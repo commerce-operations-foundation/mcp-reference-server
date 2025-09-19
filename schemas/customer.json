@@ -1,0 +1,298 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Customer",
+  "type": "object",
+  "description": "Customer entity schema",
+  "properties": {
+    "customerId": {
+      "type": "string",
+      "description": "Customer ID"
+    },
+    "addresses": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "address1": {
+            "type": "string",
+            "description": "Address"
+          },
+          "address2": {
+            "type": "string",
+            "description": "Address Line 2"
+          },
+          "city": {
+            "type": "string",
+            "description": "City"
+          },
+          "country": {
+            "type": "string",
+            "description": "Country"
+          },
+          "email": {
+            "type": "string",
+            "description": "Email"
+          },
+          "phone": {
+            "type": "string",
+            "description": "Phone"
+          },
+          "stateOrProvince": {
+            "type": "string",
+            "description": "State or Province"
+          },
+          "zipCodeOrPostalCode": {
+            "type": "string",
+            "description": "Zipcode or postal code"
+          },
+          "type": {
+            "type": "string",
+            "enum": ["billing", "shipping", "other"],
+            "description": "Customer address type"
+          }
+        }
+      }
+    },
+    "billingAddress": {
+      "type": "object",
+      "properties": {
+        "address1": {
+          "type": "string",
+          "description": "Address"
+        },
+        "address2": {
+          "type": "string",
+          "description": "Address Line 2"
+        },
+        "city": {
+          "type": "string",
+          "description": "City"
+        },
+        "country": {
+          "type": "string",
+          "description": "Country"
+        },
+        "email": {
+          "type": "string",
+          "description": "Email"
+        },
+        "phone": {
+          "type": "string",
+          "description": "Phone"
+        },
+        "stateOrProvince": {
+          "type": "string",
+          "description": "State or Province"
+        },
+        "zipCodeOrPostalCode": {
+          "type": "string",
+          "description": "Zipcode or postal code"
+        }
+      }
+    },
+    "catalogIds": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "checkoutSettings": {
+      "type": "object",
+      "description": "Customer checkout settings",
+      "properties": {
+        "checkoutToDraft": {
+          "type": "boolean"
+        },
+        "editableShippingAddress": {
+          "type": "boolean"
+        },
+        "payNowOnly": {
+          "type": "boolean"
+        }
+      }
+    },
+    "company": {
+      "type": "string",
+      "description": "Customer company name"
+    },
+    "customFields": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "compliance": {
+            "type": "string",
+            "enum": ["none", "pii", "pci", "hippa"]
+          },
+          "name": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "displayName": {
+      "type": "string",
+      "description": "Customer display name"
+    },
+    "email": {
+      "type": "string",
+      "description": "Customer email"
+    },
+    "exceptionCategories": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "References to categories of exceptions related to the customer"
+    },
+    "exceptions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Types of exceptions related to the customer"
+    },
+    "extCustomerId": {
+      "type": "string",
+      "description": "Customer external ID"
+    },
+    "firstName": {
+      "type": "string",
+      "description": "Customer first name"
+    },
+    "internal": {
+      "type": "object",
+      "description": "Internal information"
+    },
+    "lastName": {
+      "type": "string",
+      "description": "Customer last name"
+    },
+    "linkedCustomers": {
+      "type": "array",
+      "description": "References to parent customer objects(s) and assigned role(s) of individual in parent customer",
+      "items": {
+        "type": "object",
+        "required": ["customerId", "roles"],
+        "properties": {
+          "customerId": {
+            "type": "string",
+            "description": "reference to customerId e.g. company or company_location"
+          },
+          "roles": {
+            "type": "array",
+            "description": "roles of current customer within linked customer",
+            "items": {
+              "type": "string",
+              "enum": ["main_contact", "allow_ordering", "admin", "assigned"]
+            }
+          }
+        }
+      }
+    },
+    "notes": {
+      "type": "string"
+    },
+    "paymentTerms": {
+      "type": "object",
+      "description": "Customer payment terms",
+      "required": ["term"],
+      "properties": {
+        "term": {
+          "type": "string",
+          "enum": ["net", "fixed", "fulfillment", "receipt", "unknown", "other"],
+          "description": "Customer payment term"
+        },
+        "depositPercentage": {
+          "type": "number"
+        },
+        "dueInDays": {
+          "type": "number"
+        },
+        "note": {
+          "type": "string"
+        }
+      }
+    },
+    "phone": {
+      "type": "string",
+      "description": "Customer phone"
+    },
+    "shippingAddress": {
+      "type": "object",
+      "properties": {
+        "address1": {
+          "type": "string",
+          "description": "Address"
+        },
+        "address2": {
+          "type": "string",
+          "description": "Address Line 2"
+        },
+        "city": {
+          "type": "string",
+          "description": "City"
+        },
+        "country": {
+          "type": "string",
+          "description": "Country"
+        },
+        "email": {
+          "type": "string",
+          "description": "Email"
+        },
+        "phone": {
+          "type": "string",
+          "description": "Phone"
+        },
+        "stateOrProvince": {
+          "type": "string",
+          "description": "State or Province"
+        },
+        "zipCodeOrPostalCode": {
+          "type": "string",
+          "description": "Zipcode or postal code"
+        }
+      }
+    },
+    "sourceDoc": {
+      "type": "object"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["active", "inactive", "deleted"],
+      "description": "Customer status"
+    },
+    "tags": {
+      "type": "object"
+    },
+    "taxOptions": {
+      "type": "object",
+      "description": "Customer tax options"
+    },
+    "type": {
+      "type": "string",
+      "description": "Customer type"
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time",
+      "readOnly": true,
+      "description": "When the object was created"
+    },
+    "orgKey": {
+      "type": "string",
+      "readOnly": true,
+      "description": "Organization this object belong to"
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time",
+      "readOnly": true,
+      "description": "When the object was updated"
+    }
+  }
+}

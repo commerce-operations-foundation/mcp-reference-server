@@ -1,0 +1,19 @@
+{
+  "mcpServers": {
+    "cof-mcp": {
+      "command": "mise",
+      "args": [
+        "exec",
+        "node",
+        "--",
+        "$commerce-operations-foundation-mcp/server/run-mcp-sdk.js"
+      ],
+      "env": {
+        "ADAPTER_TYPE": "built-in",
+        "ADAPTER_NAME": "mock",
+        "LOG_LEVEL": "info",
+        "NODE_ENV": "development"
+      }
+    }
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "name": "@yourcompany/uois-adapter-yourfulfillment",
+  "version": "1.0.0",
+  "description": "Commerce Operations Foundation adapter for YourFulfillment",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "test": "jest",
+    "test:integration": "npm run build && node test-integration.js",
+    "lint": "eslint .",
+    "prepublishOnly": "npm run build && npm test",
+    "dev": "tsc --watch"
+  },
+  "keywords": [
+    "cof",
+    "fulfillment",
+    "adapter",
+    "mcp"
+  ],
+  "author": "Your Company",
+  "license": "MIT",
+  "peerDependencies": {},
+  "devDependencies": {
+    "@eslint/js": "^9.8.0",
+    "@types/jest": "^29.5.11",
+    "@types/node": "^20.10.5",
+    "@typescript-eslint/eslint-plugin": "^8.7.0",
+    "@typescript-eslint/parser": "^8.7.0",
+    "typescript-eslint": "^8.7.0",
+    "eslint": "^9.8.0",
+    "eslint-plugin-import": "^2.29.1",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.1",
+    "typescript": "^5.3.3"
+  },
+  "dependencies": {
+    "axios": "^1.6.0"
+  }
+}

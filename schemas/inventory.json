@@ -1,0 +1,166 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Inventory",
+  "type": "object",
+  "description": "Inventory entity schema",
+  "properties": {
+    "inventoryId": {
+      "type": "string",
+      "description": "Inventory ID"
+    },
+    "available": {
+      "type": "integer",
+      "format": "int32",
+      "description": "Number of items available"
+    },
+    "availableToPromise": {
+      "type": "integer",
+      "format": "int32",
+      "description": "Number of items available to promise"
+    },
+    "commitShip": {
+      "type": "integer",
+      "format": "int32",
+      "description": "Number of items being shipped (included in committed)"
+    },
+    "commitXfer": {
+      "type": "integer",
+      "format": "int32",
+      "description": "Number of items being transferred out (included in committed)"
+    },
+    "committed": {
+      "type": "integer",
+      "format": "int32",
+      "description": "Number of items committed"
+    },
+    "committedFuture": {
+      "type": "integer",
+      "format": "int32",
+      "description": "Number of items committed for pre-order"
+    },
+    "customFields": {
+      "type": "array",
+      "description": "Custom Fields",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "damaged": {
+      "type": "integer",
+      "format": "int32"
+    },
+    "entityId": {
+      "type": "string",
+      "description": "Related entity ID"
+    },
+    "entityType": {
+      "type": "string",
+      "description": "Related entity ID's type"
+    },
+    "event": {
+      "type": "string",
+      "description": "Event creating this item"
+    },
+    "future": {
+      "type": "integer",
+      "format": "int32",
+      "description": "Number of items that can be sold for pre-order"
+    },
+    "hold": {
+      "type": "integer",
+      "format": "int32"
+    },
+    "incoming": {
+      "type": "integer",
+      "format": "int32",
+      "description": "Number of incoming items in transit (maybe included in available)"
+    },
+    "integration": {
+      "type": "string",
+      "description": "Reference to integration that created an item"
+    },
+    "internal": {
+      "type": "object",
+      "description": "Internal information"
+    },
+    "inventoryNotTracked": {
+      "type": "boolean",
+      "description": "Disables the inventory tracking"
+    },
+    "label": {
+      "type": "string"
+    },
+    "locationId": {
+      "type": "string",
+      "description": "Location of item"
+    },
+    "onHand": {
+      "type": "integer",
+      "format": "int32",
+      "description": "Number of items on hand"
+    },
+    "orderId": {
+      "type": "string",
+      "description": "Internal order id that initiated this inventory change"
+    },
+    "orderType": {
+      "type": "string",
+      "description": "Type of order that initiated this inventory change"
+    },
+    "quantity": {
+      "type": "integer",
+      "format": "int32",
+      "description": "Number of items affected"
+    },
+    "sku": {
+      "type": "string",
+      "description": "Item SKU"
+    },
+    "tags": {
+      "type": "object"
+    },
+    "type": {
+      "type": "string",
+      "enum": ["virtual", "physical"],
+      "description": "Inventory type (undefined value indicates a physical inventory)"
+    },
+    "unavailable": {
+      "type": "integer",
+      "format": "int32",
+      "description": "Number of unavailable items"
+    },
+    "user": {
+      "type": "string",
+      "description": "Internal id of the user who makes the inventory adjustment via the portal"
+    },
+    "vendorSKU": {
+      "type": "string",
+      "description": "Item vendor SKU"
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time",
+      "readOnly": true,
+      "description": "When the object was created"
+    },
+    "orgKey": {
+      "type": "string",
+      "readOnly": true,
+      "description": "Organization this object belong to"
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time",
+      "readOnly": true,
+      "description": "When the object was updated"
+    }
+  }
+}
