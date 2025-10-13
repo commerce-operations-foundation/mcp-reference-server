@@ -3,13 +3,13 @@
   "title": "Order",
   "type": "object",
   "description": "Order entity schema",
-  "required": ["extOrderId"],
+  "required": ["externalId"],
   "properties": {
-    "orderId": {
+    "id": {
       "type": "string",
       "description": "Auto Generated order ID"
     },
-    "extOrderId": {
+    "externalId": {
       "type": "string",
       "description": "External Order ID"
     },
