@@ -14,16 +14,41 @@ export class GetInventoryTool extends BaseTool {
   inputSchema: JSONSchema = {
     type: 'object',
     properties: {
-      sku: {
-        type: 'string',
+      skus: {
+        type: 'array',
+        items: {
+          type: 'string'
+        },
         description: 'Product SKU to get inventory for (required)'
       },
-      locationId: {
-        type: 'string',
+      locationIds: {
+        type: 'array',
+        items: {
+          type: 'string'
+        },
         description: 'Specific warehouse/location ID (optional - if not provided, returns aggregated inventory)'
-      }
-    },
-    required: ['sku']
+      },
+      updatedAtMin: {
+        type: 'string',
+        format: 'date-time',
+        description: 'Minimum updated at date'
+      },
+      updatedAtMax: {
+        type: 'string',
+        format: 'date-time',
+        description: 'Maximum updated at date'
+      },
+      pageSize: {
+        type: 'number',
+        description: 'Page size',
+        default: 10
+      },
+      skip: {
+        type: 'number',
+        description: 'Skip',
+        default: 0
+      },
+    }
   };
 
   async execute(input: any): Promise<any> {
