@@ -3,7 +3,6 @@
   "title": "Order",
   "type": "object",
   "description": "Order entity schema",
-  "required": ["externalId"],
   "properties": {
     "id": {
       "type": "string",
@@ -16,13 +15,6 @@
     "status": {
       "type": "string",
       "description": "Order status"
-    },
-    "additionalCharges": {
-      "type": "array",
-      "description": "Additional charges",
-      "items": {
-        "type": "object"
-      }
     },
     "billingAddress": {
       "type": "object",
@@ -100,16 +92,10 @@
         "company": {
           "type": "string"
         },
-        "customerId": {
+        "id": {
           "type": "string"
         },
-        "extCompanyCustomerId": {
-          "type": "string"
-        },
-        "extCustomerId": {
-          "type": "string"
-        },
-        "extLocationCustomerId": {
+        "externalId": {
           "type": "string"
         },
         "firstName": {
@@ -117,20 +103,8 @@
         },
         "lastName": {
           "type": "string"
-        },
-        "type": {
-          "type": "string",
-          "enum": ["individual", "company"],
-          "description": "Order customer type"
         }
       }
-    },
-    "customerPONumber": {
-      "type": ["string", "null"]
-    },
-    "disableShipmentsReuse": {
-      "type": "boolean",
-      "description": "Hint to whether shipmentId should be re-used, or not"
     },
     "discounts": {
       "type": "array",
@@ -139,167 +113,44 @@
         "type": "object"
       }
     },
-    "disposition": {
-      "type": "array",
-      "items": {
-        "type": "string",
-        "enum": [
-          "partiallyRouted",
-          "routed",
-          "partiallySent",
-          "sent",
-          "partiallyFulfilled",
-          "fulfilled",
-          "partiallyCanceled",
-          "canceled",
-          "partiallyFailed",
-          "failed",
-          "partiallyRejected",
-          "rejected",
-          "partiallyUnrouted",
-          "unrouted",
-          "partiallyUnsent",
-          "unsent",
-          "partiallyUnfulfilled",
-          "unfulfilled"
-        ]
-      },
-      "description": "Order disposition"
-    },
-    "dispositions": {
-      "type": "array",
-      "description": "Disposition of line items",
-      "items": {
-        "type": "object",
-        "properties": {
-          "uniqueId": {
-            "type": "string",
-            "description": "Line uniqueId"
-          },
-          "values": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "type": {
-                  "type": "string"
-                },
-                "quantity": {
-                  "type": "number",
-                  "format": "float",
-                  "description": "Item quantity"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "exceptionCategories": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      },
-      "description": "References to categories of exceptions related to the order"
-    },
-    "exceptions": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      },
-      "description": "Types of exceptions related to the order"
-    },
     "expectedDeliveryDate": {
       "type": "string",
       "format": "date-time",
       "description": "First Priority to be respected"
     },
-    "extOrderApiId": {
-      "type": "string",
-      "description": "External System Order API ID"
-    },
-    "extOrderCreatedAt": {
-      "type": "string",
-      "format": "date-time",
-      "description": "When the order was created at source"
-    },
-    "extOrderUpdatedAt": {
-      "type": "string",
-      "format": "date-time",
-      "description": "When the order was updated at source"
-    },
-    "extOrderUrl": {
-      "type": "string",
-      "description": "Order Url in External System"
-    },
-    "fulfillmentStatus": {
-      "type": "string",
-      "description": "status of the fulfillment"
-    },
     "giftNote": {
       "type": "string",
       "description": "Order Gift note"
-    },
-    "holdUntil": {
-      "type": "string",
-      "format": "date-time"
-    },
-    "incoterms": {
-      "type": "string",
-      "description": "International Commercial Terms"
-    },
-    "integration": {
-      "type": "string",
-      "description": "Reference to integration that created an item"
-    },
-    "internal": {
-      "type": "object",
-      "description": "Internal information"
-    },
-    "isMultiAddress": {
-      "type": "boolean",
-      "description": "Indicates the order is a multi address destination order (default - false)"
-    },
-    "isMultiDestination": {
-      "type": "boolean",
-      "description": "Multi-destination order indicator"
-    },
-    "lastRoutedAt": {
-      "type": "string",
-      "format": "date-time",
-      "description": "When the order was last routed."
     },
     "lineItems": {
       "type": "array",
       "items": {
         "type": "object",
         "properties": {
-          "canceled": {
-            "type": "number",
-            "format": "float",
-            "description": "quantity canceled as reported by source"
+          "id": {
+            "type": "string",
+            "description": "Line Item ID"
           },
-          "fulfillable": {
-            "type": "number",
-            "format": "float",
-            "description": "quantity fulfillable as reported by source"
+          "sku": {
+            "type": "string",
+            "description": "SKU"
           },
-          "fulfilled": {
-            "type": "number",
-            "format": "float",
-            "description": "quantity fulfilled as reported by source"
+          "name": {
+            "type": "string",
+            "description": "Name"
           },
-          "ordered": {
+          "unitPrice": {
             "type": "number",
             "format": "float",
-            "description": "original quantity as reported by source"
+            "description": "unit price as reported by source"
+          },
+          "quantity": {
+            "type": "number",
+            "format": "float",
+            "description": "quantity as reported by source"
           }
         }
       }
-    },
-    "locationId": {
-      "type": "string",
-      "description": "Id of location defined in organization. Used as item origin for shipment."
     },
     "orderDiscount": {
       "type": "number",
@@ -313,10 +164,6 @@
     "orderSource": {
       "type": "string",
       "description": "The original order platform, walmart, etsy, etc"
-    },
-    "orderSourceType": {
-      "type": "string",
-      "description": "Order source type"
     },
     "orderTax": {
       "type": "number",
@@ -338,43 +185,12 @@
         "type": "object"
       }
     },
-    "preferredLocationGroupId": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      },
-      "description": "List of location-group IDs"
-    },
-    "privacyPolicy": {
-      "type": "array",
-      "items": {
-        "type": "object"
-      }
-    },
     "refunds": {
       "type": "array",
       "description": "Refunds",
       "items": {
         "type": "object"
       }
-    },
-    "replacementOrderId": {
-      "type": "string"
-    },
-    "replacementReason": {
-      "type": "object"
-    },
-    "requireShippingLabels": {
-      "type": "boolean",
-      "description": "Indicates if fetching of shipping labels is required"
-    },
-    "respectLocationId": {
-      "type": "boolean",
-      "description": "Use locationId if defined on order level or lineItems level as valid item origin for shipment (pre-route)."
-    },
-    "routingStatus": {
-      "type": "object",
-      "description": "order routing status"
     },
     "shipAfterDate": {
       "type": "string",
@@ -453,12 +269,6 @@
       "type": "string",
       "description": "1st Priority"
     },
-    "shippingDestinations": {
-      "type": "array",
-      "items": {
-        "type": "object"
-      }
-    },
     "shippingNote": {
       "type": "string",
       "description": "Shipping Notes"
@@ -468,21 +278,16 @@
       "format": "float",
       "description": "Shipping price"
     },
-    "sourceDoc": {
-      "type": "object"
-    },
     "subTotalPrice": {
       "type": "number",
       "format": "float",
       "description": "Sub Total Price"
     },
     "tags": {
-      "type": "object"
-    },
-    "timestamp": {
-      "type": "string",
-      "format": "date-time",
-      "description": "General Purpose Time Stamp"
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
     },
     "totalPrice": {
       "type": "number",
@@ -495,10 +300,10 @@
       "readOnly": true,
       "description": "When the object was created"
     },
-    "orgKey": {
+    "tenantId": {
       "type": "string",
       "readOnly": true,
-      "description": "Organization this object belong to"
+      "description": "Tenant this object belong to"
     },
     "updatedAt": {
       "type": "string",

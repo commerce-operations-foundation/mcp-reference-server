@@ -14,24 +14,41 @@ export class GetProductTool extends BaseTool {
   inputSchema: JSONSchema = {
     type: 'object',
     properties: {
-      identifier: {
-        type: 'object',
-        description: 'Product identifier - at least one field required',
-        properties: {
-          productId: {
-            type: 'string',
+          ids: {
+            type: 'array',
+            items: {
+              type: 'string'
+            },
             description: 'Unique product ID in the Fulfillment System'
           },
-          sku: {
-            type: 'string',
+          skus: {
+            type: 'array',
+            items: {
+              type: 'string'
+            },
             description: 'Product SKU (Stock Keeping Unit)'
+          },
+          updatedAtMin: {
+            type: 'string',
+            format: 'date-time',
+            description: 'Minimum updated at date'
+          },
+          updatedAtMax: {
+            type: 'string',
+            format: 'date-time',
+            description: 'Maximum updated at date'
+          },
+          pageSize: {
+            type: 'number',
+            description: 'Page size',
+            default: 10
+          },
+          skip: {
+            type: 'number',
+            description: 'Skip',
+            default: 0
           }
-        },
-        minProperties: 1,
-        additionalProperties: false
-      }
-    },
-    required: ['identifier']
+        }
   };
 
   async execute(input: any): Promise<any> {

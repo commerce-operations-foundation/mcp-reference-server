@@ -7,25 +7,61 @@ import { BaseTool } from '../base-tool.js';
 import { JSONSchema } from '../../types/mcp.js';
 import { OrderIdentifier } from '../../types/index.js';
 
-export class GetOrderTool extends BaseTool {
-  name = 'get-order';
+export class GetOrdersTool extends BaseTool {
+  name = 'get-orders';
   
-  description = 'Retrieves order details when you need to check order status, view line items, track fulfillment progress, or investigate customer inquiries. Use when: displaying order information, verifying order existence, checking shipping status, or before performing order modifications. Accepts order ID, external ID, or order number.';
+  description = 'Retrieves orders details when you need to check order status, view line items, track fulfillment progress, or investigate customer inquiries. Use when: displaying order information, verifying order existence, checking shipping status, or before performing order modifications. Accepts order ID, external ID, or order number.';
   
   inputSchema: JSONSchema = {
     type: 'object',
     properties: {
-      orderId: {
-        type: 'string',
-        description: 'Internal order ID'
+      orderIds: {
+        type: 'array',
+        items: {
+          type: 'string'
+        },
+        description: 'Internal order ID, could be a comma separated list'
       },
-      extOrderId: {
-        type: 'string',
-        description: 'External order ID from source system'
+      extOrderIds: {
+        type: 'array',
+        items: {
+          type: 'string'
+        },
+        description: 'External order ID from source system, could be a comma separated list'
       },
-      orderNumber: {
+      statuses: {
+        type: 'array',
+        items: {
+          type: 'string'
+        },
+        description: 'Order status'
+      },
+      orderNames: {
+        type: 'array',
+        items: {
+          type: 'string'
+        },
+        description: 'Friendly Order identifier'
+      },
+      updatedAtMin: {
         type: 'string',
-        description: 'Order identifier (will search both orderId and extOrderId fields)'
+        format: 'date-time',
+        description: 'Minimum updated at date'
+      },
+      updatedAtMax: {
+        type: 'string',
+        format: 'date-time',
+        description: 'Maximum updated at date'
+      },
+      pageSize: {
+        type: 'number',
+        description: 'Page size',
+        default: 10
+      },
+      skip: {
+        type: 'number',
+        description: 'Skip',
+        default: 0
       },
       includeLineItems: {
         type: 'boolean',

@@ -5,7 +5,7 @@
   "description": "Product entity schema",
   "required": ["sku", "name"],
   "properties": {
-    "productId": {
+    "id": {
       "type": "string",
       "description": "Product ID"
     },
@@ -16,34 +16,6 @@
     "name": {
       "type": "string",
       "description": "Display Name"
-    },
-    "bundleItems": {
-      "type": "array",
-      "description": "Bundle Item need to reference the SKU of the actual product",
-      "items": {
-        "type": "object",
-        "required": ["sku", "quantity"],
-        "properties": {
-          "sku": {
-            "type": "string",
-            "description": "Bundle Item SKU"
-          },
-          "quantity": {
-            "type": "number",
-            "format": "float",
-            "description": "Bundle Item Quantity"
-          },
-          "updatedAt": {
-            "type": "string",
-            "format": "date-time",
-            "description": "Last update timestamp"
-          },
-          "updatedBy": {
-            "type": "string",
-            "description": "Id of the last-update requester, if known"
-          }
-        }
-      }
     },
     "cost": {
       "type": "number",
@@ -82,35 +54,9 @@
       "description": "Dimensions UOM",
       "enum": ["cm", "in", "ft"]
     },
-    "exceptionCategories": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      },
-      "description": "References to categories of exceptions related to the product"
-    },
-    "exceptions": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      },
-      "description": "Types of exceptions related to the product"
-    },
-    "extProductApiId": {
+    "externalId": {
       "type": "string",
       "description": "External Product API Id"
-    },
-    "extProductCreatedAt": {
-      "type": "string",
-      "format": "date-time"
-    },
-    "extProductId": {
-      "type": "string",
-      "description": "External Product Id"
-    },
-    "extProductUpdatedAt": {
-      "type": "string",
-      "format": "date-time"
     },
     "harmonizedCode": {
       "type": "string",
@@ -121,24 +67,12 @@
       "format": "float",
       "description": "Height"
     },
-    "hideInStore": {
-      "type": "boolean",
-      "description": "Mark item as hidden in marketplace Storefront"
-    },
     "imageURLs": {
       "type": "array",
       "description": "Image URLs",
       "items": {
         "type": "string"
       }
-    },
-    "integration": {
-      "type": "string",
-      "description": "Reference to integration that created an item"
-    },
-    "internal": {
-      "type": "object",
-      "description": "Internal information"
     },
     "inventoryNotTracked": {
       "type": "boolean",
@@ -148,69 +82,6 @@
       "type": "number",
       "format": "float",
       "description": "Length"
-    },
-    "mappedProduct": {
-      "type": "object",
-      "description": "Mapped product information - available for integrations only",
-      "properties": {
-        "integrationId": {
-          "type": "string",
-          "description": "Reference to channel integration"
-        },
-        "bufferInventory": {
-          "type": "integer",
-          "format": "int32",
-          "description": "Reserved buffer inventory quantity when publishing to this channel"
-        },
-        "customFields": {
-          "type": "array",
-          "description": "Custom Fields",
-          "items": {
-            "type": "object",
-            "properties": {
-              "name": {
-                "type": "string"
-              },
-              "value": {
-                "type": "string"
-              }
-            }
-          }
-        },
-        "extProductId": {
-          "type": "string",
-          "description": "Channel specific product id"
-        },
-        "inventoryNotTracked": {
-          "type": "boolean",
-          "description": "Do not track inventory for this channel"
-        },
-        "name": {
-          "type": "string"
-        },
-        "sku": {
-          "type": "string",
-          "description": "Channel specific SKU"
-        },
-        "status": {
-          "type": "string",
-          "enum": ["tobepublished", "published", "tobeunpublished", "unpublished", "disabled"],
-          "description": "Product published item status"
-        },
-        "updatedAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "Channel specific product updatedAt timestamp"
-        },
-        "updatedBy": {
-          "type": "string",
-          "description": "Id of the last-update requester, if known"
-        }
-      }
-    },
-    "parentExtProductId": {
-      "type": "string",
-      "description": "Variant parent external product Id"
     },
     "partId": {
       "type": "string",
@@ -223,78 +94,15 @@
         "type": "object"
       }
     },
-    "published": {
-      "type": "array",
-      "description": "Published Channels",
-      "items": {
-        "type": "object",
-        "required": ["integrationId"],
-        "properties": {
-          "integrationId": {
-            "type": "string",
-            "description": "Reference to channel integration"
-          },
-          "bufferInventory": {
-            "type": "integer",
-            "format": "int32",
-            "description": "Reserved buffer inventory quantity when publishing to this channel"
-          },
-          "customFields": {
-            "type": "array",
-            "description": "Custom Fields",
-            "items": {
-              "type": "object",
-              "properties": {
-                "name": {
-                  "type": "string"
-                },
-                "value": {
-                  "type": "string"
-                }
-              }
-            }
-          },
-          "extProductId": {
-            "type": "string",
-            "description": "Channel specific product id"
-          },
-          "inventoryNotTracked": {
-            "type": "boolean",
-            "description": "Do not track inventory for this channel"
-          },
-          "name": {
-            "type": "string"
-          },
-          "sku": {
-            "type": "string",
-            "description": "Channel specific SKU"
-          },
-          "status": {
-            "type": "string",
-            "enum": ["tobepublished", "published", "tobeunpublished", "unpublished", "disabled"],
-            "description": "Product published item status"
-          },
-          "updatedAt": {
-            "type": "string",
-            "format": "date-time",
-            "description": "Channel specific product updatedAt timestamp"
-          },
-          "updatedBy": {
-            "type": "string",
-            "description": "Id of the last-update requester, if known"
-          }
-        }
-      }
-    },
-    "sourceDoc": {
-      "type": "object"
-    },
     "status": {
       "type": "string",
       "description": "Product status"
     },
     "tags": {
-      "type": "object"
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
     },
     "taxable": {
       "type": "boolean",
@@ -310,21 +118,6 @@
     "upc": {
       "type": "string",
       "description": "UPC"
-    },
-    "variantOptions": {
-      "type": "array",
-      "description": "this let us know the variant description",
-      "items": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string"
-          },
-          "value": {
-            "type": "string"
-          }
-        }
-      }
     },
     "vendor": {
       "type": "string",
@@ -351,10 +144,10 @@
       "readOnly": true,
       "description": "When the object was created"
     },
-    "orgKey": {
+    "tenantId": {
       "type": "string",
       "readOnly": true,
-      "description": "Organization this object belong to"
+      "description": "Tenant this object belong to"
     },
     "updatedAt": {
       "type": "string",

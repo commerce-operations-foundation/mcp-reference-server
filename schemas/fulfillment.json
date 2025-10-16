@@ -5,29 +5,13 @@
   "description": "Shipment entity schema",
   "required": ["extOrderId", "shippingAddress"],
   "properties": {
-    "shipmentId": {
+    "id": {
       "type": "string",
       "description": "Shipment ID"
     },
     "extOrderId": {
       "type": "string",
       "description": "Customer friendly ID on the order object"
-    },
-    "extOrderApiId": {
-      "type": "string",
-      "description": "External System Order API ID"
-    },
-    "extShipmentId": {
-      "type": "string",
-      "description": "Customer Friendly reference to this shipping request on originating vendor, auto generated if not provided"
-    },
-    "extReferenceId": {
-      "type": "string",
-      "description": "Customer Friendly reference to this shipping request on destination vendor"
-    },
-    "extReferenceUrl": {
-      "type": "string",
-      "description": "Direct link to this shipping request on destination vendor"
     },
     "shippingAddress": {
       "type": "object",
@@ -79,24 +63,6 @@
         }
       }
     },
-    "canceledAt": {
-      "type": "string",
-      "format": "date-time",
-      "description": "The cancellation date"
-    },
-    "canceledBy": {
-      "type": "string",
-      "description": "The cancel requester Id"
-    },
-    "canceledByType": {
-      "type": "string",
-      "enum": ["user", "integration", "apikey"],
-      "description": "The cancel requester Id type"
-    },
-    "cancellationStatus": {
-      "type": "string",
-      "description": "Cancellation status"
-    },
     "currency": {
       "type": "string",
       "description": "Currency code (inherited from order)"
@@ -116,127 +82,26 @@
         }
       }
     },
-    "excludeFromReuse": {
-      "type": "boolean",
-      "default": false,
-      "description": "A flag to indicate whether id of this SR can be reused, or not"
-    },
-    "exceptionCategories": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      },
-      "description": "References to categories of exceptions related to the shipment"
-    },
-    "exceptions": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      },
-      "description": "Types of exceptions related to the shipment"
-    },
     "expectedDeliveryDate": {
       "type": "string",
       "format": "date-time",
       "description": "First Priority to be respected"
     },
-    "expectedShipDate": {
-      "type": "string",
-      "format": "date-time",
-      "description": "Expected ship date"
-    },
-    "fulfillmentIntegrationId": {
-      "type": "string",
-      "description": "Destination of this shipping request"
-    },
     "giftNote": {
       "type": "string",
       "description": "Shipping Gift note"
-    },
-    "holdUntil": {
-      "type": "string",
-      "format": "date-time"
     },
     "incoterms": {
       "type": "string",
       "description": "International Commercial Terms"
     },
-    "integration": {
-      "type": "string",
-      "description": "Reference to integration that created an item"
-    },
-    "internal": {
-      "type": "object",
-      "description": "Internal information"
-    },
-    "lineItems": {
-      "type": "array",
-      "items": {
-        "type": "object"
-      }
-    },
     "locationId": {
       "type": "string",
       "description": "Id of location defined in organization"
     },
-    "orderCreateTime": {
-      "type": "string",
-      "format": "date-time",
-      "description": "Create time of linked order"
-    },
     "orderId": {
       "type": "string",
       "description": "Internal Order's orderId"
-    },
-    "orderIntegration": {
-      "type": "string",
-      "description": "Reference to integration that created order tied to an item"
-    },
-    "orderSource": {
-      "type": "string",
-      "description": "Actual Order source, Walmart, Etsy, etc"
-    },
-    "orderSourceType": {
-      "type": "string",
-      "description": "Order source type"
-    },
-    "orderType": {
-      "type": "string",
-      "description": "Shipment order type"
-    },
-    "overfulfillPolicy": {
-      "type": "object",
-      "description": "Overfulfill policy"
-    },
-    "privacyPolicy": {
-      "type": "array",
-      "items": {
-        "type": "object"
-      }
-    },
-    "reused": {
-      "type": "boolean",
-      "description": "Indicates the shipment's extShipmentId is being reused in another one"
-    },
-    "sentToFulfillmentAt": {
-      "type": "string",
-      "format": "date-time",
-      "description": "Sent to fulfillment timestamp"
-    },
-    "shipAfterDate": {
-      "type": "string",
-      "format": "date-time",
-      "description": "Ship After Date"
-    },
-    "shipByDate": {
-      "type": "string",
-      "format": "date-time",
-      "description": "Ship By Date"
-    },
-    "shipCancelByDate": {
-      "type": "string",
-      "format": "date-time",
-      "description": "Ship Cancel By Date"
     },
     "shippingCarrier": {
       "type": "string",
@@ -250,17 +115,6 @@
       "type": "string",
       "description": "1st Priority"
     },
-    "shippingLabels": {
-      "type": "array",
-      "description": "Shipping Labels",
-      "items": {
-        "type": "string"
-      }
-    },
-    "shippingMethodMapping": {
-      "type": "boolean",
-      "description": "Enable shipping method mapping (defaults to company setting if not provided)"
-    },
     "shippingNote": {
       "type": "string",
       "description": "Shipping Note"
@@ -270,30 +124,15 @@
       "format": "float",
       "description": "Shipping price"
     },
-    "skipLocation": {
-      "type": "boolean",
-      "description": "A flag to indicate the location in this SR should be skipped during rerun-routing"
-    },
-    "sourceDoc": {
-      "type": "object"
-    },
     "status": {
       "type": "string",
       "description": "Shipment status"
     },
     "tags": {
-      "type": "object"
-    },
-    "timeline": {
       "type": "array",
-      "description": "Timeline of updates",
       "items": {
-        "type": "object"
+        "type": "string"
       }
-    },
-    "version": {
-      "type": "number",
-      "description": "Shipping request ordinal number - each new shipping request will have this value incremented for the same orderId"
     },
     "createdAt": {
       "type": "string",
@@ -301,10 +140,10 @@
       "readOnly": true,
       "description": "When the object was created"
     },
-    "orgKey": {
+    "tenantId": {
       "type": "string",
       "readOnly": true,
-      "description": "Organization this object belong to"
+      "description": "Tenant this object belong to"
     },
     "updatedAt": {
       "type": "string",
