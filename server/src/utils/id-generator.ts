@@ -20,12 +20,13 @@ export class IdGenerator {
    */
   static orderId(): string {
     const now = new Date();
-    const timestamp = now.getFullYear().toString() +
-                     (now.getMonth() + 1).toString().padStart(2, '0') +
-                     now.getDate().toString().padStart(2, '0') +
-                     now.getHours().toString().padStart(2, '0') +
-                     now.getMinutes().toString().padStart(2, '0') +
-                     now.getSeconds().toString().padStart(2, '0');
+    const timestamp =
+      now.getFullYear().toString() +
+      (now.getMonth() + 1).toString().padStart(2, '0') +
+      now.getDate().toString().padStart(2, '0') +
+      now.getHours().toString().padStart(2, '0') +
+      now.getMinutes().toString().padStart(2, '0') +
+      now.getSeconds().toString().padStart(2, '0');
     const suffix = this.random(4, true);
     return `ORD-${timestamp}-${suffix}`;
   }
@@ -33,14 +34,15 @@ export class IdGenerator {
   /**
    * Generate a shipment ID
    */
-  static shipmentId(): string {
+  static fulfillmentId(): string {
     const now = new Date();
-    const timestamp = now.getFullYear().toString() +
-                     (now.getMonth() + 1).toString().padStart(2, '0') +
-                     now.getDate().toString().padStart(2, '0') +
-                     now.getHours().toString().padStart(2, '0') +
-                     now.getMinutes().toString().padStart(2, '0') +
-                     now.getSeconds().toString().padStart(2, '0');
+    const timestamp =
+      now.getFullYear().toString() +
+      (now.getMonth() + 1).toString().padStart(2, '0') +
+      now.getDate().toString().padStart(2, '0') +
+      now.getHours().toString().padStart(2, '0') +
+      now.getMinutes().toString().padStart(2, '0') +
+      now.getSeconds().toString().padStart(2, '0');
     const suffix = this.random(4, true);
     return `SHP-${timestamp}-${suffix}`;
   }
@@ -58,12 +60,13 @@ export class IdGenerator {
    */
   static rmaNumber(): string {
     const now = new Date();
-    const timestamp = now.getFullYear().toString() +
-                     (now.getMonth() + 1).toString().padStart(2, '0') +
-                     now.getDate().toString().padStart(2, '0') +
-                     now.getHours().toString().padStart(2, '0') +
-                     now.getMinutes().toString().padStart(2, '0') +
-                     now.getSeconds().toString().padStart(2, '0');
+    const timestamp =
+      now.getFullYear().toString() +
+      (now.getMonth() + 1).toString().padStart(2, '0') +
+      now.getDate().toString().padStart(2, '0') +
+      now.getHours().toString().padStart(2, '0') +
+      now.getMinutes().toString().padStart(2, '0') +
+      now.getSeconds().toString().padStart(2, '0');
     const suffix = this.random(4, true);
     return `RMA-${timestamp}-${suffix}`;
   }
@@ -103,10 +106,8 @@ export class IdGenerator {
    * Generate a random string using cryptographically secure randomness
    */
   static random(length: number, alphaOnly: boolean = false): string {
-    const chars = alphaOnly 
-      ? 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
-      : 'abcdefghijklmnopqrstuvwxyz0123456789';
-    
+    const chars = alphaOnly ? 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789' : 'abcdefghijklmnopqrstuvwxyz0123456789';
+
     const bytes = randomBytes(length);
     let result = '';
     for (let i = 0; i < length; i++) {

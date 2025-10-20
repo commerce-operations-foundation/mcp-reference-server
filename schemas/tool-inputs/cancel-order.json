@@ -1,0 +1,51 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "cancel-order",
+  "description": "Input schema for canceling an order",
+  "type": "object",
+  "properties": {
+    "orderId": {
+      "description": "id of the order to cancel",
+      "type": "string"
+    },
+    "reason": {
+      "description": "Reason for cancellation",
+      "type": "string"
+    },
+    "notifyCustomer": {
+      "description": "Whether to send cancellation notification to customer",
+      "type": "boolean"
+    },
+    "notes": {
+      "description": "Additional cancellation notes",
+      "type": "string"
+    },
+    "lineItems": {
+      "description": "Specific line items to cancel (omit to cancel entire order)",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "description": "Unique identifier for this line item within the order",
+            "type": "string"
+          },
+          "quantity": {
+            "description": "Quantity ordered",
+            "type": "number",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "id",
+          "quantity"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "orderId"
+  ],
+  "additionalProperties": false
+}

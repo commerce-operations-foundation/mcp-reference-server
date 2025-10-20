@@ -1,0 +1,182 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "fulfill-order",
+  "description": "Input schema for fulfilling an order",
+  "type": "object",
+  "properties": {
+    "orderId": {
+      "description": "Order ID to ship",
+      "type": "string"
+    },
+    "shippingInfo": {
+      "description": "Shipping details",
+      "type": "object",
+      "properties": {
+        "carrier": {
+          "description": "Shipping carrier name",
+          "type": "string"
+        },
+        "service": {
+          "description": "Shipping service level",
+          "type": "string"
+        },
+        "trackingNumber": {
+          "description": "Tracking number from carrier",
+          "type": "string"
+        },
+        "trackingUrl": {
+          "description": "URL to track shipment",
+          "type": "string"
+        },
+        "estimatedDelivery": {
+          "description": "Expected delivery date",
+          "type": "string"
+        },
+        "shippingCost": {
+          "description": "Actual shipping cost",
+          "type": "number",
+          "minimum": 0
+        },
+        "weight": {
+          "description": "Package weight in pounds",
+          "type": "number",
+          "minimum": 0
+        },
+        "dimensions": {
+          "type": "object",
+          "properties": {
+            "length": {
+              "type": "number",
+              "minimum": 0
+            },
+            "width": {
+              "type": "number",
+              "minimum": 0
+            },
+            "height": {
+              "type": "number",
+              "minimum": 0
+            },
+            "unit": {
+              "default": "in",
+              "type": "string",
+              "enum": [
+                "in",
+                "cm"
+              ]
+            }
+          },
+          "required": [
+            "unit"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "items": {
+      "description": "Items included in this shipment (for partial shipments)",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "description": "Unique identifier for this line item within the order",
+            "type": "string"
+          },
+          "sku": {
+            "description": "Product SKU",
+            "type": "string",
+            "minLength": 1
+          },
+          "quantity": {
+            "description": "Quantity being shipped",
+            "type": "number",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "sku",
+          "quantity"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "shippingAddress": {
+      "description": "Shipping address (if different from order address)",
+      "type": "object",
+      "properties": {
+        "address1": {
+          "description": "Primary street address (e.g., \"123 Main Street\")",
+          "type": "string"
+        },
+        "address2": {
+          "description": "Secondary address information such as apartment, suite, or unit number (e.g., \"Apt 4B\")",
+          "type": "string"
+        },
+        "city": {
+          "description": "City or town name",
+          "type": "string"
+        },
+        "company": {
+          "description": "Company or organization name associated with this address",
+          "type": "string"
+        },
+        "country": {
+          "description": "Country code in ISO 3166-1 alpha-2 format (2 letters, e.g., \"US\", \"CA\", \"GB\")",
+          "type": "string"
+        },
+        "email": {
+          "description": "Email address for contact at this location",
+          "type": "string",
+          "format": "email",
+          "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+        },
+        "firstName": {
+          "description": "First name of the person at this address",
+          "type": "string"
+        },
+        "lastName": {
+          "description": "Last name of the person at this address",
+          "type": "string"
+        },
+        "phone": {
+          "description": "Phone number including country code if applicable (e.g., \"+1-555-123-4567\")",
+          "type": "string"
+        },
+        "stateOrProvince": {
+          "description": "State or province. For US addresses, use 2-letter state code (e.g., \"CA\", \"NY\"). For other countries, use full province name or local standard.",
+          "type": "string"
+        },
+        "zipCodeOrPostalCode": {
+          "description": "ZIP code (US) or postal code (international) for the address",
+          "type": "string"
+        }
+      },
+      "required": [
+        "address1",
+        "city",
+        "company",
+        "country",
+        "email",
+        "firstName"
+      ],
+      "additionalProperties": false
+    },
+    "notifyCustomer": {
+      "description": "Whether to send shipping notification to customer",
+      "type": "boolean"
+    },
+    "notes": {
+      "description": "Additional shipping notes",
+      "type": "string"
+    }
+  },
+  "required": [
+    "orderId",
+    "shippingInfo",
+    "items",
+    "shippingAddress"
+  ],
+  "additionalProperties": false
+}

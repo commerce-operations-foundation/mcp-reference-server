@@ -1,78 +1,81 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Order",
+  "description": "Sales Order",
   "type": "object",
-  "description": "Order entity schema",
   "properties": {
-    "id": {
-      "type": "string",
-      "description": "Auto Generated order ID"
-    },
-    "externalId": {
-      "type": "string",
-      "description": "External Order ID"
-    },
     "status": {
-      "type": "string",
-      "description": "Order status"
+      "description": "Order status",
+      "type": "string"
     },
     "billingAddress": {
-      "type": "object",
       "description": "Purchaser Address",
+      "type": "object",
       "properties": {
         "address1": {
-          "type": "string",
-          "description": "Address"
+          "description": "Primary street address (e.g., \"123 Main Street\")",
+          "type": "string"
         },
         "address2": {
-          "type": "string",
-          "description": "Address Line 2"
+          "description": "Secondary address information such as apartment, suite, or unit number (e.g., \"Apt 4B\")",
+          "type": "string"
         },
         "city": {
-          "type": "string",
-          "description": "City"
+          "description": "City or town name",
+          "type": "string"
         },
         "company": {
-          "type": "string",
-          "description": "Company"
+          "description": "Company or organization name associated with this address",
+          "type": "string"
         },
         "country": {
-          "type": "string",
-          "description": "ISO 2 letter code only"
+          "description": "Country code in ISO 3166-1 alpha-2 format (2 letters, e.g., \"US\", \"CA\", \"GB\")",
+          "type": "string"
         },
         "email": {
+          "description": "Email address for contact at this location",
           "type": "string",
-          "description": "email"
+          "format": "email",
+          "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
         },
         "firstName": {
-          "type": "string",
-          "description": "First Name"
+          "description": "First name of the person at this address",
+          "type": "string"
         },
         "lastName": {
-          "type": "string",
-          "description": "Last Name"
+          "description": "Last name of the person at this address",
+          "type": "string"
         },
         "phone": {
-          "type": "string",
-          "description": "Phone"
+          "description": "Phone number including country code if applicable (e.g., \"+1-555-123-4567\")",
+          "type": "string"
         },
         "stateOrProvince": {
-          "type": "string",
-          "description": "If within the US, required 2 letter State Code"
+          "description": "State or province. For US addresses, use 2-letter state code (e.g., \"CA\", \"NY\"). For other countries, use full province name or local standard.",
+          "type": "string"
         },
         "zipCodeOrPostalCode": {
-          "type": "string",
-          "description": "zipcode or postal code"
+          "description": "ZIP code (US) or postal code (international) for the address",
+          "type": "string"
         }
-      }
+      },
+      "required": [
+        "address1",
+        "city",
+        "company",
+        "country",
+        "email",
+        "firstName"
+      ],
+      "additionalProperties": false
     },
     "currency": {
-      "type": "string",
-      "description": "Order currency code"
+      "description": "Order currency code",
+      "type": "string"
     },
     "customFields": {
+      "description": "Custom Fields - allows for arbitrary key-value pairs to be added to an entity. Useful for storing any custom data that is not covered by the other fields.",
       "type": "array",
-      "description": "Custom Fields",
       "items": {
         "type": "object",
         "properties": {
@@ -82,20 +85,26 @@
           "value": {
             "type": "string"
           }
-        }
+        },
+        "required": [
+          "name",
+          "value"
+        ],
+        "additionalProperties": false
       }
     },
     "customer": {
-      "type": "object",
       "description": "Order customer information",
+      "type": "object",
       "properties": {
-        "company": {
-          "type": "string"
-        },
         "id": {
           "type": "string"
         },
         "externalId": {
+          "description": "ID of the entity in the client's system. Must be unique within the tenant.",
+          "type": "string"
+        },
+        "company": {
           "type": "string"
         },
         "firstName": {
@@ -103,24 +112,41 @@
         },
         "lastName": {
           "type": "string"
+        },
+        "type": {
+          "description": "Customer type",
+          "type": "string",
+          "enum": [
+            "individual",
+            "company"
+          ]
         }
-      }
+      },
+      "required": [
+        "externalId",
+        "company",
+        "firstName",
+        "lastName",
+        "type"
+      ],
+      "additionalProperties": false
     },
     "discounts": {
-      "type": "array",
       "description": "Discounts",
+      "type": "array",
       "items": {
-        "type": "object"
+        "type": "object",
+        "properties": {},
+        "additionalProperties": {}
       }
     },
-    "expectedDeliveryDate": {
-      "type": "string",
-      "format": "date-time",
-      "description": "First Priority to be respected"
-    },
     "giftNote": {
-      "type": "string",
-      "description": "Order Gift note"
+      "description": "Order Gift note",
+      "type": "string"
+    },
+    "incoterms": {
+      "description": "International Commercial Terms",
+      "type": "string"
     },
     "lineItems": {
       "type": "array",
@@ -128,188 +154,219 @@
         "type": "object",
         "properties": {
           "id": {
-            "type": "string",
-            "description": "Line Item ID"
+            "description": "Unique identifier for this line item within the order",
+            "type": "string"
           },
           "sku": {
+            "description": "Product Variant SKU",
             "type": "string",
-            "description": "SKU"
-          },
-          "name": {
-            "type": "string",
-            "description": "Name"
-          },
-          "unitPrice": {
-            "type": "number",
-            "format": "float",
-            "description": "unit price as reported by source"
+            "minLength": 1
           },
           "quantity": {
+            "description": "Quantity ordered",
             "type": "number",
-            "format": "float",
-            "description": "quantity as reported by source"
+            "minimum": 1
+          },
+          "unitPrice": {
+            "description": "Price per unit",
+            "type": "number",
+            "minimum": 0
+          },
+          "totalPrice": {
+            "description": "Total price (calculated if not provided)",
+            "type": "number",
+            "minimum": 0
+          },
+          "name": {
+            "description": "Product name for display",
+            "type": "string"
+          },
+          "customFields": {
+            "description": "Custom Fields - allows for arbitrary key-value pairs to be added to an entity. Useful for storing any custom data that is not covered by the other fields.",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "name",
+                "value"
+              ],
+              "additionalProperties": false
+            }
           }
-        }
+        },
+        "required": [
+          "id",
+          "sku",
+          "quantity"
+        ],
+        "additionalProperties": false
       }
     },
     "orderDiscount": {
-      "type": "number",
-      "format": "float",
-      "description": "Order Discount"
+      "description": "Order Discount",
+      "type": "number"
     },
     "orderNote": {
-      "type": "string",
-      "description": "Order Notes"
+      "description": "Order Notes",
+      "type": "string"
     },
     "orderSource": {
-      "type": "string",
-      "description": "The original order platform, walmart, etsy, etc"
+      "description": "The original order platform, walmart, etsy, etc",
+      "type": "string"
     },
     "orderTax": {
-      "type": "number",
-      "format": "float",
-      "description": "Order Tax"
+      "description": "Order Tax",
+      "type": "number"
     },
     "paymentStatus": {
-      "type": "string",
-      "description": "status of the payment"
-    },
-    "paymentTerms": {
-      "type": "object",
-      "description": "Payments terms"
+      "description": "status of the payment",
+      "type": "string"
     },
     "payments": {
-      "type": "array",
       "description": "Payments",
+      "type": "array",
       "items": {
-        "type": "object"
+        "type": "object",
+        "properties": {},
+        "additionalProperties": {}
       }
     },
     "refunds": {
-      "type": "array",
       "description": "Refunds",
+      "type": "array",
       "items": {
-        "type": "object"
+        "type": "object",
+        "properties": {},
+        "additionalProperties": {}
       }
-    },
-    "shipAfterDate": {
-      "type": "string",
-      "format": "date-time",
-      "description": "Ship After Date"
-    },
-    "shipByDate": {
-      "type": "string",
-      "format": "date-time",
-      "description": "Ship By Date"
-    },
-    "shipCancelByDate": {
-      "type": "string",
-      "format": "date-time",
-      "description": "Ship Cancel By Date"
     },
     "shippingAddress": {
-      "type": "object",
       "description": "Recipient Address",
+      "type": "object",
       "properties": {
         "address1": {
-          "type": "string",
-          "description": "Address"
+          "description": "Primary street address (e.g., \"123 Main Street\")",
+          "type": "string"
         },
         "address2": {
-          "type": "string",
-          "description": "Address Line 2"
+          "description": "Secondary address information such as apartment, suite, or unit number (e.g., \"Apt 4B\")",
+          "type": "string"
         },
         "city": {
-          "type": "string",
-          "description": "City"
+          "description": "City or town name",
+          "type": "string"
         },
         "company": {
-          "type": "string",
-          "description": "Company"
+          "description": "Company or organization name associated with this address",
+          "type": "string"
         },
         "country": {
-          "type": "string",
-          "description": "ISO 2 letter code only"
+          "description": "Country code in ISO 3166-1 alpha-2 format (2 letters, e.g., \"US\", \"CA\", \"GB\")",
+          "type": "string"
         },
         "email": {
+          "description": "Email address for contact at this location",
           "type": "string",
-          "description": "email"
+          "format": "email",
+          "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
         },
         "firstName": {
-          "type": "string",
-          "description": "First Name"
+          "description": "First name of the person at this address",
+          "type": "string"
         },
         "lastName": {
-          "type": "string",
-          "description": "Last Name"
+          "description": "Last name of the person at this address",
+          "type": "string"
         },
         "phone": {
-          "type": "string",
-          "description": "Phone"
+          "description": "Phone number including country code if applicable (e.g., \"+1-555-123-4567\")",
+          "type": "string"
         },
         "stateOrProvince": {
-          "type": "string",
-          "description": "If within the US, required 2 letter State Code"
+          "description": "State or province. For US addresses, use 2-letter state code (e.g., \"CA\", \"NY\"). For other countries, use full province name or local standard.",
+          "type": "string"
         },
         "zipCodeOrPostalCode": {
-          "type": "string",
-          "description": "zipcode or postal code"
+          "description": "ZIP code (US) or postal code (international) for the address",
+          "type": "string"
         }
-      }
-    },
-    "shippingCarrier": {
-      "type": "string",
-      "description": "Required with ShippingClass, 2nd Priority"
+      },
+      "required": [
+        "address1",
+        "city",
+        "company",
+        "country",
+        "email",
+        "firstName"
+      ],
+      "additionalProperties": false
     },
     "shippingClass": {
-      "type": "string",
-      "description": "Required with ShippingCarrier, 2nd Priority"
+      "description": "Required with ShippingCarrier, 2nd Priority",
+      "type": "string"
     },
     "shippingCode": {
-      "type": "string",
-      "description": "1st Priority"
-    },
-    "shippingNote": {
-      "type": "string",
-      "description": "Shipping Notes"
+      "description": "1st Priority",
+      "type": "string"
     },
     "shippingPrice": {
-      "type": "number",
-      "format": "float",
-      "description": "Shipping price"
+      "description": "Shipping price",
+      "type": "number"
     },
     "subTotalPrice": {
-      "type": "number",
-      "format": "float",
-      "description": "Sub Total Price"
+      "description": "Sub Total Price",
+      "type": "number"
     },
     "tags": {
+      "description": "Tags for categorization and filtering. Useful for organizing entities with custom labels (e.g., \"priority\", \"wholesale\", \"gift\")",
       "type": "array",
       "items": {
         "type": "string"
       }
     },
     "totalPrice": {
-      "type": "number",
-      "format": "float",
-      "description": "Total Price"
+      "description": "Total Price",
+      "type": "number"
+    },
+    "id": {
+      "description": "Unique system-generated identifier for this entity (read-only)",
+      "type": "string"
+    },
+    "externalId": {
+      "description": "ID of the entity in the client's system. Must be unique within the tenant.",
+      "type": "string"
     },
     "createdAt": {
+      "description": "ISO 8601 timestamp when the entity was created (read-only)",
       "type": "string",
       "format": "date-time",
-      "readOnly": true,
-      "description": "When the object was created"
-    },
-    "tenantId": {
-      "type": "string",
-      "readOnly": true,
-      "description": "Tenant this object belong to"
+      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
     },
     "updatedAt": {
+      "description": "ISO 8601 timestamp when the entity was last updated (read-only)",
       "type": "string",
       "format": "date-time",
-      "readOnly": true,
-      "description": "When the object was updated"
+      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+    },
+    "tenantId": {
+      "description": "Unique identifier for the tenant that owns this entity (read-only)",
+      "type": "string"
     }
-  }
+  },
+  "required": [
+    "lineItems",
+    "id",
+    "createdAt",
+    "updatedAt",
+    "tenantId"
+  ],
+  "additionalProperties": false
 }

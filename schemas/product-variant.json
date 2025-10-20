@@ -1,0 +1,198 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Product Variant",
+  "description": "Product variant",
+  "type": "object",
+  "properties": {
+    "productId": {
+      "description": "ID of the parent product",
+      "type": "string"
+    },
+    "externalProductId": {
+      "description": "External product identifier when provided alongside a distinct variant externalId",
+      "type": "string"
+    },
+    "sku": {
+      "description": "Variant SKU or stock keeping unit",
+      "type": "string"
+    },
+    "barcode": {
+      "description": "General barcode or GTIN value; use `upc` when a UPC-format code is available",
+      "type": "string"
+    },
+    "upc": {
+      "description": "UPC-format code; when present it overrides any product-level default for this variant",
+      "type": "string"
+    },
+    "title": {
+      "description": "Variant display name",
+      "type": "string"
+    },
+    "selectedOptions": {
+      "description": "Selected option values describing this variant",
+      "type": "array",
+      "items": {
+        "description": "Specific option selections for a product variant",
+        "type": "object",
+        "properties": {
+          "name": {
+            "description": "Name of the option dimension selected by this variant, e.g. Size",
+            "type": "string"
+          },
+          "value": {
+            "description": "Value for the option dimension, e.g. Medium",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "value"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "price": {
+      "description": "Current selling price for the variant",
+      "type": "number"
+    },
+    "currency": {
+      "description": "ISO currency code for the price",
+      "type": "string"
+    },
+    "compareAtPrice": {
+      "description": "List or compare-at price, if available",
+      "type": "number"
+    },
+    "cost": {
+      "description": "Unit cost attributed to this variant",
+      "type": "number"
+    },
+    "costCurrency": {
+      "description": "Currency for the unit cost",
+      "type": "string"
+    },
+    "inventoryNotTracked": {
+      "type": "boolean"
+    },
+    "weight": {
+      "type": "object",
+      "properties": {
+        "value": {
+          "type": "number"
+        },
+        "unit": {
+          "type": "string",
+          "enum": [
+            "lb",
+            "oz",
+            "kg",
+            "g"
+          ]
+        }
+      },
+      "required": [
+        "value",
+        "unit"
+      ],
+      "additionalProperties": false
+    },
+    "dimensions": {
+      "type": "object",
+      "properties": {
+        "length": {
+          "type": "number"
+        },
+        "width": {
+          "type": "number"
+        },
+        "height": {
+          "type": "number"
+        },
+        "unit": {
+          "type": "string",
+          "enum": [
+            "cm",
+            "in",
+            "ft"
+          ]
+        }
+      },
+      "required": [
+        "length",
+        "width",
+        "height",
+        "unit"
+      ],
+      "additionalProperties": false
+    },
+    "imageURLs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "taxable": {
+      "type": "boolean"
+    },
+    "tags": {
+      "description": "Tags for categorization and filtering. Useful for organizing entities with custom labels (e.g., \"priority\", \"wholesale\", \"gift\")",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "customFields": {
+      "description": "Custom Fields - allows for arbitrary key-value pairs to be added to an entity. Useful for storing any custom data that is not covered by the other fields.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "value"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "id": {
+      "description": "Unique system-generated identifier for this entity (read-only)",
+      "type": "string"
+    },
+    "externalId": {
+      "description": "ID of the entity in the client's system. Must be unique within the tenant.",
+      "type": "string"
+    },
+    "createdAt": {
+      "description": "ISO 8601 timestamp when the entity was created (read-only)",
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+    },
+    "updatedAt": {
+      "description": "ISO 8601 timestamp when the entity was last updated (read-only)",
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+    },
+    "tenantId": {
+      "description": "Unique identifier for the tenant that owns this entity (read-only)",
+      "type": "string"
+    }
+  },
+  "required": [
+    "productId",
+    "sku",
+    "id",
+    "createdAt",
+    "updatedAt",
+    "tenantId"
+  ],
+  "additionalProperties": false
+}
