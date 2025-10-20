@@ -3,24 +3,19 @@
  * Handles all read-only query operations
  */
 
-import { 
-  IFulfillmentAdapter,
-  Order,
-  OrderIdentifier,
-  Product,
-  ProductIdentifier,
-  Customer,
-  CustomerIdentifier,
-  Shipment,
-  ShipmentIdentifier,
-  OrderSearchFilters,
-  ProductSearchFilters
-} from '../types/index.js';
+import { IFulfillmentAdapter } from '../types/index.js';
 import { Logger } from '../utils/logger.js';
-import { ValidationError } from '../utils/errors.js';
-import { Sanitizer } from '../utils/index.js';
 import { TimeoutHandler } from '../utils/timeout.js';
 import { ErrorHandler } from './error-handler.js';
+import type {
+  GetOrdersInput,
+  GetProductsInput,
+  GetProductVariantsInput,
+  GetCustomersInput,
+  GetFulfillmentsInput,
+} from '../schemas/tool-inputs/index.js';
+import { Customer, Fulfillment, Order, Product, ProductVariant } from '../schemas/index.js';
+import { FulfillmentToolResult } from '../types/adapter.js';
 
 export class QueryService {
   constructor(
@@ -31,267 +26,91 @@ export class QueryService {
   }
 
   /**
-   * Get order by identifier
+   * Retrieve orders matching the provided identifiers.
    */
-  async getOrder(identifier: OrderIdentifier): Promise<Order> {
-    return this.errorHandler.executeOperation('getOrder', async () => {
-      if (!identifier.orderId && !identifier.extOrderId && !identifier.orderNumber) {
-        throw new ValidationError('identifier', 'At least one order identifier is required');
-      }
+  async getOrders(input: GetOrdersInput): Promise<FulfillmentToolResult<{ orders: Order[] }>> {
+    return this.errorHandler.executeOperation('getOrders', async () => {
+      Logger.debug('Fetching orders', { filters: input });
 
-      // Sanitize identifiers
-      const sanitizedIdentifier: OrderIdentifier = {};
-      if (identifier.orderId) {
-        sanitizedIdentifier.orderId = Sanitizer.string(identifier.orderId);
-      }
-      if (identifier.extOrderId) {
-        sanitizedIdentifier.extOrderId = Sanitizer.string(identifier.extOrderId);
-      }
-      if (identifier.orderNumber) {
-        sanitizedIdentifier.orderNumber = Sanitizer.string(identifier.orderNumber);
-      }
+      const result = await TimeoutHandler.withTimeout(() => this.adapter.getOrders(input), 'adapter');
 
-      Logger.debug('Getting order', { identifier: sanitizedIdentifier });
-      
-      const order = await TimeoutHandler.withTimeout(
-        () => this.adapter.getOrder(sanitizedIdentifier),
-        'adapter'
-      );
-      
-      Logger.debug('Order retrieved successfully', { 
-        orderId: order.orderId,
-        status: order.status 
-      });
-      
-      return order;
+      if (result.success) {
+        Logger.debug('Orders retrieved', { count: result.orders.length });
+        return result;
+      } else {
+        Logger.error('Failed to retrieve orders', { error: result.error });
+        throw result.error;
+      }
     });
   }
 
   /**
-   * Get product by identifier
+   * Retrieve products matching provided identifiers.
    */
-  async getProduct(identifier: ProductIdentifier): Promise<Product> {
-    return this.errorHandler.executeOperation('getProduct', async () => {
-      if (!identifier.productId && !identifier.sku) {
-        throw new ValidationError('identifier', 'Product ID or SKU is required');
-      }
+  async getProducts(input: GetProductsInput): Promise<FulfillmentToolResult<{ products: Product[] }>> {
+    return this.errorHandler.executeOperation('getProducts', async () => {
+      const result = await TimeoutHandler.withTimeout(() => this.adapter.getProducts(input), 'adapter');
 
-      // Sanitize identifiers
-      const sanitizedIdentifier: ProductIdentifier = {};
-      if (identifier.productId) {
-        sanitizedIdentifier.productId = Sanitizer.string(identifier.productId);
+      if (result.success) {
+        Logger.debug('Products retrieved', { count: result.products.length });
+        return result;
+      } else {
+        Logger.error('Failed to retrieve products', { error: result.error });
+        throw result.error;
       }
-      if (identifier.sku) {
-        sanitizedIdentifier.sku = Sanitizer.string(identifier.sku);
-      }
-
-      Logger.debug('Getting product', { identifier: sanitizedIdentifier });
-      
-      const product = await TimeoutHandler.withTimeout(
-        () => this.adapter.getProduct(sanitizedIdentifier),
-        'adapter'
-      );
-      
-      Logger.debug('Product retrieved successfully', { 
-        productId: product.productId, 
-        sku: product.sku 
-      });
-      
-      return product;
     });
   }
 
   /**
-   * Get customer by identifier
+   * Retrieve SKU-level product variants.
    */
-  async getCustomer(identifier: CustomerIdentifier): Promise<Customer> {
-    return this.errorHandler.executeOperation('getCustomer', async () => {
-      if (!identifier.customerId && !identifier.email) {
-        throw new ValidationError('identifier', 'Customer ID or email is required');
-      }
+  async getProductVariants(
+    input: GetProductVariantsInput
+  ): Promise<FulfillmentToolResult<{ productVariants: ProductVariant[] }>> {
+    return this.errorHandler.executeOperation('getProductVariants', async () => {
+      const result = await TimeoutHandler.withTimeout(() => this.adapter.getProductVariants(input), 'adapter');
 
-      // Sanitize identifiers
-      const sanitizedIdentifier: CustomerIdentifier = {};
-      if (identifier.customerId) {
-        sanitizedIdentifier.customerId = Sanitizer.string(identifier.customerId);
+      if (result.success) {
+        Logger.debug('Product variants retrieved', { count: result.productVariants.length });
+        return result;
+      } else {
+        Logger.error('Failed to retrieve product variants', { error: result.error });
+        throw result.error;
       }
-      if (identifier.email) {
-        sanitizedIdentifier.email = Sanitizer.string(identifier.email);
-      }
-
-      Logger.debug('Getting customer', { identifier: sanitizedIdentifier });
-      
-      const customer = await TimeoutHandler.withTimeout(
-        () => this.adapter.getCustomer(sanitizedIdentifier),
-        'adapter'
-      );
-      
-      Logger.debug('Customer retrieved successfully', { 
-        customerId: customer.customerId, 
-        email: customer.email 
-      });
-      
-      return customer;
     });
   }
 
   /**
-   * Get shipment by identifier
+   * Retrieve customers by ids or emails.
    */
-  async getShipment(identifier: ShipmentIdentifier): Promise<Shipment> {
-    return this.errorHandler.executeOperation('getShipment', async () => {
-      if (!identifier.shipmentId && !identifier.orderId && !identifier.trackingNumber) {
-        throw new ValidationError('identifier', 'At least one shipment identifier is required');
-      }
+  async getCustomers(input: GetCustomersInput): Promise<FulfillmentToolResult<{ customers: Customer[] }>> {
+    return this.errorHandler.executeOperation('getCustomers', async () => {
+      const result = await TimeoutHandler.withTimeout(() => this.adapter.getCustomers(input), 'adapter');
 
-      // Sanitize identifiers
-      const sanitizedIdentifier: ShipmentIdentifier = {};
-      if (identifier.shipmentId) {
-        sanitizedIdentifier.shipmentId = Sanitizer.string(identifier.shipmentId);
+      if (result.success) {
+        Logger.debug('Customers retrieved', { count: result.customers.length });
+        return result;
+      } else {
+        Logger.error('Failed to retrieve customers', { error: result.error });
+        throw result.error;
       }
-      if (identifier.orderId) {
-        sanitizedIdentifier.orderId = Sanitizer.string(identifier.orderId);
-      }
-      if (identifier.trackingNumber) {
-        sanitizedIdentifier.trackingNumber = Sanitizer.string(identifier.trackingNumber);
-      }
-
-      Logger.debug('Getting shipment', { identifier: sanitizedIdentifier });
-      
-      const shipment = await TimeoutHandler.withTimeout(
-        () => this.adapter.getShipment(sanitizedIdentifier),
-        'adapter'
-      );
-      
-      Logger.debug('Shipment retrieved successfully', { 
-        shipmentId: shipment.shipmentId,
-        status: shipment.status,
-        trackingNumber: shipment.trackingNumber
-      });
-      
-      return shipment;
     });
   }
 
   /**
-   * Search orders with filters
+   * Retrieve shipments/fulfillments.
    */
-  async searchOrders(filters: OrderSearchFilters): Promise<{ orders: Order[]; total: number }> {
-    return this.errorHandler.executeOperation('searchOrders', async () => {
-      // Sanitize filters
-      const sanitizedFilters = {
-        ...filters,
-        status: filters.status ? Sanitizer.string(filters.status) : undefined,
-        customerId: filters.customerId ? Sanitizer.string(filters.customerId) : undefined,
-        email: filters.email ? Sanitizer.string(filters.email) : undefined,
-        limit: filters.limit || 50,
-        offset: filters.offset || 0
-      };
+  async getFulfillments(input: GetFulfillmentsInput): Promise<FulfillmentToolResult<{ fulfillments: Fulfillment[] }>> {
+    return this.errorHandler.executeOperation('getFulfillments', async () => {
+      const result = await TimeoutHandler.withTimeout(() => this.adapter.getFulfillments(input), 'adapter');
 
-      Logger.debug('Searching orders', { filters: sanitizedFilters });
-      
-      const searchFn = this.adapter.searchOrders;
-      if (!searchFn) {
-        Logger.warn('Adapter does not support searchOrders');
-        return { orders: [], total: 0 };
+      if (result.success) {
+        Logger.debug('Fulfillments retrieved', { count: result.fulfillments.length });
+        return result;
+      } else {
+        Logger.error('Failed to retrieve fulfillments', { error: result.error });
+        throw result.error;
       }
-      
-      const result = await TimeoutHandler.withTimeout(
-        () => searchFn(sanitizedFilters),
-        'adapter'
-      );
-      
-      Logger.debug('Order search completed', { 
-        found: result.orders.length,
-        total: result.total 
-      });
-      
-      return result;
-    });
-  }
-
-  /**
-   * Search products with filters
-   */
-  async searchProducts(filters: ProductSearchFilters): Promise<{ products: Product[]; total: number }> {
-    return this.errorHandler.executeOperation('searchProducts', async () => {
-      // Sanitize filters
-      const sanitizedFilters = {
-        ...filters,
-        category: filters.category ? Sanitizer.string(filters.category) : undefined,
-        brand: filters.brand ? Sanitizer.string(filters.brand) : undefined,
-        status: filters.status ? Sanitizer.string(filters.status) : undefined,
-        searchTerm: filters.searchTerm ? Sanitizer.string(filters.searchTerm) : undefined,
-        limit: filters.limit || 50,
-        offset: filters.offset || 0
-      };
-
-      Logger.debug('Searching products', { filters: sanitizedFilters });
-      
-      const searchProductsFn = this.adapter.searchProducts;
-      if (!searchProductsFn) {
-        Logger.warn('Adapter does not support searchProducts');
-        return { products: [], total: 0 };
-      }
-      
-      const result = await TimeoutHandler.withTimeout(
-        () => searchProductsFn(sanitizedFilters),
-        'adapter'
-      );
-      
-      Logger.debug('Product search completed', { 
-        found: result.products.length,
-        total: result.total 
-      });
-      
-      return result;
-    });
-  }
-
-  /**
-   * Get order history for a customer
-   */
-  async getCustomerOrders(
-    customerId: string, 
-    options?: { limit?: number; offset?: number }
-  ): Promise<{ orders: Order[]; total: number }> {
-    return this.errorHandler.executeOperation('getCustomerOrders', async () => {
-      const sanitizedCustomerId = Sanitizer.string(customerId);
-      if (!sanitizedCustomerId) {
-        throw new ValidationError('customerId', 'Customer ID is required');
-      }
-
-      const sanitizedOptions = {
-        limit: options?.limit || 50,
-        offset: options?.offset || 0
-      };
-
-      Logger.debug('Getting customer orders', { 
-        customerId: sanitizedCustomerId,
-        ...sanitizedOptions 
-      });
-      
-      const getCustomerOrdersFn = this.adapter.getCustomerOrders;
-      if (!getCustomerOrdersFn) {
-        Logger.warn('Adapter does not support getCustomerOrders');
-        return { orders: [], total: 0 };
-      }
-      
-      const result = await TimeoutHandler.withTimeout(
-        () => getCustomerOrdersFn(
-          sanitizedCustomerId, 
-          sanitizedOptions
-        ),
-        'adapter'
-      );
-      
-      Logger.debug('Customer orders retrieved', { 
-        customerId: sanitizedCustomerId,
-        orderCount: result.orders.length,
-        total: result.total 
-      });
-      
-      return result;
     });
   }
 }

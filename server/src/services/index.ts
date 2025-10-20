@@ -4,7 +4,6 @@
 
 export { ServiceOrchestrator } from './service-orchestrator.js';
 export { Validator } from './validator.js';
-export { Transformer } from './transformer.js';
 export { OrderService } from './order-service.js';
 export { InventoryService } from './inventory-service.js';
 export { QueryService } from './query-service.js';

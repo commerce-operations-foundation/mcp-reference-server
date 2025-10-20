@@ -70,10 +70,7 @@ export class AdapterFactory {
           adapter = await this.createLocalAdapter(config);
           break;
         default:
-          throw new AdapterError(
-            `Unknown adapter type: ${(config as any).type}`,
-            'UNKNOWN_ADAPTER_TYPE'
-          );
+          throw new AdapterError(`Unknown adapter type: ${(config as any).type}`, 'UNKNOWN_ADAPTER_TYPE');
       }
 
       // Validate adapter implements interface
@@ -100,10 +97,7 @@ export class AdapterFactory {
 
     const AdapterClass = this.builtInAdapters.get(config.name);
     if (!AdapterClass) {
-      throw new AdapterError(
-        `Built-in adapter not found: ${config.name}`,
-        'ADAPTER_NOT_FOUND'
-      );
+      throw new AdapterError(`Built-in adapter not found: ${config.name}`, 'ADAPTER_NOT_FOUND');
     }
 
     return new AdapterClass(config);
@@ -131,17 +125,11 @@ export class AdapterFactory {
       const AdapterClass = module[exportName];
 
       if (!AdapterClass) {
-        throw new AdapterError(
-          `Export '${exportName}' not found in package ${config.package}`,
-          'EXPORT_NOT_FOUND'
-        );
+        throw new AdapterError(`Export '${exportName}' not found in package ${config.package}`, 'EXPORT_NOT_FOUND');
       }
 
       if (typeof AdapterClass !== 'function') {
-        throw new AdapterError(
-          `Export '${exportName}' is not a constructor`,
-          'INVALID_CONSTRUCTOR'
-        );
+        throw new AdapterError(`Export '${exportName}' is not a constructor`, 'INVALID_CONSTRUCTOR');
       }
 
       return new AdapterClass(config);
@@ -149,11 +137,7 @@ export class AdapterFactory {
       if (error instanceof AdapterError) {
         throw error;
       }
-      throw new AdapterError(
-        `Failed to load NPM adapter: ${config.package}`,
-        'NPM_LOAD_ERROR',
-        error
-      );
+      throw new AdapterError(`Failed to load NPM adapter: ${config.package}`, 'NPM_LOAD_ERROR', error);
     }
   }
 
@@ -174,19 +158,13 @@ export class AdapterFactory {
 
     // Basic validation to prevent obvious mistakes
     if (!fs.existsSync(adapterPath)) {
-      throw new AdapterError(
-        `Local adapter file not found: ${adapterPath}`,
-        'ADAPTER_FILE_NOT_FOUND'
-      );
+      throw new AdapterError(`Local adapter file not found: ${adapterPath}`, 'ADAPTER_FILE_NOT_FOUND');
     }
 
     // Verify it's a file, not a directory
     const stats = fs.statSync(adapterPath);
     if (!stats.isFile()) {
-      throw new AdapterError(
-        `Adapter path must be a file, not a directory: ${adapterPath}`,
-        'INVALID_ADAPTER_PATH'
-      );
+      throw new AdapterError(`Adapter path must be a file, not a directory: ${adapterPath}`, 'INVALID_ADAPTER_PATH');
     }
 
     // Check for reasonable file extensions
@@ -205,17 +183,11 @@ export class AdapterFactory {
       const AdapterClass = module[exportName];
 
       if (!AdapterClass) {
-        throw new AdapterError(
-          `Export '${exportName}' not found in ${adapterPath}`,
-          'EXPORT_NOT_FOUND'
-        );
+        throw new AdapterError(`Export '${exportName}' not found in ${adapterPath}`, 'EXPORT_NOT_FOUND');
       }
 
       if (typeof AdapterClass !== 'function') {
-        throw new AdapterError(
-          `Export '${exportName}' is not a constructor`,
-          'INVALID_CONSTRUCTOR'
-        );
+        throw new AdapterError(`Export '${exportName}' is not a constructor`, 'INVALID_CONSTRUCTOR');
       }
 
       return new AdapterClass(config);
@@ -223,11 +195,7 @@ export class AdapterFactory {
       if (error instanceof AdapterError) {
         throw error;
       }
-      throw new AdapterError(
-        `Failed to load local adapter: ${adapterPath}`,
-        'LOCAL_LOAD_ERROR',
-        error
-      );
+      throw new AdapterError(`Failed to load local adapter: ${adapterPath}`, 'LOCAL_LOAD_ERROR', error);
     }
   }
 
@@ -236,19 +204,26 @@ export class AdapterFactory {
    */
   private static validateAdapter(adapter: any): void {
     const requiredMethods = [
-      'connect', 'disconnect', 'healthCheck',
-      'captureOrder', 'cancelOrder', 'updateOrder', 'returnOrder', 'exchangeOrder', 'shipOrder',
-      'holdOrder', 'splitOrder', 'reserveInventory',
-      'getOrder', 'getInventory', 'getProduct', 'getCustomer', 'getShipment'
-    ];
+      'connect',
+      'disconnect',
+      'healthCheck',
+      'createSalesOrder',
+      'cancelOrder',
+      'updateOrder',
+      'fulfillOrder',
+      'getOrders',
+      'getInventory',
+      'getProducts',
+      'getProductVariants',
+      'getCustomers',
+      'getFulfillments',
+    ] satisfies (keyof IFulfillmentAdapter)[];
 
     for (const method of requiredMethods) {
       if (typeof adapter[method] !== 'function') {
-        throw new AdapterError(
-          `Adapter missing required method: ${method}`,
-          'INVALID_ADAPTER',
-          { missingMethod: method }
-        );
+        throw new AdapterError(`Adapter missing required method: ${method}`, 'INVALID_ADAPTER', {
+          missingMethod: method,
+        });
       }
     }
 

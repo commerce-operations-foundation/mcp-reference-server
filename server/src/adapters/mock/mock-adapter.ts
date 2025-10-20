@@ -7,43 +7,43 @@ import {
   IFulfillmentAdapter,
   HealthStatus,
   OrderResult,
-  CancelResult,
-  UpdateResult,
-  ReturnResult,
-  ExchangeResult,
-  ShipmentResult,
-  HoldResult,
-  SplitResult,
-  ReservationRequest,
-  ReservationResult,
   AdapterError,
-  OrderNotFoundError,
-  InvalidOrderStateError
+  InvalidInputError,
+  FulfillmentToolResult,
 } from '../../types/adapter.js';
-import {
-  Order,
-  Customer,
-  Product,
-  Inventory,
-  Shipment,
-  Buyer,
-  OrderIdentifier,
-  ProductIdentifier,
-  CustomerIdentifier,
-  ShipmentIdentifier,
-  HoldParams,
-  SplitParams,
-  ReturnItem,
-  ExchangeParams,
-  OrderUpdates,
-  ShippingInfo,
-  OrderLineItem,
-  OrderRequest
-} from '../../types/fulfillment.js';
 import { MockData } from './mock-data.js';
 import { MockConfig } from './mock-config.js';
 import { Logger } from '../../utils/logger.js';
 import { IdGenerator, DateUtils } from '../../utils/index.js';
+import {
+  CreateSalesOrderInput,
+  CreateSalesOrderInputSchema,
+  CancelOrderInput,
+  CancelOrderInputSchema,
+  Fulfillment,
+  FulfillOrderInput,
+  FulfillOrderInputSchema,
+  GetCustomersInput,
+  GetCustomersInputSchema,
+  GetFulfillmentsInput,
+  GetFulfillmentsInputSchema,
+  GetInventoryInput,
+  GetInventoryInputSchema,
+  GetOrdersInput,
+  GetOrdersInputSchema,
+  GetProductsInput,
+  GetProductsInputSchema,
+  GetProductVariantsInput,
+  GetProductVariantsInputSchema,
+  Inventory,
+  Order,
+  OrderLineItem,
+  Product,
+  ProductVariant,
+  UpdateOrderInput,
+  UpdateOrderInputSchema,
+  Customer,
+} from '../../schemas/index.js';
 
 export class MockAdapter implements IFulfillmentAdapter {
   private mockData: MockData;
@@ -93,25 +93,25 @@ export class MockAdapter implements IFulfillmentAdapter {
         {
           name: 'connection',
           status: this.connected ? 'pass' : 'fail',
-          message: this.connected ? 'Connected' : 'Not connected'
+          message: this.connected ? 'Connected' : 'Not connected',
         },
         {
           name: 'data_store',
           status: 'pass',
-          message: `${dataSize.orders} orders, ${dataSize.products} products in memory`
+          message: `${dataSize.orders} orders, ${dataSize.products} products, ${dataSize.productVariants} variants in memory`,
         },
         {
           name: 'configuration',
           status: 'pass',
           message: 'Mock configuration loaded',
-          details: this.config.getSummary()
-        }
-      ]
+          details: this.config.getSummary(),
+        },
+      ],
     };
   }
 
   // Order Actions
-  async captureOrder(order: OrderRequest): Promise<OrderResult> {
+  async createSalesOrder(params: CreateSalesOrderInput): Promise<OrderResult> {
     await this.simulateLatency();
     this.ensureConnected();
 
@@ -119,24 +119,33 @@ export class MockAdapter implements IFulfillmentAdapter {
       throw new AdapterError('Mock error: Order capture failed', 'OPERATION_FAILED');
     }
 
-    if (!order.extOrderId) {
-      throw new AdapterError('Order ID is required (extOrderId)', 'VALIDATION_ERROR');
-    }
+    const parseResult = CreateSalesOrderInputSchema.safeParse(params);
 
-    // Validate required fields
-    if (!order.customer) {
-      throw new AdapterError('Customer is required', 'VALIDATION_ERROR');
+    if (!parseResult.success) {
+      throw new InvalidInputError(parseResult.error.message, parseResult.error.issues);
     }
-
-    if (!order.lineItems || order.lineItems.length === 0) {
-      throw new AdapterError('At least one line item is required', 'VALIDATION_ERROR');
-    }
+    const { order } = parseResult.data;
 
     const orderId = IdGenerator.orderId();
-    // orderNumber not in schema - removed
 
     // Calculate totals
-    const items = order.lineItems || [];
+    const items: OrderLineItem[] = (order.lineItems || []).map((item, index) => {
+      const quantity = item.quantity ?? 1;
+      const unitPrice = item.unitPrice ?? 0;
+      const totalPrice = item.totalPrice ?? unitPrice * quantity;
+      const lineItemId = item.id ?? `LI-${IdGenerator.random(8)}`;
+
+      return {
+        ...item,
+        id: lineItemId,
+        sku: item.sku ?? `SKU-${index + 1}`,
+        quantity,
+        unitPrice,
+        totalPrice,
+        name: item.name ?? `Item ${index + 1}`,
+        customFields: item.customFields ?? [],
+      };
+    });
     const subTotalPrice = this.calculateSubtotal(items);
     const orderTax = subTotalPrice * 0.08; // 8% tax
     const shippingPrice = subTotalPrice > 100 ? 0 : 10; // Free shipping over $100
@@ -144,23 +153,25 @@ export class MockAdapter implements IFulfillmentAdapter {
 
     // Store order in mock data
     const savedOrder = {
-      orderId,
-      // orderNumber not in schema
-      extOrderId: order.extOrderId,
+      ...order,
       status: 'confirmed',
-      customer: order.customer,
+      customer: this.buildCustomer(order.customer),
       lineItems: items,
-      billingAddress: order.billingAddress,
-      shippingAddress: order.shippingAddress,
-      currency: order.currency || 'USD',
+      billingAddress: this.buildAddress(order.billingAddress),
+      shippingAddress: this.buildAddress(order.shippingAddress),
+      currency: order.currency ?? 'USD',
       subTotalPrice,
       orderTax,
       shippingPrice,
       totalPrice,
       createdAt: DateUtils.now(),
       updatedAt: DateUtils.now(),
-      customFields: order.customFields || []
-    };
+      customFields: order.customFields || [],
+      tenantId: (order as Partial<Order>).tenantId ?? 'mock-tenant',
+      id: orderId,
+    } as unknown as Order & { orderId: string };
+
+    savedOrder.orderId = orderId;
 
     this.mockData.addOrder(savedOrder);
 
@@ -168,16 +179,11 @@ export class MockAdapter implements IFulfillmentAdapter {
 
     return {
       success: true,
-      orderId,
-      status: 'confirmed',
-      createdAt: savedOrder.createdAt
+      order: savedOrder,
     };
   }
 
-  async cancelOrder(
-    orderId: string,
-    reason?: string
-  ): Promise<CancelResult> {
+  async cancelOrder(input: CancelOrderInput): Promise<OrderResult> {
     await this.simulateLatency();
     this.ensureConnected();
 
@@ -185,17 +191,34 @@ export class MockAdapter implements IFulfillmentAdapter {
       throw new AdapterError('Mock error: Order cancellation failed', 'OPERATION_FAILED');
     }
 
+    const parseResult = CancelOrderInputSchema.safeParse(input);
+    if (!parseResult.success) {
+      throw new InvalidInputError(parseResult.error.message, parseResult.error.issues);
+    }
+
+    const {
+      data: { orderId, reason, lineItems, notifyCustomer, refundAmount, notes },
+    } = parseResult;
+
     const order = this.mockData.getOrder(orderId);
     if (!order) {
-      throw new OrderNotFoundError({ orderId });
+      throw new AdapterError(`Order not found: ${orderId}`, 'ORDER_NOT_FOUND', { orderId });
     }
 
     if (order.status === 'cancelled') {
-      throw new InvalidOrderStateError(orderId, 'cancelled', 'cancel');
+      throw new AdapterError(`Cannot cancel order ${orderId} in status cancelled`, 'INVALID_ORDER_STATE', {
+        orderId,
+        currentStatus: 'cancelled',
+        operation: 'cancel',
+      });
     }
 
     if (['shipped', 'delivered'].includes(order.status)) {
-      throw new InvalidOrderStateError(orderId, order.status, 'cancel');
+      throw new AdapterError(`Cannot cancel order ${orderId} in status ${order.status}`, 'INVALID_ORDER_STATE', {
+        orderId,
+        currentStatus: order.status,
+        operation: 'cancel',
+      });
     }
 
     // Update order status
@@ -204,18 +227,22 @@ export class MockAdapter implements IFulfillmentAdapter {
     order.cancelReason = reason;
     order.updatedAt = DateUtils.now();
 
-    Logger.info('Order cancelled', { orderId, reason });
+    Logger.info('Order cancelled', {
+      orderId,
+      reason,
+      lineItems,
+      notifyCustomer,
+      refundAmount,
+      notes,
+    });
 
     return {
       success: true,
-      orderId,
-      status: 'cancelled',
-      cancelledAt: order.cancelledAt,
-      refundInitiated: true
+      order,
     };
   }
 
-  async updateOrder(orderId: string, updates: OrderUpdates): Promise<UpdateResult> {
+  async updateOrder(input: UpdateOrderInput): Promise<OrderResult> {
     await this.simulateLatency();
     this.ensureConnected();
 
@@ -223,155 +250,161 @@ export class MockAdapter implements IFulfillmentAdapter {
       throw new AdapterError('Mock error: Order update failed', 'OPERATION_FAILED');
     }
 
+    const parseResult = UpdateOrderInputSchema.safeParse(input);
+    if (!parseResult.success) {
+      throw new InvalidInputError(parseResult.error.message, parseResult.error.issues);
+    }
+
+    const {
+      data: { id: orderId, updates },
+    } = parseResult;
+
     const order = this.mockData.getOrder(orderId);
     if (!order) {
-      throw new OrderNotFoundError({ orderId });
+      throw new AdapterError(`Order not found: ${orderId}`, 'ORDER_NOT_FOUND', { orderId });
     }
 
     const updatedFields = Object.keys(updates);
 
+    if (updates.lineItems) {
+      order.lineItems = updates.lineItems.map((item) => {
+        const quantity = item.quantity ?? 1;
+        const unitPrice = item.unitPrice ?? 0;
+        const totalPrice = item.totalPrice ?? unitPrice * quantity;
+        const id = item.lineItemId ?? `LI-${IdGenerator.random(8)}`;
+
+        return {
+          ...item,
+          id,
+          totalPrice,
+          sku: item.sku ?? `SKU-${IdGenerator.random(4)}`,
+          quantity,
+          unitPrice,
+          name: item.name ?? `Item ${IdGenerator.random(4)}`,
+          customFields: item.customFields ?? [],
+        } as OrderLineItem;
+      });
+    }
+
+    const updatesToApply = { ...updates } as Partial<Order>;
+    if ('lineItems' in updatesToApply) {
+      delete updatesToApply.lineItems;
+    }
+    if (updatesToApply.billingAddress) {
+      updatesToApply.billingAddress = this.buildAddress(updatesToApply.billingAddress);
+    }
+    if (updatesToApply.shippingAddress) {
+      updatesToApply.shippingAddress = this.buildAddress(updatesToApply.shippingAddress);
+    }
+    if (updatesToApply.customer) {
+      updatesToApply.customer = this.buildCustomer(updatesToApply.customer);
+    }
+
     // Apply updates
-    Object.assign(order, updates, {
-      updatedAt: DateUtils.now()
-    });
+    Object.assign(order, updatesToApply);
+    order.updatedAt = DateUtils.now();
 
     Logger.info('Order updated', { orderId, updatedFields });
 
     return {
       success: true,
-      orderId,
-      updatedFields
+      order,
     };
   }
 
-  async returnOrder(
-    orderId: string,
-    items: ReturnItem[]
-  ): Promise<ReturnResult> {
+  async fulfillOrder(input: FulfillOrderInput): Promise<
+    | {
+        success: true;
+        fulfillment: Fulfillment;
+      }
+    | {
+        success: false;
+        error: AdapterError;
+      }
+  > {
     await this.simulateLatency();
     this.ensureConnected();
 
-    if (this.shouldSimulateError('returnOrder')) {
-      throw new AdapterError('Mock error: Return processing failed', 'OPERATION_FAILED');
+    const parseResult = FulfillOrderInputSchema.safeParse(input);
+    if (!parseResult.success) {
+      return {
+        success: false,
+        error: new InvalidInputError(parseResult.error.message, parseResult.error.issues),
+      };
     }
+
+    const {
+      data: { orderId, shippingInfo, items, shippingAddress },
+    } = parseResult;
 
     const order = this.mockData.getOrder(orderId);
     if (!order) {
-      throw new OrderNotFoundError({ orderId });
-    }
-
-    const returnId = IdGenerator.returnId();
-    const rmaNumber = IdGenerator.rmaNumber();
-    const refundAmount = items.reduce((sum, item) => sum + (50.00 * item.quantity), 0); // Fixed price for mock
-
-    Logger.info('Return processed', { orderId, returnId, refundAmount });
-
-    return {
-      success: true,
-      returnId,
-      rmaNumber,
-      status: 'pending',
-      refundAmount
-    };
-  }
-
-  async exchangeOrder(
-    params: ExchangeParams
-  ): Promise<ExchangeResult> {
-    await this.simulateLatency();
-    this.ensureConnected();
-
-    if (this.shouldSimulateError('exchangeOrder')) {
-      throw new AdapterError('Mock error: Exchange processing failed', 'OPERATION_FAILED');
-    }
-
-    const order = this.mockData.getOrder(params.orderId);
-    if (!order) {
-      throw new OrderNotFoundError({ orderId: params.orderId });
-    }
-
-    const exchangeId = IdGenerator.exchangeId();
-    const newOrderId = IdGenerator.orderId();
-    // orderNumber not in schema - removed
-    const priceDifference = 0; // Calculate from params if needed
-
-    // Create the new order with exchanged items
-    if (params.newItems && params.newItems.length > 0) {
-      const newOrder: Order = {
-        ...order,
-        orderId: newOrderId,
-        // orderNumber not in schema
-        extOrderId: `EXCHANGE-${order.extOrderId}`,
-        lineItems: params.newItems.map(item => ({
-          ...item,
-          lineItemId: `LI-${IdGenerator.random(8)}`,
-          ordered: item.quantity
-        })),
-        status: 'processing',
-        createdAt: DateUtils.now(),
-        updatedAt: DateUtils.now(),
-        customFields: [
-          { name: 'exchangeFrom', value: params.orderId },
-          { name: 'exchangeId', value: exchangeId }
-        ]
+      return {
+        success: false,
+        error: new AdapterError(`Order not found: ${orderId}`, 'ORDER_NOT_FOUND', { orderId }),
       };
-
-      // Add the new order to mock data
-      this.mockData.addOrder(newOrder);
     }
-
-    Logger.info('Exchange processed', { orderId: params.orderId, exchangeId, newOrderId });
-
-    return {
-      success: true,
-      exchangeId,
-      originalOrderId: params.orderId,
-      newOrderId,
-      priceDifference,
-      rmaNumber: `RMA-${Date.now()}-${IdGenerator.random(4)}`
-    };
-  }
-
-  async shipOrder(orderId: string, shipping: ShippingInfo): Promise<ShipmentResult> {
-    await this.simulateLatency();
-    this.ensureConnected();
 
     if (this.shouldSimulateError('shipOrder')) {
-      throw new AdapterError('Mock error: Shipment processing failed', 'OPERATION_FAILED');
-    }
-
-    const order = this.mockData.getOrder(orderId);
-    if (!order) {
-      throw new OrderNotFoundError({ orderId });
+      return {
+        success: false,
+        error: new AdapterError('Mock error: Shipment processing failed', 'OPERATION_FAILED'),
+      };
     }
 
     if (order.status === 'cancelled') {
-      throw new InvalidOrderStateError(orderId, 'cancelled', 'ship');
+      return {
+        success: false,
+        error: new AdapterError(`Cannot ship order ${orderId} in status cancelled`, 'INVALID_ORDER_STATE', {
+          orderId,
+          currentStatus: 'cancelled',
+          operation: 'ship',
+        }),
+      };
     }
 
-    const shipmentId = IdGenerator.shipmentId();
+    const fulfillmentId = IdGenerator.fulfillmentId();
     // Use provided tracking number or generate one
-    const trackingNumber = shipping.trackingNumber || `TRACK-${shipmentId}`;
+    const trackingNumber = shippingInfo.trackingNumber || `TRACK-${fulfillmentId}`;
+    const shippedAt = DateUtils.now();
+    const resolvedShippingAddress = this.buildAddress(shippingAddress ?? order.shippingAddress ?? order.billingAddress);
+    const baseTenantId = (order as Partial<Order>).tenantId ?? 'mock-tenant';
+    const internalOrderId = this.getOrderId(order);
 
     // Update order status
     order.status = 'shipped';
-    order.shippedAt = DateUtils.now();
-    order.updatedAt = DateUtils.now();
+    order.shippedAt = shippedAt;
+    order.updatedAt = shippedAt;
 
-    Logger.info('Order shipped', { orderId, shipmentId, trackingNumber });
+    const fulfillment: Fulfillment = {
+      id: fulfillmentId,
+      externalId: `FULFILL-${fulfillmentId}`,
+      shippingAddress: resolvedShippingAddress!,
+      trackingNumber,
+      shippingCarrier: shippingInfo.carrier,
+      status: 'shipped',
+      expectedDeliveryDate: shippingInfo.estimatedDelivery ?? order.expectedDeliveryDate,
+      shipByDate: order.shipByDate,
+      orderId: internalOrderId,
+      createdAt: shippedAt,
+      updatedAt: shippedAt,
+      tenantId: baseTenantId,
+      lineItems:
+        items?.map((item) => ({
+          ...item,
+        })) ?? order.lineItems,
+    };
+
+    Logger.info('Order shipped', { orderId, fulfillmentId, trackingNumber });
 
     return {
       success: true,
-      shipmentId,
-      trackingNumber,
-      carrier: shipping.carrier,
-      shippedAt: order.shippedAt,
-      estimatedDelivery: shipping.estimatedDelivery
+      fulfillment,
     };
   }
 
   // Management Operations
-  async holdOrder(orderId: string, holdParams: HoldParams): Promise<HoldResult> {
+  async holdOrder(orderId: string, holdParams: any): Promise<any> {
     await this.simulateLatency();
     this.ensureConnected();
 
@@ -381,7 +414,7 @@ export class MockAdapter implements IFulfillmentAdapter {
 
     const order = this.mockData.getOrder(orderId);
     if (!order) {
-      throw new OrderNotFoundError({ orderId });
+      throw new AdapterError(`Order not found: ${orderId}`, 'ORDER_NOT_FOUND', { orderId });
     }
 
     const holdId = IdGenerator.holdId();
@@ -399,11 +432,11 @@ export class MockAdapter implements IFulfillmentAdapter {
       orderId,
       holdId,
       status: 'on_hold',
-      reason: holdParams.reason
+      reason: holdParams.reason,
     };
   }
 
-  async splitOrder(orderId: string, splits: SplitParams[]): Promise<SplitResult> {
+  async splitOrder(orderId: string, splits: any[]): Promise<any> {
     await this.simulateLatency();
     this.ensureConnected();
 
@@ -413,7 +446,7 @@ export class MockAdapter implements IFulfillmentAdapter {
 
     const order = this.mockData.getOrder(orderId);
     if (!order) {
-      throw new OrderNotFoundError({ orderId });
+      throw new AdapterError(`Order not found: ${orderId}`, 'ORDER_NOT_FOUND', { orderId });
     }
 
     const newOrderIds: string[] = [];
@@ -423,26 +456,26 @@ export class MockAdapter implements IFulfillmentAdapter {
       const newOrderId = IdGenerator.orderId();
       // orderNumber not in schema - using orderId for identification
 
-      const newOrder: Order = {
+      const newOrder: any = {
         ...order,
         orderId: newOrderId,
         // orderNumber not in schema
         extOrderId: `SPLIT-${order.extOrderId}-${newOrderIds.length + 1}`,
-        lineItems: split.items ? split.items.map(item => {
-          // Find the original line item to get details
-          const origItem = order.lineItems.find((li: any) =>
-            li.lineItemId === item.lineItemId
-          );
+        lineItems: split.items
+          ? split.items.map((item: any) => {
+              // Find the original line item to get details
+              const origItem = order.lineItems.find((li: any) => li.lineItemId === item.lineItemId);
 
-          return {
-            lineItemId: `LI-${IdGenerator.random(8)}`,
-            sku: origItem?.sku || 'UNKNOWN',
-            name: origItem?.name || 'Unknown Product',
-            ordered: item.quantity,
-            unitPrice: origItem?.unitPrice || 0,
-            totalPrice: (origItem?.unitPrice || 0) * item.quantity
-          };
-        }) : order.lineItems,  // If no items specified, use all items from original order
+              return {
+                lineItemId: `LI-${IdGenerator.random(8)}`,
+                sku: origItem?.sku || 'UNKNOWN',
+                name: origItem?.name || 'Unknown Product',
+                ordered: item.quantity,
+                unitPrice: origItem?.unitPrice || 0,
+                totalPrice: (origItem?.unitPrice || 0) * item.quantity,
+              };
+            })
+          : order.lineItems, // If no items specified, use all items from original order
         status: 'processing',
         shippingAddress: order.shippingAddress,
         billingAddress: order.billingAddress,
@@ -454,7 +487,7 @@ export class MockAdapter implements IFulfillmentAdapter {
         expectedDeliveryDate: order.expectedDeliveryDate,
         shipAfterDate: order.shipAfterDate,
         shippingCarrier: order.shippingCarrier,
-        locationId: split.locationId || order.locationId
+        locationId: split.locationId || order.locationId,
       };
 
       this.mockData.addOrder(newOrder);
@@ -477,13 +510,11 @@ export class MockAdapter implements IFulfillmentAdapter {
       success: true,
       originalOrderId: orderId,
       newOrderIds,
-      splitCount
+      splitCount,
     };
   }
 
-  async reserveInventory(
-    reservation: ReservationRequest
-  ): Promise<ReservationResult> {
+  async reserveInventory(reservation: any): Promise<any> {
     await this.simulateLatency();
     this.ensureConnected();
 
@@ -495,7 +526,7 @@ export class MockAdapter implements IFulfillmentAdapter {
     const reservationId = IdGenerator.reservationId();
     const expiresAt = DateUtils.addMinutes(expiresInMinutes);
 
-    const reservedItems = items.map(item => {
+    const reservedItems = items.map((item: any) => {
       const inventory = this.mockData.getInventory(item.sku, item.locationId);
       const availableQty = inventory.available || inventory.onHand || 100; // Fallback to default
       const availableQuantity = Math.max(0, availableQty - item.quantity);
@@ -503,7 +534,7 @@ export class MockAdapter implements IFulfillmentAdapter {
       return {
         sku: item.sku,
         reserved: Math.min(item.quantity, availableQty),
-        available: availableQuantity
+        available: availableQuantity,
       };
     });
 
@@ -513,129 +544,391 @@ export class MockAdapter implements IFulfillmentAdapter {
       success: true,
       reservationId,
       items: reservedItems,
-      expiresAt: expiresAt.toISOString()
+      expiresAt: expiresAt.toISOString(),
     };
   }
 
   // Query Operations
-  async getOrder(identifier: OrderIdentifier): Promise<Order> {
+  async getOrders(input: GetOrdersInput): Promise<
+    | {
+        success: true;
+        orders: Order[];
+      }
+    | {
+        success: false;
+        error: AdapterError;
+      }
+  > {
     await this.simulateLatency();
     this.ensureConnected();
 
+    const parseResult = GetOrdersInputSchema.safeParse(input);
+    if (!parseResult.success) {
+      return {
+        success: false,
+        error: new InvalidInputError(parseResult.error.message, parseResult.error.issues),
+      };
+    }
+
     if (this.shouldSimulateError('getOrder')) {
-      throw new AdapterError('Mock error: Order retrieval failed', 'OPERATION_FAILED');
+      return {
+        success: false,
+        error: new AdapterError('Mock error: Order retrieval failed', 'OPERATION_FAILED'),
+      };
     }
 
-    let order;
-    if (identifier.orderId) {
-      order = this.mockData.getOrder(identifier.orderId);
-    } else if (identifier.orderNumber) {
-      // Since Order schema doesn't have orderNumber field,
-      // search by orderId first, then extOrderId
-      order = this.mockData.getOrder(identifier.orderNumber);
-      if (!order) {
-        // Try as extOrderId
-        order = this.mockData.getOrderByExtOrderId(identifier.orderNumber);
+    const orders: Order[] = [];
+    const seen = new Set<string>();
+    const data = parseResult.data;
+
+    const addOrder = (ord: any) => {
+      if (!ord) {
+        return;
       }
-    } else if (identifier.extOrderId) {
-      // Search by external order ID
-      order = this.mockData.getOrderByExtOrderId(identifier.extOrderId);
-    }
-
-    if (!order) {
-      throw new OrderNotFoundError(identifier);
-    }
-
-    // Clean up the order to remove null values that would fail validation
-    // Make sure to preserve all original fields including status
-    const cleanOrder = {
-      ...order,
-      customer: order.customer ? this.cleanObject(order.customer) : undefined,
-      billingAddress: order.billingAddress ? this.cleanObject(order.billingAddress) : undefined,
-      shippingAddress: order.shippingAddress ? this.cleanObject(order.shippingAddress) : undefined,
-      status: order.status // Make sure status is preserved
+      const cleanOrder: Order = {
+        ...ord,
+        customer: this.buildCustomer(ord.customer),
+        billingAddress: this.buildAddress(ord.billingAddress, false),
+        shippingAddress: this.buildAddress(ord.shippingAddress, false),
+      };
+      const key = this.getOrderId(cleanOrder);
+      if (!seen.has(key)) {
+        orders.push(cleanOrder);
+        seen.add(key);
+      }
     };
 
-    return cleanOrder;
+    data.orderIds?.forEach((orderId) => addOrder(this.mockData.getOrder(orderId)));
+    data.extOrderIds?.forEach((extOrderId) => addOrder(this.mockData.getOrderByExtOrderId(extOrderId)));
+    data.orderNames?.forEach((orderNumber) => addOrder(this.mockData.getOrderByNumber(orderNumber)));
+
+    if (orders.length === 0) {
+      const identifier = (data.orderIds?.[0] && { orderId: data.orderIds[0] }) ||
+        (data.extOrderIds?.[0] && { extOrderId: data.extOrderIds[0] }) ||
+        (data.orderNames?.[0] && { orderNumber: data.orderNames[0] }) || { orderId: 'unknown' };
+      return {
+        success: false,
+        error: new AdapterError(`Order not found: ${JSON.stringify(identifier)}`, 'ORDER_NOT_FOUND', identifier),
+      };
+    }
+
+    return {
+      success: true,
+      orders,
+    };
   }
 
-  async getInventory(sku: string, locationId?: string): Promise<Inventory> {
+  async getInventory(input: GetInventoryInput): Promise<
+    | {
+        success: true;
+        inventory: Inventory[];
+      }
+    | {
+        success: false;
+        error: AdapterError;
+      }
+  > {
     await this.simulateLatency();
     this.ensureConnected();
 
     if (this.shouldSimulateError('getInventory')) {
-      throw new AdapterError('Mock error: Inventory retrieval failed', 'OPERATION_FAILED');
+      return {
+        success: false,
+        error: new AdapterError('Mock error: Inventory retrieval failed', 'OPERATION_FAILED'),
+      };
     }
 
-    return this.mockData.getInventory(sku, locationId || 'WH001');
-  }
-
-  async getProduct(identifier: ProductIdentifier): Promise<Product> {
-    await this.simulateLatency();
-    this.ensureConnected();
-
-    if (this.shouldSimulateError('getProduct')) {
-      throw new AdapterError('Mock error: Product retrieval failed', 'OPERATION_FAILED');
+    const parseResult = GetInventoryInputSchema.safeParse(input);
+    if (!parseResult.success) {
+      return {
+        success: false,
+        error: new InvalidInputError(parseResult.error.message, parseResult.error.issues),
+      };
     }
 
-    const id = identifier.productId || identifier.sku;
-    return this.mockData.getProduct(id);
-  }
+    const data = parseResult.data;
+    const results: Inventory[] = [];
 
-  async getCustomer(identifier: CustomerIdentifier): Promise<Customer> {
-    await this.simulateLatency();
-    this.ensureConnected();
-
-    if (this.shouldSimulateError('getCustomer')) {
-      throw new AdapterError('Mock error: Customer retrieval failed', 'OPERATION_FAILED');
+    for (const sku of data.skus) {
+      if (data.locationIds && data.locationIds.length > 0) {
+        for (const locationId of data.locationIds) {
+          results.push(this.mockData.getInventory(sku, locationId));
+        }
+      } else {
+        results.push(this.mockData.getInventory(sku));
+      }
     }
-
-    const id = identifier.customerId || identifier.email;
-    return this.mockData.getCustomer(id);
-  }
-
-  async getShipment(identifier: ShipmentIdentifier): Promise<Shipment> {
-    await this.simulateLatency();
-    this.ensureConnected();
-
-    if (this.shouldSimulateError('getShipment')) {
-      throw new AdapterError('Mock error: Shipment retrieval failed', 'OPERATION_FAILED');
-    }
-
-    const shipmentId = identifier.shipmentId || IdGenerator.shipmentId();
 
     return {
-      shipmentId,
-      orderId: identifier.orderId || 'order_' + IdGenerator.random(6),
-      extOrderId: 'ext_' + IdGenerator.random(6),
-      status: 'shipped',
-      shippingAddress: {
-        address1: '123 Sample St',
-        city: 'Sample City',
-        stateOrProvince: 'CA',
-        zipCodeOrPostalCode: '90210',
-        country: 'US'
-      },
-      customFields: [
-        { name: 'carrier', value: 'USPS' },
-        { name: 'service_level', value: 'Ground' }
-      ]
+      success: true,
+      inventory: results,
     };
   }
 
-  async getBuyer(buyerId: string): Promise<Buyer> {
+  async getProducts(input: GetProductsInput): Promise<
+    | {
+        success: true;
+        products: Product[];
+      }
+    | {
+        success: false;
+        error: AdapterError;
+      }
+  > {
     await this.simulateLatency();
     this.ensureConnected();
 
-    if (this.shouldSimulateError('getBuyer')) {
-      throw new AdapterError('Mock error: Buyer retrieval failed', 'OPERATION_FAILED');
+    const parseResult = GetProductsInputSchema.safeParse(input);
+    if (!parseResult.success) {
+      return {
+        success: false,
+        error: new InvalidInputError(parseResult.error.message, parseResult.error.issues),
+      };
+    }
+
+    if (this.shouldSimulateError('getProduct')) {
+      return {
+        success: false,
+        error: new AdapterError('Mock error: Product retrieval failed', 'OPERATION_FAILED'),
+      };
+    }
+
+    const data = parseResult.data;
+    const products: Product[] = [];
+    const seen = new Set<string>();
+
+    const addProduct = (identifier?: string) => {
+      if (!identifier) {
+        return;
+      }
+      const product = this.mockData.getProduct(identifier);
+      const key = product.id ?? product.externalId ?? identifier;
+      if (!seen.has(key)) {
+        products.push(product);
+        seen.add(key);
+        if (product.id) {
+          seen.add(product.id);
+        }
+        if (product.externalId) {
+          seen.add(product.externalId);
+        }
+        if (product.externalProductId) {
+          seen.add(product.externalProductId);
+        }
+      }
+    };
+
+    data.ids?.forEach((id) => addProduct(id));
+    data.skus?.forEach((sku) => addProduct(sku));
+
+    if (products.length === 0) {
+      const identifier = (data.ids?.[0] && { productId: data.ids[0] }) ||
+        (data.skus?.[0] && { sku: data.skus[0] }) || { productId: 'unknown' };
+      return {
+        success: false,
+        error: new AdapterError(`Product not found: ${JSON.stringify(identifier)}`, 'PRODUCT_NOT_FOUND', identifier),
+      };
     }
 
     return {
-      userId: buyerId,
-      name: `Sample Buyer ${buyerId}`,
-      email: `buyer_${buyerId}@example.com`,
-      roles: ['purchaser']
+      success: true,
+      products,
+    };
+  }
+
+  async getProductVariants(input: GetProductVariantsInput): Promise<
+    | {
+        success: true;
+        productVariants: ProductVariant[];
+      }
+    | {
+        success: false;
+        error: AdapterError;
+      }
+  > {
+    await this.simulateLatency();
+    this.ensureConnected();
+
+    const parseResult = GetProductVariantsInputSchema.safeParse(input);
+    if (!parseResult.success) {
+      return {
+        success: false,
+        error: new InvalidInputError(parseResult.error.message, parseResult.error.issues),
+      };
+    }
+
+    if (this.shouldSimulateError('getProductVariants')) {
+      return {
+        success: false,
+        error: new AdapterError('Mock error: Product variant retrieval failed', 'OPERATION_FAILED'),
+      };
+    }
+
+    const data = parseResult.data;
+    const variants: ProductVariant[] = [];
+    const seen = new Set<string>();
+
+    const addVariant = (identifier?: string) => {
+      if (!identifier) {
+        return;
+      }
+
+      const variant = this.mockData.getProductVariant(identifier);
+      const key = variant.id ?? variant.sku ?? identifier;
+      if (!seen.has(key)) {
+        variants.push(variant);
+        seen.add(key);
+        if (variant.id) {
+          seen.add(variant.id);
+        }
+        if (variant.sku) {
+          seen.add(variant.sku);
+        }
+      }
+    };
+
+    data.variantIds?.forEach((variantId) => addVariant(variantId));
+    data.skus?.forEach((sku) => addVariant(sku));
+
+    data.productIds?.forEach((productId) => {
+      const productVariants = this.mockData.getProductVariantsByProductId(productId);
+      productVariants.forEach((variant) => addVariant(variant.id));
+    });
+
+    if (variants.length === 0) {
+      const identifier = (data.variantIds?.[0] && { variantId: data.variantIds[0] }) ||
+        (data.skus?.[0] && { sku: data.skus[0] }) ||
+        (data.productIds?.[0] && { productId: data.productIds[0] }) || { variantId: 'unknown' };
+      return {
+        success: false,
+        error: new AdapterError(
+          `Product variant not found: ${JSON.stringify(identifier)}`,
+          'PRODUCT_VARIANT_NOT_FOUND',
+          identifier
+        ),
+      };
+    }
+
+    return {
+      success: true,
+      productVariants: variants,
+    };
+  }
+
+  async getCustomers(input: GetCustomersInput): Promise<FulfillmentToolResult<{ customers: Customer[] }>> {
+    await this.simulateLatency();
+    this.ensureConnected();
+
+    const parseResult = GetCustomersInputSchema.safeParse(input);
+    if (!parseResult.success) {
+      return {
+        success: false,
+        error: new InvalidInputError(parseResult.error.message, parseResult.error.issues),
+      };
+    }
+
+    if (this.shouldSimulateError('getCustomer')) {
+      return {
+        success: false,
+        error: new AdapterError('Mock error: Customer retrieval failed', 'OPERATION_FAILED'),
+      };
+    }
+
+    const customers: Customer[] = [];
+    const seen = new Set<string>();
+
+    const addCustomer = (identifier?: string) => {
+      if (!identifier) {
+        return;
+      }
+      const customer = this.mockData.getCustomer(identifier);
+      const key = customer.id ?? customer.email ?? identifier;
+      if (!seen.has(key)) {
+        customers.push(customer);
+        seen.add(key);
+      }
+    };
+
+    const data = parseResult.data;
+    data.ids?.forEach((id) => addCustomer(id));
+    data.emails?.forEach((email) => addCustomer(email));
+
+    if (customers.length === 0) {
+      const identifier = (data.ids?.[0] && { customerId: data.ids[0] }) ||
+        (data.emails?.[0] && { email: data.emails[0] }) || {
+          customerId: 'unknown',
+        };
+      return {
+        success: false,
+        error: new AdapterError(`Customer not found: ${JSON.stringify(identifier)}`, 'CUSTOMER_NOT_FOUND', identifier),
+      };
+    }
+
+    return {
+      success: true,
+      customers,
+    };
+  }
+
+  async getFulfillments(input: GetFulfillmentsInput): Promise<
+    | {
+        success: true;
+        fulfillments: Fulfillment[];
+      }
+    | {
+        success: false;
+        error: AdapterError;
+      }
+  > {
+    await this.simulateLatency();
+    this.ensureConnected();
+
+    const parseResult = GetFulfillmentsInputSchema.safeParse(input);
+    if (!parseResult.success) {
+      return {
+        success: false,
+        error: new InvalidInputError(parseResult.error.message, parseResult.error.issues),
+      };
+    }
+
+    if (this.shouldSimulateError('getShipment')) {
+      return {
+        success: false,
+        error: new AdapterError('Mock error: Shipment retrieval failed', 'OPERATION_FAILED'),
+      };
+    }
+
+    const data = parseResult.data;
+    const fulfillments: Fulfillment[] = [];
+
+    const now = DateUtils.now();
+    const targetIds = data.ids?.length ? data.ids : [IdGenerator.fulfillmentId()];
+
+    for (const fulfillmentId of targetIds) {
+      const requestedOrderId = data.orderIds?.[0] ?? `order_${IdGenerator.random(6)}`;
+      const order = this.mockData.getOrder(requestedOrderId);
+      const address = this.buildAddress(order?.shippingAddress ?? order?.billingAddress, true)!;
+      const resolvedOrderId = order ? this.getOrderId(order) : requestedOrderId;
+
+      fulfillments.push({
+        id: fulfillmentId,
+        externalId: `FULFILL-${fulfillmentId}`,
+        shippingAddress: address,
+        lineItems: order?.lineItems ?? [],
+        orderId: resolvedOrderId,
+        trackingNumber: `TRACK-${fulfillmentId}`,
+        shippingCarrier: 'USPS',
+        status: 'shipped',
+        createdAt: now,
+        updatedAt: now,
+        tenantId: (order as Partial<Order>)?.tenantId ?? 'mock-tenant',
+        tags: [],
+      });
+    }
+
+    return {
+      success: true,
+      fulfillments,
     };
   }
 
@@ -643,12 +936,61 @@ export class MockAdapter implements IFulfillmentAdapter {
   private async simulateLatency(): Promise<void> {
     const delay = this.config.getLatency();
     if (delay > 0) {
-      await new Promise(resolve => setTimeout(resolve, delay));
+      await new Promise((resolve) => setTimeout(resolve, delay));
     }
   }
 
   private shouldSimulateError(operation: string): boolean {
     return this.config.shouldSimulateError(operation);
+  }
+
+  private buildAddress(
+    address?: Partial<Order['shippingAddress']>,
+    fallback: boolean = true
+  ): Order['shippingAddress'] | undefined {
+    if (!address && !fallback) {
+      return undefined;
+    }
+
+    const base = address ?? {};
+    return {
+      address1: base.address1 ?? '123 Mock St',
+      address2: base.address2,
+      city: base.city ?? 'Sample City',
+      company: base.company ?? 'Mock Company',
+      country: base.country ?? 'US',
+      email: base.email ?? 'mock.customer@example.com',
+      firstName: base.firstName ?? 'Mock',
+      lastName: base.lastName ?? 'Customer',
+      phone: base.phone ?? '555-0100',
+      stateOrProvince: base.stateOrProvince ?? 'CA',
+      zipCodeOrPostalCode: base.zipCodeOrPostalCode ?? '90210',
+    };
+  }
+
+  private buildCustomer(customer?: Partial<Order['customer']>): Order['customer'] | undefined {
+    if (!customer) {
+      return undefined;
+    }
+
+    return {
+      ...customer,
+      externalId: customer.externalId ?? `CUST-${IdGenerator.random(6)}`,
+      company: customer.company ?? 'Mock Customer Co',
+      firstName: customer.firstName ?? 'Mock',
+      lastName: customer.lastName ?? 'Customer',
+      type: customer.type ?? 'individual',
+    };
+  }
+
+  private getOrderId(order: Partial<Order> & { orderId?: string; extOrderId?: string }): string {
+    return (
+      (order as any).orderId ??
+      order.id ??
+      (order as any).extOrderId ??
+      order.externalId ??
+      `order-${IdGenerator.random(6)}`
+    );
   }
 
   private cleanObject(obj: any): any {
@@ -667,9 +1009,9 @@ export class MockAdapter implements IFulfillmentAdapter {
       if (item.totalPrice) {
         return sum + item.totalPrice;
       }
-      const quantity = item.quantity || item.ordered || 1;
-      const price = item.unitPrice || 50.00; // Default price for mock calculation
-      return sum + (quantity * price);
+      const quantity = item.quantity || 1;
+      const price = item.unitPrice || 50.0; // Default price for mock calculation
+      return sum + quantity * price;
     }, 0);
   }
 }

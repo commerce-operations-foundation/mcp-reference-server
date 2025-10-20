@@ -1,166 +1,92 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Inventory",
+  "description": "Inventory Item",
   "type": "object",
-  "description": "Inventory entity schema",
   "properties": {
-    "inventoryId": {
-      "type": "string",
-      "description": "Inventory ID"
-    },
     "available": {
-      "type": "integer",
-      "format": "int32",
-      "description": "Number of items available"
+      "type": "number"
     },
     "availableToPromise": {
-      "type": "integer",
-      "format": "int32",
-      "description": "Number of items available to promise"
+      "type": "number"
     },
     "commitShip": {
-      "type": "integer",
-      "format": "int32",
-      "description": "Number of items being shipped (included in committed)"
+      "type": "number"
     },
     "commitXfer": {
-      "type": "integer",
-      "format": "int32",
-      "description": "Number of items being transferred out (included in committed)"
+      "type": "number"
     },
     "committed": {
-      "type": "integer",
-      "format": "int32",
-      "description": "Number of items committed"
+      "type": "number"
     },
     "committedFuture": {
-      "type": "integer",
-      "format": "int32",
-      "description": "Number of items committed for pre-order"
-    },
-    "customFields": {
-      "type": "array",
-      "description": "Custom Fields",
-      "items": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string"
-          },
-          "value": {
-            "type": "string"
-          }
-        }
-      }
+      "type": "number"
     },
     "damaged": {
-      "type": "integer",
-      "format": "int32"
-    },
-    "entityId": {
-      "type": "string",
-      "description": "Related entity ID"
-    },
-    "entityType": {
-      "type": "string",
-      "description": "Related entity ID's type"
-    },
-    "event": {
-      "type": "string",
-      "description": "Event creating this item"
+      "type": "number"
     },
     "future": {
-      "type": "integer",
-      "format": "int32",
-      "description": "Number of items that can be sold for pre-order"
+      "type": "number"
     },
     "hold": {
-      "type": "integer",
-      "format": "int32"
+      "type": "number"
     },
     "incoming": {
-      "type": "integer",
-      "format": "int32",
-      "description": "Number of incoming items in transit (maybe included in available)"
-    },
-    "integration": {
-      "type": "string",
-      "description": "Reference to integration that created an item"
-    },
-    "internal": {
-      "type": "object",
-      "description": "Internal information"
+      "type": "number"
     },
     "inventoryNotTracked": {
-      "type": "boolean",
-      "description": "Disables the inventory tracking"
+      "type": "boolean"
     },
     "label": {
       "type": "string"
     },
     "locationId": {
-      "type": "string",
-      "description": "Location of item"
+      "type": "string"
     },
     "onHand": {
-      "type": "integer",
-      "format": "int32",
-      "description": "Number of items on hand"
-    },
-    "orderId": {
-      "type": "string",
-      "description": "Internal order id that initiated this inventory change"
-    },
-    "orderType": {
-      "type": "string",
-      "description": "Type of order that initiated this inventory change"
+      "type": "number"
     },
     "quantity": {
-      "type": "integer",
-      "format": "int32",
-      "description": "Number of items affected"
+      "type": "number"
     },
     "sku": {
-      "type": "string",
-      "description": "Item SKU"
-    },
-    "tags": {
-      "type": "object"
-    },
-    "type": {
-      "type": "string",
-      "enum": ["virtual", "physical"],
-      "description": "Inventory type (undefined value indicates a physical inventory)"
+      "type": "string"
     },
     "unavailable": {
-      "type": "integer",
-      "format": "int32",
-      "description": "Number of unavailable items"
+      "type": "number"
     },
-    "user": {
-      "type": "string",
-      "description": "Internal id of the user who makes the inventory adjustment via the portal"
+    "id": {
+      "description": "Unique system-generated identifier for this entity (read-only)",
+      "type": "string"
     },
-    "vendorSKU": {
-      "type": "string",
-      "description": "Item vendor SKU"
+    "externalId": {
+      "description": "ID of the entity in the client's system. Must be unique within the tenant.",
+      "type": "string"
     },
     "createdAt": {
+      "description": "ISO 8601 timestamp when the entity was created (read-only)",
       "type": "string",
       "format": "date-time",
-      "readOnly": true,
-      "description": "When the object was created"
-    },
-    "orgKey": {
-      "type": "string",
-      "readOnly": true,
-      "description": "Organization this object belong to"
+      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
     },
     "updatedAt": {
+      "description": "ISO 8601 timestamp when the entity was last updated (read-only)",
       "type": "string",
       "format": "date-time",
-      "readOnly": true,
-      "description": "When the object was updated"
+      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+    },
+    "tenantId": {
+      "description": "Unique identifier for the tenant that owns this entity (read-only)",
+      "type": "string"
     }
-  }
+  },
+  "required": [
+    "locationId",
+    "sku",
+    "id",
+    "createdAt",
+    "updatedAt",
+    "tenantId"
+  ],
+  "additionalProperties": false
 }

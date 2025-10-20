@@ -1,38 +1,79 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Product",
+  "description": "Product",
   "type": "object",
-  "description": "Product entity schema",
-  "required": ["sku", "name"],
   "properties": {
-    "id": {
-      "type": "string",
-      "description": "Product ID"
-    },
-    "sku": {
-      "type": "string",
-      "description": "Product SKU"
+    "externalProductId": {
+      "type": "string"
     },
     "name": {
-      "type": "string",
-      "description": "Display Name"
+      "description": "Product display name",
+      "type": "string"
     },
-    "cost": {
-      "type": "number",
-      "format": "float",
-      "description": "Cost"
+    "description": {
+      "type": "string"
     },
-    "costCurrency": {
-      "type": "string",
-      "description": "Currency"
+    "handle": {
+      "description": "URL-friendly identifier or slug",
+      "type": "string"
     },
-    "countryOfOrigin": {
-      "type": "string",
-      "description": "Country of Origin"
+    "status": {
+      "description": "Adapter-defined status for the product as a whole",
+      "type": "string"
+    },
+    "tags": {
+      "description": "Tags for categorization and filtering. Useful for organizing entities with custom labels (e.g., \"priority\", \"wholesale\", \"gift\")",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "vendor": {
+      "type": "string"
+    },
+    "categories": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "options": {
+      "description": "Declares which option dimensions exist for the product",
+      "type": "array",
+      "items": {
+        "description": "Definition for a selectable product option",
+        "type": "object",
+        "properties": {
+          "name": {
+            "description": "Option dimension name, e.g. size or color",
+            "type": "string"
+          },
+          "values": {
+            "description": "Optional merchandising hints for valid option values",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "name",
+          "values"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "imageURLs": {
+      "description": "Fallback imagery used when variants omit their own images",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
     },
     "customFields": {
+      "description": "Custom Fields - allows for arbitrary key-value pairs to be added to an entity. Useful for storing any custom data that is not covered by the other fields.",
       "type": "array",
-      "description": "Custom Fields",
       "items": {
         "type": "object",
         "properties": {
@@ -42,118 +83,46 @@
           "value": {
             "type": "string"
           }
-        }
+        },
+        "required": [
+          "name",
+          "value"
+        ],
+        "additionalProperties": false
       }
     },
-    "description": {
-      "type": "string",
-      "description": "Description"
-    },
-    "dimensionsUnit": {
-      "type": "string",
-      "description": "Dimensions UOM",
-      "enum": ["cm", "in", "ft"]
+    "id": {
+      "description": "Unique system-generated identifier for this entity (read-only)",
+      "type": "string"
     },
     "externalId": {
-      "type": "string",
-      "description": "External Product API Id"
-    },
-    "harmonizedCode": {
-      "type": "string",
-      "description": "Harmonized System/Tarrif Code"
-    },
-    "height": {
-      "type": "number",
-      "format": "float",
-      "description": "Height"
-    },
-    "imageURLs": {
-      "type": "array",
-      "description": "Image URLs",
-      "items": {
-        "type": "string"
-      }
-    },
-    "inventoryNotTracked": {
-      "type": "boolean",
-      "description": "Do not track inventory flag"
-    },
-    "length": {
-      "type": "number",
-      "format": "float",
-      "description": "Length"
-    },
-    "partId": {
-      "type": "string",
-      "description": "Manufacturer part number"
-    },
-    "prices": {
-      "type": "array",
-      "description": "Start off with basePrice",
-      "items": {
-        "type": "object"
-      }
-    },
-    "status": {
-      "type": "string",
-      "description": "Product status"
-    },
-    "tags": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      }
-    },
-    "taxable": {
-      "type": "boolean",
-      "description": "Taxable"
-    },
-    "types": {
-      "type": "array",
-      "description": "Product types",
-      "items": {
-        "type": "string"
-      }
-    },
-    "upc": {
-      "type": "string",
-      "description": "UPC"
-    },
-    "vendor": {
-      "type": "string",
-      "description": "vendor"
-    },
-    "weight": {
-      "type": "number",
-      "format": "float",
-      "description": "Weight"
-    },
-    "weightUnit": {
-      "type": "string",
-      "description": "Weight UOM",
-      "enum": ["lb", "oz", "kg", "g"]
-    },
-    "width": {
-      "type": "number",
-      "format": "float",
-      "description": "Width"
+      "description": "ID of the entity in the client's system. Must be unique within the tenant.",
+      "type": "string"
     },
     "createdAt": {
+      "description": "ISO 8601 timestamp when the entity was created (read-only)",
       "type": "string",
       "format": "date-time",
-      "readOnly": true,
-      "description": "When the object was created"
-    },
-    "tenantId": {
-      "type": "string",
-      "readOnly": true,
-      "description": "Tenant this object belong to"
+      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
     },
     "updatedAt": {
+      "description": "ISO 8601 timestamp when the entity was last updated (read-only)",
       "type": "string",
       "format": "date-time",
-      "readOnly": true,
-      "description": "When the object was updated"
+      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+    },
+    "tenantId": {
+      "description": "Unique identifier for the tenant that owns this entity (read-only)",
+      "type": "string"
     }
-  }
+  },
+  "required": [
+    "name",
+    "options",
+    "id",
+    "createdAt",
+    "updatedAt",
+    "tenantId"
+  ],
+  "additionalProperties": false
 }
