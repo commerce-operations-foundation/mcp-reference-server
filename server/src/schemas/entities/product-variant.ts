@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 import { CustomFieldsSchema, ObjectProps, TagsSchema } from '../common.js';
-import { makeZodFieldMap } from '../index.js';
+import { makeZodFieldMap } from '../utils/schema-util.js';
 
 export const variantSelectionSchema = z
   .object({

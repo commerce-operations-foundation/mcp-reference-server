@@ -1,6 +1,6 @@
 /**
  * Service Orchestrator unit tests
- * 
+ *
  * Note: This file contains basic unit tests for ServiceOrchestrator.
  * For comprehensive testing of service interactions, see the integration tests.
  */
@@ -14,8 +14,8 @@ vi.mock('../../../src/utils/logger', () => ({
     debug: vi.fn(),
     info: vi.fn(),
     warn: vi.fn(),
-    error: vi.fn()
-  }
+    error: vi.fn(),
+  },
 }));
 
 describe('ServiceOrchestrator', () => {
@@ -52,12 +52,18 @@ describe('ServiceOrchestrator', () => {
 
     it('should throw error when operations called before initialization', async () => {
       const uninitializedService = new ServiceOrchestrator();
-      
+
       // Test that operations throw when not initialized
-      await expect(uninitializedService.captureOrder({} as any)).rejects.toThrow('ServiceOrchestrator not initialized');
-      await expect(uninitializedService.cancelOrder('order-id', 'reason')).rejects.toThrow('ServiceOrchestrator not initialized');
-      await expect(uninitializedService.getOrder({})).rejects.toThrow('ServiceOrchestrator not initialized');
-      await expect(uninitializedService.getInventory('sku')).rejects.toThrow('ServiceOrchestrator not initialized');
+      await expect(uninitializedService.createSalesOrder({} as any)).rejects.toThrow(
+        'ServiceOrchestrator not initialized'
+      );
+      await expect(uninitializedService.cancelOrder({ orderId: 'order-id' } as any)).rejects.toThrow(
+        'ServiceOrchestrator not initialized'
+      );
+      await expect(uninitializedService.getOrders({})).rejects.toThrow('ServiceOrchestrator not initialized');
+      await expect(uninitializedService.getInventory({ skus: ['sku'] })).rejects.toThrow(
+        'ServiceOrchestrator not initialized'
+      );
     });
   });
 
@@ -81,14 +87,14 @@ describe('ServiceOrchestrator', () => {
 /**
  * NOTE: Comprehensive testing of ServiceOrchestrator with actual service interactions
  * is handled in the integration tests at tests/integration/
- * 
+ *
  * The following test scenarios are covered in integration tests:
  * - Actual order operations (capture, cancel, update, return, exchange, split)
  * - Query operations with real data
  * - Error handling and validation
  * - Metrics tracking
  * - Adapter interactions
- * 
+ *
  * This unit test file focuses only on basic initialization and state management
  * that can be tested without heavy mocking.
  */

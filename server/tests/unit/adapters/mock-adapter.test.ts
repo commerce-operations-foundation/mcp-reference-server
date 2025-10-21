@@ -12,7 +12,7 @@ describe('MockAdapter', () => {
   beforeEach(() => {
     adapter = new MockAdapter({
       fixedLatency: 0, // No delay in tests
-      errorRate: 0 // No random errors in tests
+      errorRate: 0, // No random errors in tests
     });
   });
 
@@ -43,18 +43,18 @@ describe('MockAdapter', () => {
     it('should provide detailed health check', async () => {
       await adapter.connect();
       const healthStatus = await adapter.healthCheck();
-      
+
       expect(healthStatus).toHaveProperty('status', 'healthy');
       expect(healthStatus).toHaveProperty('timestamp');
       expect(healthStatus.checks).toHaveLength(3);
-      
-      const connectionCheck = healthStatus.checks.find(c => c.name === 'connection');
+
+      const connectionCheck = healthStatus.checks.find((c) => c.name === 'connection');
       expect(connectionCheck?.status).toBe('pass');
-      
-      const dataCheck = healthStatus.checks.find(c => c.name === 'data_store');
+
+      const dataCheck = healthStatus.checks.find((c) => c.name === 'data_store');
       expect(dataCheck?.status).toBe('pass');
-      
-      const configCheck = healthStatus.checks.find(c => c.name === 'configuration');
+
+      const configCheck = healthStatus.checks.find((c) => c.name === 'configuration');
       expect(configCheck?.status).toBe('pass');
     });
   });
@@ -72,33 +72,33 @@ describe('MockAdapter', () => {
             customerId: 'cust_001',
             firstName: 'John',
             lastName: 'Doe',
-            type: 'individual'
+            type: 'individual',
           },
           lineItems: [
             {
               lineItemId: 'line_001',
               sku: 'TEST-001',
               quantity: 2,
-              unitPrice: 50.00,
-              totalPrice: 100.00,
-              customFields: []
-            }
+              unitPrice: 50.0,
+              totalPrice: 100.0,
+              customFields: [],
+            },
           ],
           billingAddress: {
             address1: '123 Test St',
             city: 'Test City',
             stateOrProvince: 'CA',
             zipCodeOrPostalCode: '90210',
-            country: 'US'
+            country: 'US',
           },
           shippingAddress: {
             address1: '123 Test St',
             city: 'Test City',
             stateOrProvince: 'CA',
             zipCodeOrPostalCode: '90210',
-            country: 'US'
+            country: 'US',
           },
-          customFields: []
+          customFields: [],
         };
 
         const result = await adapter.captureOrder(orderRequest);
@@ -116,55 +116,55 @@ describe('MockAdapter', () => {
             customerId: 'cust_002',
             firstName: 'Jane',
             lastName: 'Smith',
-            type: 'individual'
+            type: 'individual',
           },
           lineItems: [
             {
               lineItemId: 'line_001',
               sku: 'TEST-002',
               quantity: 1,
-              unitPrice: 50.00,
-              totalPrice: 50.00,
-              customFields: []
-            }
+              unitPrice: 50.0,
+              totalPrice: 50.0,
+              customFields: [],
+            },
           ],
           billingAddress: {
             address1: '456 Test Ave',
             city: 'Test City',
             stateOrProvince: 'CA',
             zipCodeOrPostalCode: '90210',
-            country: 'US'
+            country: 'US',
           },
           shippingAddress: {
             address1: '456 Test Ave',
             city: 'Test City',
             stateOrProvince: 'CA',
             zipCodeOrPostalCode: '90210',
-            country: 'US'
+            country: 'US',
           },
-          customFields: []
+          customFields: [],
         };
 
         const result = await adapter.captureOrder(orderRequest);
-        
+
         // Verify order was stored and can be retrieved
         const order = await adapter.getOrder({ orderId: result.orderId });
-        expect(order.subTotalPrice).toBe(50.00);
-        expect(order.orderTax).toBe(4.00); // 8% of subtotal
-        expect(order.shippingPrice).toBe(10.00); // Shipping fee for orders under $100
-        expect(order.totalPrice).toBe(64.00);
+        expect(order.subTotalPrice).toBe(50.0);
+        expect(order.orderTax).toBe(4.0); // 8% of subtotal
+        expect(order.shippingPrice).toBe(10.0); // Shipping fee for orders under $100
+        expect(order.totalPrice).toBe(64.0);
       });
 
       it('should throw error when not connected', async () => {
         await adapter.disconnect();
-        
+
         const orderRequest: types.OrderRequest = {
           extOrderId: 'EXT-125',
           customer: {
             customerId: 'cust_003',
             firstName: 'Bob',
             lastName: 'Johnson',
-            type: 'individual'
+            type: 'individual',
           },
           lineItems: [],
           billingAddress: {
@@ -172,16 +172,16 @@ describe('MockAdapter', () => {
             city: 'Test City',
             stateOrProvince: 'CA',
             zipCodeOrPostalCode: '90210',
-            country: 'US'
+            country: 'US',
           },
           shippingAddress: {
             address1: '789 Test Blvd',
             city: 'Test City',
             stateOrProvince: 'CA',
             zipCodeOrPostalCode: '90210',
-            country: 'US'
+            country: 'US',
           },
-          customFields: []
+          customFields: [],
         };
 
         await expect(adapter.captureOrder(orderRequest)).rejects.toThrow('Adapter not connected');
@@ -198,33 +198,33 @@ describe('MockAdapter', () => {
             customerId: 'cust_cancel',
             firstName: 'Cancel',
             lastName: 'Test',
-            type: 'individual'
+            type: 'individual',
           },
           lineItems: [
             {
               lineItemId: 'line_cancel',
               sku: 'CANCEL-001',
               quantity: 1,
-              unitPrice: 100.00,
-              totalPrice: 100.00,
-              customFields: []
-            }
+              unitPrice: 100.0,
+              totalPrice: 100.0,
+              customFields: [],
+            },
           ],
           billingAddress: {
             address1: '123 Cancel St',
             city: 'Cancel City',
             stateOrProvince: 'CA',
             zipCodeOrPostalCode: '90210',
-            country: 'US'
+            country: 'US',
           },
           shippingAddress: {
             address1: '123 Cancel St',
             city: 'Cancel City',
             stateOrProvince: 'CA',
             zipCodeOrPostalCode: '90210',
-            country: 'US'
+            country: 'US',
           },
-          customFields: []
+          customFields: [],
         };
 
         const result = await adapter.captureOrder(orderRequest);
@@ -261,33 +261,33 @@ describe('MockAdapter', () => {
             customerId: 'cust_update',
             firstName: 'Update',
             lastName: 'Test',
-            type: 'individual'
+            type: 'individual',
           },
           lineItems: [
             {
               lineItemId: 'line_update',
               sku: 'UPDATE-001',
               quantity: 1,
-              unitPrice: 75.00,
-              totalPrice: 75.00,
-              customFields: []
-            }
+              unitPrice: 75.0,
+              totalPrice: 75.0,
+              customFields: [],
+            },
           ],
           billingAddress: {
             address1: '123 Update St',
             city: 'Update City',
             stateOrProvince: 'CA',
             zipCodeOrPostalCode: '90210',
-            country: 'US'
+            country: 'US',
           },
           shippingAddress: {
             address1: '123 Update St',
             city: 'Update City',
             stateOrProvince: 'CA',
             zipCodeOrPostalCode: '90210',
-            country: 'US'
+            country: 'US',
           },
-          customFields: []
+          customFields: [],
         };
 
         const result = await adapter.captureOrder(orderRequest);
@@ -297,7 +297,7 @@ describe('MockAdapter', () => {
       it('should update order successfully', async () => {
         const updates = {
           status: 'processing',
-          notes: 'Order being processed'
+          notes: 'Order being processed',
         };
 
         const result = await adapter.updateOrder(orderId, updates);
@@ -326,33 +326,33 @@ describe('MockAdapter', () => {
             customerId: 'cust_retrieve',
             firstName: 'Retrieve',
             lastName: 'Test',
-            type: 'individual'
+            type: 'individual',
           },
           lineItems: [
             {
               lineItemId: 'line_retrieve',
               sku: 'RETRIEVE-001',
               quantity: 1,
-              unitPrice: 25.00,
-              totalPrice: 25.00,
-              customFields: []
-            }
+              unitPrice: 25.0,
+              totalPrice: 25.0,
+              customFields: [],
+            },
           ],
           billingAddress: {
             address1: '123 Retrieve St',
             city: 'Retrieve City',
             stateOrProvince: 'CA',
             zipCodeOrPostalCode: '90210',
-            country: 'US'
+            country: 'US',
           },
           shippingAddress: {
             address1: '123 Retrieve St',
             city: 'Retrieve City',
             stateOrProvince: 'CA',
             zipCodeOrPostalCode: '90210',
-            country: 'US'
+            country: 'US',
           },
-          customFields: []
+          customFields: [],
         };
 
         const captureResult = await adapter.captureOrder(orderRequest);
@@ -451,40 +451,40 @@ describe('MockAdapter', () => {
 
     beforeEach(async () => {
       await adapter.connect();
-      
+
       const orderRequest: types.OrderRequest = {
         extOrderId: 'EXT-MGMT',
         customer: {
           customerId: 'cust_mgmt',
           firstName: 'Management',
           lastName: 'Test',
-          type: 'individual'
+          type: 'individual',
         },
         lineItems: [
           {
             lineItemId: 'line_mgmt',
             sku: 'MGMT-001',
             quantity: 1,
-            unitPrice: 150.00,
-            totalPrice: 150.00,
-            customFields: []
-          }
+            unitPrice: 150.0,
+            totalPrice: 150.0,
+            customFields: [],
+          },
         ],
         billingAddress: {
           address1: '123 Management St',
           city: 'Management City',
           stateOrProvince: 'CA',
           zipCodeOrPostalCode: '90210',
-          country: 'US'
+          country: 'US',
         },
         shippingAddress: {
           address1: '123 Management St',
           city: 'Management City',
           stateOrProvince: 'CA',
           zipCodeOrPostalCode: '90210',
-          country: 'US'
+          country: 'US',
         },
-        customFields: []
+        customFields: [],
       };
 
       const result = await adapter.captureOrder(orderRequest);
@@ -495,7 +495,7 @@ describe('MockAdapter', () => {
       it('should place order on hold', async () => {
         const holdInfo: types.HoldParams = {
           reason: 'Payment verification',
-          releaseDate: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+          releaseDate: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
         };
 
         const result = await adapter.holdOrder(orderId, holdInfo);
@@ -510,10 +510,7 @@ describe('MockAdapter', () => {
 
     describe('splitOrder', () => {
       it('should split order successfully', async () => {
-        const splits: types.SplitParams[] = [
-          { reason: 'Partial availability' },
-          { reason: 'Different warehouse' }
-        ];
+        const splits: types.SplitParams[] = [{ reason: 'Partial availability' }, { reason: 'Different warehouse' }];
 
         const result = await adapter.splitOrder(orderId, splits);
 
@@ -530,13 +527,13 @@ describe('MockAdapter', () => {
           {
             sku: 'WID-001',
             quantity: 5,
-            locationId: 'WH001'
-          }
+            locationId: 'WH001',
+          },
         ];
 
         const reservation: types.ReservationRequest = {
           items,
-          expiresInMinutes: 30
+          expiresInMinutes: 30,
         };
         const result = await adapter.reserveInventory(reservation);
 
@@ -552,7 +549,7 @@ describe('MockAdapter', () => {
     it('should simulate connection errors when configured', async () => {
       const errorAdapter = new MockAdapter({
         fixedLatency: 0,
-        operationErrors: { connect: 1.0 } // 100% error rate for connect
+        operationErrors: { connect: 1.0 }, // 100% error rate for connect
       });
 
       await expect(errorAdapter.connect()).rejects.toThrow('Mock error: Connection failed');
@@ -561,7 +558,7 @@ describe('MockAdapter', () => {
     it('should simulate operation-specific errors', async () => {
       const errorAdapter = new MockAdapter({
         fixedLatency: 0,
-        operationErrors: { captureOrder: 1.0 } // 100% error rate for captureOrder
+        operationErrors: { captureOrder: 1.0 }, // 100% error rate for captureOrder
       });
 
       await errorAdapter.connect();
@@ -572,7 +569,7 @@ describe('MockAdapter', () => {
           customerId: 'cust_error',
           firstName: 'Error',
           lastName: 'Test',
-          type: 'individual'
+          type: 'individual',
         },
         lineItems: [],
         billingAddress: {
@@ -580,16 +577,16 @@ describe('MockAdapter', () => {
           city: 'Error City',
           stateOrProvince: 'CA',
           zipCodeOrPostalCode: '90210',
-          country: 'US'
+          country: 'US',
         },
         shippingAddress: {
           address1: '123 Error St',
           city: 'Error City',
           stateOrProvince: 'CA',
           zipCodeOrPostalCode: '90210',
-          country: 'US'
+          country: 'US',
         },
-        customFields: []
+        customFields: [],
       };
 
       await expect(errorAdapter.captureOrder(orderRequest)).rejects.toThrow('Mock error: Order capture failed');
@@ -600,7 +597,7 @@ describe('MockAdapter', () => {
     it('should respect latency configuration', async () => {
       const slowAdapter = new MockAdapter({
         fixedLatency: 100,
-        errorRate: 0
+        errorRate: 0,
       });
 
       await slowAdapter.connect();
@@ -617,13 +614,13 @@ describe('MockAdapter', () => {
         fixedLatency: 50,
         errorRate: 0.05,
         dataSize: 500,
-        operationErrors: { connect: 0 } // Ensure connect doesn't fail for this test
+        operationErrors: { connect: 0 }, // Ensure connect doesn't fail for this test
       });
 
       await configAdapter.connect();
       const health = await configAdapter.healthCheck();
 
-      const configCheck = health.checks.find(c => c.name === 'configuration');
+      const configCheck = health.checks.find((c) => c.name === 'configuration');
       expect(configCheck?.details).toHaveProperty('latency', 'fixed 50ms');
       expect(configCheck?.details).toHaveProperty('errorRate', '5%');
     });
