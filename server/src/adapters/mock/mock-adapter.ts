@@ -197,7 +197,7 @@ export class MockAdapter implements IFulfillmentAdapter {
     }
 
     const {
-      data: { orderId, reason, lineItems, notifyCustomer, refundAmount, notes },
+      data: { orderId, reason, lineItems, notifyCustomer, notes },
     } = parseResult;
 
     const order = this.mockData.getOrder(orderId);
@@ -213,7 +213,7 @@ export class MockAdapter implements IFulfillmentAdapter {
       });
     }
 
-    if (['shipped', 'delivered'].includes(order.status)) {
+    if (['shipped', 'delivered'].includes(order.status as any)) {
       throw new AdapterError(`Cannot cancel order ${orderId} in status ${order.status}`, 'INVALID_ORDER_STATE', {
         orderId,
         currentStatus: order.status,
@@ -223,8 +223,6 @@ export class MockAdapter implements IFulfillmentAdapter {
 
     // Update order status
     order.status = 'cancelled';
-    order.cancelledAt = DateUtils.now();
-    order.cancelReason = reason;
     order.updatedAt = DateUtils.now();
 
     Logger.info('Order cancelled', {
@@ -232,7 +230,6 @@ export class MockAdapter implements IFulfillmentAdapter {
       reason,
       lineItems,
       notifyCustomer,
-      refundAmount,
       notes,
     });
 
@@ -373,7 +370,6 @@ export class MockAdapter implements IFulfillmentAdapter {
 
     // Update order status
     order.status = 'shipped';
-    order.shippedAt = shippedAt;
     order.updatedAt = shippedAt;
 
     const fulfillment: Fulfillment = {
@@ -383,16 +379,12 @@ export class MockAdapter implements IFulfillmentAdapter {
       trackingNumber,
       shippingCarrier: shippingInfo.carrier,
       status: 'shipped',
-      expectedDeliveryDate: shippingInfo.estimatedDelivery ?? order.expectedDeliveryDate,
-      shipByDate: order.shipByDate,
+      expectedDeliveryDate: shippingInfo.estimatedDelivery,
       orderId: internalOrderId,
       createdAt: shippedAt,
       updatedAt: shippedAt,
       tenantId: baseTenantId,
-      lineItems:
-        items?.map((item) => ({
-          ...item,
-        })) ?? order.lineItems,
+      lineItems: order.lineItems.filter((orderLineItem) => items.some((item) => item.sku === orderLineItem.sku)),
     };
 
     Logger.info('Order shipped', { orderId, fulfillmentId, trackingNumber });
@@ -400,151 +392,6 @@ export class MockAdapter implements IFulfillmentAdapter {
     return {
       success: true,
       fulfillment,
-    };
-  }
-
-  // Management Operations
-  async holdOrder(orderId: string, holdParams: any): Promise<any> {
-    await this.simulateLatency();
-    this.ensureConnected();
-
-    if (this.shouldSimulateError('holdOrder')) {
-      throw new AdapterError('Mock error: Hold processing failed', 'OPERATION_FAILED');
-    }
-
-    const order = this.mockData.getOrder(orderId);
-    if (!order) {
-      throw new AdapterError(`Order not found: ${orderId}`, 'ORDER_NOT_FOUND', { orderId });
-    }
-
-    const holdId = IdGenerator.holdId();
-
-    order.status = 'on_hold';
-    order.holdId = holdId;
-    order.holdReason = holdParams.reason;
-    order.holdUntil = holdParams.releaseDate;
-    order.updatedAt = DateUtils.now();
-
-    Logger.info('Order placed on hold', { orderId, holdId, reason: holdParams.reason });
-
-    return {
-      success: true,
-      orderId,
-      holdId,
-      status: 'on_hold',
-      reason: holdParams.reason,
-    };
-  }
-
-  async splitOrder(orderId: string, splits: any[]): Promise<any> {
-    await this.simulateLatency();
-    this.ensureConnected();
-
-    if (this.shouldSimulateError('splitOrder')) {
-      throw new AdapterError('Mock error: Split processing failed', 'OPERATION_FAILED');
-    }
-
-    const order = this.mockData.getOrder(orderId);
-    if (!order) {
-      throw new AdapterError(`Order not found: ${orderId}`, 'ORDER_NOT_FOUND', { orderId });
-    }
-
-    const newOrderIds: string[] = [];
-
-    // Create new orders for each split
-    for (const split of splits) {
-      const newOrderId = IdGenerator.orderId();
-      // orderNumber not in schema - using orderId for identification
-
-      const newOrder: any = {
-        ...order,
-        orderId: newOrderId,
-        // orderNumber not in schema
-        extOrderId: `SPLIT-${order.extOrderId}-${newOrderIds.length + 1}`,
-        lineItems: split.items
-          ? split.items.map((item: any) => {
-              // Find the original line item to get details
-              const origItem = order.lineItems.find((li: any) => li.lineItemId === item.lineItemId);
-
-              return {
-                lineItemId: `LI-${IdGenerator.random(8)}`,
-                sku: origItem?.sku || 'UNKNOWN',
-                name: origItem?.name || 'Unknown Product',
-                ordered: item.quantity,
-                unitPrice: origItem?.unitPrice || 0,
-                totalPrice: (origItem?.unitPrice || 0) * item.quantity,
-              };
-            })
-          : order.lineItems, // If no items specified, use all items from original order
-        status: 'processing',
-        shippingAddress: order.shippingAddress,
-        billingAddress: order.billingAddress,
-        customer: order.customer,
-        // buyer not in schema - removed
-        // Using schema-compliant date fields
-        extOrderCreatedAt: new Date().toISOString(),
-        shipByDate: order.shipByDate,
-        expectedDeliveryDate: order.expectedDeliveryDate,
-        shipAfterDate: order.shipAfterDate,
-        shippingCarrier: order.shippingCarrier,
-        locationId: split.locationId || order.locationId,
-      };
-
-      this.mockData.addOrder(newOrder);
-      newOrderIds.push(newOrderId);
-
-      // Verify the order was added
-      const verifyOrder = this.mockData.getOrder(newOrderId);
-      if (!verifyOrder) {
-        Logger.error('Failed to add split order to mock data', { newOrderId });
-      } else {
-        Logger.info('Split order added successfully', { newOrderId, orderId: newOrder.orderId });
-      }
-    }
-
-    const splitCount = splits.length;
-
-    Logger.info('Order split', { orderId, newOrderIds, splitCount });
-
-    return {
-      success: true,
-      originalOrderId: orderId,
-      newOrderIds,
-      splitCount,
-    };
-  }
-
-  async reserveInventory(reservation: any): Promise<any> {
-    await this.simulateLatency();
-    this.ensureConnected();
-
-    if (this.shouldSimulateError('reserveInventory')) {
-      throw new AdapterError('Mock error: Inventory reservation failed', 'OPERATION_FAILED');
-    }
-
-    const { items, expiresInMinutes = 15 } = reservation;
-    const reservationId = IdGenerator.reservationId();
-    const expiresAt = DateUtils.addMinutes(expiresInMinutes);
-
-    const reservedItems = items.map((item: any) => {
-      const inventory = this.mockData.getInventory(item.sku, item.locationId);
-      const availableQty = inventory.available || inventory.onHand || 100; // Fallback to default
-      const availableQuantity = Math.max(0, availableQty - item.quantity);
-
-      return {
-        sku: item.sku,
-        reserved: Math.min(item.quantity, availableQty),
-        available: availableQuantity,
-      };
-    });
-
-    Logger.info('Inventory reserved', { reservationId, itemCount: items.length, expiresInMinutes });
-
-    return {
-      success: true,
-      reservationId,
-      items: reservedItems,
-      expiresAt: expiresAt.toISOString(),
     };
   }
 
@@ -975,11 +822,17 @@ export class MockAdapter implements IFulfillmentAdapter {
 
     return {
       ...customer,
+      id: customer.id ?? `CUST-${IdGenerator.random(6)}`,
       externalId: customer.externalId ?? `CUST-${IdGenerator.random(6)}`,
-      company: customer.company ?? 'Mock Customer Co',
       firstName: customer.firstName ?? 'Mock',
       lastName: customer.lastName ?? 'Customer',
       type: customer.type ?? 'individual',
+      createdAt: DateUtils.now(),
+      updatedAt: DateUtils.now(),
+      tenantId: (customer as Partial<Customer>).tenantId ?? 'mock-tenant',
+      addresses: customer.addresses ?? [],
+      customFields: customer.customFields ?? [],
+      tags: customer.tags ?? [],
     };
   }
 

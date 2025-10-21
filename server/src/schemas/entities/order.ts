@@ -1,14 +1,8 @@
 import { z } from 'zod';
 
-import {
-  AddressSchema,
-  orderCustomerSchema,
-  OrderLineItemSchema,
-  ObjectProps,
-  TagsSchema,
-  CustomFieldsSchema,
-} from '../common.js';
+import { AddressSchema, OrderLineItemSchema, ObjectProps, TagsSchema, CustomFieldsSchema } from '../common.js';
 import { makeZodFieldMap } from '../utils/schema-util.js';
+import { CustomerSchema } from './customer.js';
 
 /**
  * Order entity schema definition.
@@ -19,7 +13,7 @@ export const orderSchema = z
     billingAddress: AddressSchema.describe('Purchaser Address'),
     currency: z.string().describe('Order currency code'),
     customFields: CustomFieldsSchema,
-    customer: orderCustomerSchema.describe('Order customer information'),
+    customer: CustomerSchema.describe('Order customer information'),
     discounts: z.array(z.looseObject({})).describe('Discounts'),
     giftNote: z.string().describe('Order Gift note'),
     incoterms: z.string().describe('International Commercial Terms'),

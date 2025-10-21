@@ -10,8 +10,8 @@ import { JSONSchema } from '../../../src/types/mcp';
 // Mock ServiceOrchestrator
 const mockServiceOrchestrator = {
   validator: {
-    validate: vi.fn().mockImplementation((input) => Promise.resolve(input))
-  }
+    validate: vi.fn().mockImplementation((input) => Promise.resolve(input)),
+  },
 } as any;
 
 // Mock Tool for Testing
@@ -21,9 +21,9 @@ class MockTestTool extends BaseTool {
   inputSchema: JSONSchema = {
     type: 'object',
     properties: {
-      param1: { type: 'string' }
+      param1: { type: 'string' },
     },
-    required: ['param1']
+    required: ['param1'],
   };
 
   async execute(input: any): Promise<any> {
@@ -92,26 +92,24 @@ describe('ToolRegistry', () => {
     it('should execute tool successfully with valid input', async () => {
       const input = { param1: 'test' };
       const result = await registry.execute(mockTool.name, input);
-      
+
       expect(result).toEqual({ result: 'Processed: test' });
       // Validator is no longer used in refactored code
       // expect(mockServiceOrchestrator.validator.validate).toHaveBeenCalledTimes(2);
     });
 
     it('should throw error when tool not found', async () => {
-      await expect(registry.execute('nonexistent-tool', {}))
-        .rejects.toThrow('Tool not found: nonexistent-tool');
+      await expect(registry.execute('nonexistent-tool', {})).rejects.toThrow('Tool not found: nonexistent-tool');
     });
 
     it('should handle tool execution errors', async () => {
       const errorTool = new MockTestTool(mockServiceOrchestrator);
       errorTool.name = 'error-test-tool'; // Different name to avoid conflict
       errorTool.execute = vi.fn().mockRejectedValue(new Error('Execution failed'));
-      
+
       registry.register(errorTool);
-      
-      await expect(registry.execute(errorTool.name, { param1: 'test' }))
-        .rejects.toThrow('Execution failed');
+
+      await expect(registry.execute(errorTool.name, { param1: 'test' })).rejects.toThrow('Execution failed');
     });
   });
 
@@ -122,13 +120,13 @@ describe('ToolRegistry', () => {
 
     it('should return tool descriptions for all registered tools', () => {
       registry.register(mockTool);
-      
+
       const descriptions = registry.list();
       expect(descriptions).toHaveLength(1);
       expect(descriptions[0]).toEqual({
         name: mockTool.name,
         description: mockTool.description,
-        inputSchema: mockTool.inputSchema
+        inputSchema: mockTool.inputSchema,
       });
     });
   });
@@ -164,7 +162,7 @@ describe('ToolRegistry', () => {
       const tool2 = new MockOrderTool(mockServiceOrchestrator);
       registry.register(mockTool);
       registry.register(tool2);
-      
+
       expect(registry.getToolNames()).toEqual(['mock-test-tool', 'capture-order']);
     });
   });
@@ -178,22 +176,22 @@ describe('ToolRegistry', () => {
 
     it('should categorize tools correctly', () => {
       const categories = registry.getToolsByCategory();
-      
+
       // Check that we have categories
       expect(Object.keys(categories).length).toBeGreaterThan(0);
-      
+
       // get-order has 'order' in the name, so it goes to Fulfillment Management, not Query Operations
       // Both get-order and capture-order should be in Fulfillment Management
       expect(categories['Fulfillment Management']).toBeDefined();
       expect(categories['Fulfillment Management'].length).toBeGreaterThanOrEqual(2);
-      
-      const orderToolNames = categories['Fulfillment Management'].map(t => t.name);
+
+      const orderToolNames = categories['Fulfillment Management'].map((t) => t.name);
       expect(orderToolNames).toContain('capture-order');
       expect(orderToolNames).toContain('get-order');
-      
+
       // mock-test-tool should be in Other
       if (categories['Other']) {
-        const otherTools = categories['Other'].map(t => t.name);
+        const otherTools = categories['Other'].map((t) => t.name);
         expect(otherTools).toContain('mock-test-tool');
       }
     });
@@ -201,7 +199,7 @@ describe('ToolRegistry', () => {
     it('should remove empty categories', () => {
       const emptyRegistry = new ToolRegistry(mockServiceOrchestrator);
       const categories = emptyRegistry.getToolsByCategory();
-      
+
       expect(Object.keys(categories)).toHaveLength(0);
     });
   });
@@ -230,9 +228,9 @@ describe('ToolRegistry', () => {
 
     it('should clear existing tools and reload', async () => {
       expect(registry.has(mockTool.name)).toBe(true);
-      
+
       await registry.reload();
-      
+
       // After reload, manually registered tools should be gone
       // (unless they're discovered in the filesystem)
       // This test verifies the clearing functionality

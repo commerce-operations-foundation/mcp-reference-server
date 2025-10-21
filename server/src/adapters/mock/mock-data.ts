@@ -4,7 +4,7 @@
  */
 
 import { DateUtils } from '../../utils/index.js';
-import { Customer, Inventory, Product, ProductVariant } from '../../schemas/index.js';
+import { Customer, Inventory, Order, Product, ProductVariant } from '../../schemas/index.js';
 
 const tenantId = 'tenant_001';
 
@@ -358,16 +358,15 @@ export class MockData {
    * Generate sample orders
    */
   private generateSampleOrders(): void {
-    const sampleOrders = [
+    const sampleOrders: Order[] = [
       {
-        orderId: 'order_001',
-        // orderNumber not in schema - tool will map orderNumber to extOrderId/orderId
-        extOrderId: 'EXT-001',
+        id: 'order_001',
+        externalId: 'EXT-001',
         status: 'confirmed',
         customer: this.customers.get('cust_001'),
         lineItems: [
           {
-            lineItemId: 'line_001',
+            id: 'line_001',
             sku: 'WID-001',
             quantity: 1,
             unitPrice: 199.99,
@@ -382,6 +381,10 @@ export class MockData {
           stateOrProvince: 'NY',
           zipCodeOrPostalCode: '10001',
           country: 'US',
+          company: 'N/A',
+          email: 'john.smith@example.com',
+          firstName: 'John',
+          lastName: 'Smith',
         },
         shippingAddress: {
           address1: '123 Main St',
@@ -390,6 +393,10 @@ export class MockData {
           stateOrProvince: 'NY',
           zipCodeOrPostalCode: '10001',
           country: 'US',
+          company: 'N/A',
+          email: 'john.smith@example.com',
+          firstName: 'John',
+          lastName: 'Smith',
         },
         currency: 'USD',
         subTotalPrice: 199.99,
@@ -402,15 +409,16 @@ export class MockData {
           { name: 'priority', value: 'standard' },
           { name: 'source', value: 'website' },
         ],
+        tenantId,
       },
       {
-        orderId: 'order_002',
-        extOrderId: 'ORD-1001', // Common format users might expect
+        id: 'order_002',
+        externalId: 'ORD-1001', // Common format users might expect
         status: 'processing',
         customer: this.customers.get('cust_002'),
         lineItems: [
           {
-            lineItemId: 'line_002',
+            id: 'line_002',
             sku: 'TSH-002',
             quantity: 2,
             unitPrice: 29.99,
@@ -424,6 +432,10 @@ export class MockData {
           stateOrProvince: 'CA',
           zipCodeOrPostalCode: '90001',
           country: 'US',
+          company: 'N/A',
+          email: 'sarah.johnson@example.com',
+          firstName: 'Sarah',
+          lastName: 'Johnson',
         },
         shippingAddress: {
           address1: '456 Oak Ave',
@@ -431,6 +443,10 @@ export class MockData {
           stateOrProvince: 'CA',
           zipCodeOrPostalCode: '90001',
           country: 'US',
+          company: 'N/A',
+          email: 'sarah.johnson@example.com',
+          firstName: 'Sarah',
+          lastName: 'Johnson',
         },
         currency: 'USD',
         subTotalPrice: 59.98,
@@ -440,15 +456,16 @@ export class MockData {
         createdAt: DateUtils.format(DateUtils.addDays(-3)),
         updatedAt: DateUtils.format(DateUtils.addDays(-2)),
         customFields: [{ name: 'priority', value: 'express' }],
+        tenantId,
       },
       {
-        orderId: 'order_003',
-        extOrderId: 'WEB-2024-1002', // Different format example
+        id: 'order_003',
+        externalId: 'WEB-2024-1002', // Different format example
         status: 'shipped',
         customer: this.customers.get('cust_001'),
         lineItems: [
           {
-            lineItemId: 'line_003',
+            id: 'line_003',
             sku: 'COF-003',
             quantity: 3,
             unitPrice: 24.99,
@@ -463,6 +480,10 @@ export class MockData {
           stateOrProvince: 'NY',
           zipCodeOrPostalCode: '10001',
           country: 'US',
+          company: 'N/A',
+          email: 'john.smith@example.com',
+          firstName: 'John',
+          lastName: 'Smith',
         },
         shippingAddress: {
           address1: '789 Pine St',
@@ -470,12 +491,17 @@ export class MockData {
           stateOrProvince: 'IL',
           zipCodeOrPostalCode: '60601',
           country: 'US',
+          company: 'N/A',
+          email: 'john.smith@example.com',
+          firstName: 'John',
+          lastName: 'Smith',
         },
         currency: 'USD',
         subTotalPrice: 74.97,
         orderTax: 6.0,
         shippingPrice: 8.99,
         totalPrice: 89.96,
+        tenantId,
         createdAt: DateUtils.format(DateUtils.addDays(-7)),
         updatedAt: DateUtils.format(DateUtils.addDays(-1)),
         customFields: [{ name: 'gift', value: 'true' }],
@@ -483,9 +509,7 @@ export class MockData {
     ];
 
     sampleOrders.forEach((order) => {
-      this.orders.set(order.orderId, order);
-      // orderNumber not in schema
-      // this.ordersByNumber.set(order.orderNumber, order);
+      this.orders.set(order.id, order);
     });
   }
 
@@ -503,7 +527,7 @@ export class MockData {
   /**
    * Get order by ID
    */
-  getOrder(orderId: string): any | undefined {
+  getOrder(orderId: string): Order | undefined {
     return this.orders.get(orderId);
   }
 

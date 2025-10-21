@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 import { AddressSchema, ObjectProps, TagsSchema, OrderLineItemSchema, CustomFieldsSchema } from '../common.js';
-import { makeZodFieldMap } from '../utils/index.js';
+import { makeZodFieldMap } from '../utils/schema-util.js';
 
 /**
  * Fulfillment entity schema.

@@ -72,27 +72,6 @@ export class IdGenerator {
   }
 
   /**
-   * Generate a return ID
-   */
-  static returnId(): string {
-    return `ret_${this.random(10)}`;
-  }
-
-  /**
-   * Generate an exchange ID
-   */
-  static exchangeId(): string {
-    return `exch_${this.random(10)}`;
-  }
-
-  /**
-   * Generate a hold ID
-   */
-  static holdId(): string {
-    return `hold_${this.random(8)}`;
-  }
-
-  /**
    * Generate a sequential ID with prefix
    */
   static sequential(prefix: string): string {

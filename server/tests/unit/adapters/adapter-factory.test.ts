@@ -1,12 +1,24 @@
 /**
-import { vi, describe, it, expect, beforeEach, afterEach, beforeAll, afterAll } from 'vitest'; * Unit tests for AdapterFactory
+ * Unit tests for AdapterFactory
  */
-
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { AdapterFactory } from '../../../src/adapters/adapter-factory';
-import { IFulfillmentAdapter, AdapterConfig } from '../../../src/types/adapter';
-import { OrderIdentifier, ProductIdentifier, CustomerIdentifier, ShipmentIdentifier } from '../../../src/types/fulfillment';
+import {
+  IFulfillmentAdapter,
+  AdapterConfig,
+  OrderResult,
+  FulfillmentToolResult,
+} from '../../../src/types/adapter';
+import type {
+  Order,
+  Inventory,
+  Product,
+  ProductVariant,
+  Customer,
+  Fulfillment,
+} from '../../../src/schemas/index';
 
-// Mock adapter class for testing
+// Mock adapter class for testing - minimal implementation with proper types
 class MockFulfillmentAdapter implements IFulfillmentAdapter {
   constructor(_config: AdapterConfig) {}
 
@@ -22,94 +34,163 @@ class MockFulfillmentAdapter implements IFulfillmentAdapter {
     return {
       status: 'healthy' as const,
       timestamp: new Date().toISOString(),
-      checks: []
+      checks: [],
     };
   }
 
-  async captureOrder() {
-    return { success: true, orderId: 'test-order', status: 'confirmed', createdAt: new Date().toISOString() };
-  }
-
-  async cancelOrder() {
-    return { success: true, orderId: 'test-order', status: 'cancelled' as const, cancelledAt: new Date().toISOString(), refundInitiated: true };
-  }
-
-  async updateOrder() {
-    return { success: true, orderId: 'test-order', updatedFields: ['status'] };
-  }
-
-  async returnOrder() {
-    return { success: true, returnId: 'ret-123', rmaNumber: 'RMA-123', status: 'pending' as const, refundAmount: 100 };
-  }
-
-  async exchangeOrder() {
-    return { success: true, exchangeId: 'ex-123', originalOrderId: 'ord-1', newOrderId: 'ord-2', priceDifference: 0 };
-  }
-
-  async shipOrder() {
-    return { success: true, shipmentId: 'ship-123', shippedAt: new Date().toISOString() };
-  }
-
-  async holdOrder() {
-    return { success: true, orderId: 'test-order', holdId: 'hold-123', status: 'on_hold' as const, reason: 'test' };
-  }
-
-  async splitOrder() {
-    return { success: true, originalOrderId: 'ord-1', newOrderIds: ['ord-2', 'ord-3'], splitCount: 2 };
-  }
-
-  async reserveInventory() {
-    return { success: true, reservationId: 'res-123', items: [], expiresAt: new Date().toISOString() };
-  }
-
-  async getOrder(_identifier: OrderIdentifier) {
-    return { 
-      orderId: 'test-order', 
-      extOrderId: 'ext-123', 
-      status: 'confirmed', 
-      customer: undefined, 
-      lineItems: [], 
-      customFields: [] 
+  async createSalesOrder(): Promise<OrderResult> {
+    return {
+      success: true,
+      order: {
+        id: 'test-order',
+        externalId: 'ext-123',
+        lineItems: [],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        tenantId: 'test-tenant',
+      } as Order,
     };
   }
 
-  async getInventory() {
-    return { sku: 'test-sku', available: 100, allocated: 0, backordered: 0, customFields: [] };
-  }
-
-  async getProduct(_identifier: ProductIdentifier) {
-    return { productId: 'prod-123', sku: 'test-sku', name: 'Test Product', customFields: [] };
-  }
-
-  async getCustomer(_identifier: CustomerIdentifier) {
-    return { customerId: 'cust-123', firstName: 'John', lastName: 'Doe', type: 'individual' as const };
-  }
-
-  async getShipment(_identifier: ShipmentIdentifier) {
-    return { 
-      shipmentId: 'ship-123', 
-      orderId: 'ord-123', 
-      extOrderId: 'ext-123',
-      status: 'shipped', 
-      trackingNumber: '123456', 
-      shippingAddress: {
-        address1: '123 Test St',
-        city: 'Test City',
-        stateOrProvince: 'TS',
-        zipCodeOrPostalCode: '12345',
-        country: 'US'
-      },
-      customFields: [] 
+  async cancelOrder(): Promise<OrderResult> {
+    return {
+      success: true,
+      order: {
+        id: 'test-order',
+        externalId: 'ext-123',
+        lineItems: [],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        tenantId: 'test-tenant',
+      } as Order,
     };
   }
 
-  async getBuyer(_buyerId: string) {
-    return { 
-      buyerId: 'buyer-123', 
-      name: 'Test Buyer', 
-      email: 'test@example.com',
-      type: 'individual' as const,
-      roles: []
+  async updateOrder(): Promise<OrderResult> {
+    return {
+      success: true,
+      order: {
+        id: 'test-order',
+        externalId: 'ext-123',
+        lineItems: [],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        tenantId: 'test-tenant',
+      } as Order,
+    };
+  }
+
+  async fulfillOrder(): Promise<FulfillmentToolResult<{ fulfillment: Fulfillment }>> {
+    return {
+      success: true,
+      fulfillment: {
+        id: 'fulfillment-123',
+        externalId: 'ext-fulfillment-123',
+        orderId: 'test-order',
+        lineItems: [],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        tenantId: 'test-tenant',
+      } as Fulfillment,
+    };
+  }
+
+  async getOrders(): Promise<FulfillmentToolResult<{ orders: Order[] }>> {
+    return {
+      success: true,
+      orders: [
+        {
+          id: 'test-order',
+          externalId: 'ext-123',
+          lineItems: [],
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          tenantId: 'test-tenant',
+        } as Order,
+      ],
+    };
+  }
+
+  async getInventory(): Promise<FulfillmentToolResult<{ inventory: Inventory[] }>> {
+    return {
+      success: true,
+      inventory: [
+        {
+          id: 'inv-123',
+          externalId: 'ext-inv-123',
+          sku: 'test-sku',
+          locationId: 'loc-123',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          tenantId: 'test-tenant',
+        } as Inventory,
+      ],
+    };
+  }
+
+  async getProducts(): Promise<FulfillmentToolResult<{ products: Product[] }>> {
+    return {
+      success: true,
+      products: [
+        {
+          id: 'prod-123',
+          externalId: 'ext-prod-123',
+          name: 'Test Product',
+          options: [],
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          tenantId: 'test-tenant',
+        } as Product,
+      ],
+    };
+  }
+
+  async getProductVariants(): Promise<FulfillmentToolResult<{ productVariants: ProductVariant[] }>> {
+    return {
+      success: true,
+      productVariants: [
+        {
+          id: 'variant-123',
+          externalId: 'ext-variant-123',
+          productId: 'prod-123',
+          sku: 'test-sku',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          tenantId: 'test-tenant',
+        } as ProductVariant,
+      ],
+    };
+  }
+
+  async getCustomers(): Promise<FulfillmentToolResult<{ customers: Customer[] }>> {
+    return {
+      success: true,
+      customers: [
+        {
+          id: 'cust-123',
+          externalId: 'ext-cust-123',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          tenantId: 'test-tenant',
+        } as Customer,
+      ],
+    };
+  }
+
+  async getFulfillments(): Promise<FulfillmentToolResult<{ fulfillments: Fulfillment[] }>> {
+    return {
+      success: true,
+      fulfillments: [
+        {
+          id: 'fulfillment-123',
+          externalId: 'ext-fulfillment-123',
+          orderId: 'test-order',
+          lineItems: [],
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          tenantId: 'test-tenant',
+        } as Fulfillment,
+      ],
     };
   }
 }
@@ -146,7 +227,7 @@ describe('AdapterFactory', () => {
 
       const config: AdapterConfig = {
         type: 'built-in',
-        name: 'mock'
+        name: 'mock',
       };
 
       const adapter = await AdapterFactory.createAdapter(config);
@@ -158,7 +239,7 @@ describe('AdapterFactory', () => {
 
       const config: AdapterConfig = {
         type: 'built-in',
-        name: 'mock'
+        name: 'mock',
       };
 
       const adapter1 = await AdapterFactory.createAdapter(config);
@@ -173,13 +254,13 @@ describe('AdapterFactory', () => {
       const config1: AdapterConfig = {
         type: 'built-in',
         name: 'mock',
-        options: { setting: 'value1' }
+        options: { setting: 'value1' },
       };
 
       const config2: AdapterConfig = {
         type: 'built-in',
         name: 'mock',
-        options: { setting: 'value2' }
+        options: { setting: 'value2' },
       };
 
       const adapter1 = await AdapterFactory.createAdapter(config1);
@@ -191,20 +272,18 @@ describe('AdapterFactory', () => {
     it('should throw error for unknown built-in adapter', async () => {
       const config: AdapterConfig = {
         type: 'built-in',
-        name: 'unknown'
+        name: 'unknown',
       };
 
-      await expect(AdapterFactory.createAdapter(config))
-        .rejects.toThrow('Built-in adapter not found: unknown');
+      await expect(AdapterFactory.createAdapter(config)).rejects.toThrow('Built-in adapter not found: unknown');
     });
 
     it('should throw error for built-in adapter without name', async () => {
       const config: AdapterConfig = {
-        type: 'built-in'
+        type: 'built-in',
       };
 
-      await expect(AdapterFactory.createAdapter(config))
-        .rejects.toThrow('Built-in adapter requires name');
+      await expect(AdapterFactory.createAdapter(config)).rejects.toThrow('Built-in adapter requires name');
     });
   });
 
@@ -212,20 +291,20 @@ describe('AdapterFactory', () => {
     it('should throw error for missing NPM package', async () => {
       const config: AdapterConfig = {
         type: 'npm',
-        package: 'non-existent-package'
+        package: 'non-existent-package',
       };
 
-      await expect(AdapterFactory.createAdapter(config))
-        .rejects.toThrow('Failed to load NPM adapter: non-existent-package');
+      await expect(AdapterFactory.createAdapter(config)).rejects.toThrow(
+        'Failed to load NPM adapter: non-existent-package'
+      );
     });
 
     it('should throw error for NPM adapter without package name', async () => {
       const config: AdapterConfig = {
-        type: 'npm'
+        type: 'npm',
       };
 
-      await expect(AdapterFactory.createAdapter(config))
-        .rejects.toThrow('NPM adapter requires package name');
+      await expect(AdapterFactory.createAdapter(config)).rejects.toThrow('NPM adapter requires package name');
     });
   });
 
@@ -233,20 +312,18 @@ describe('AdapterFactory', () => {
     it('should throw error for missing local file', async () => {
       const config: AdapterConfig = {
         type: 'local',
-        path: './non-existent-file.js'
+        path: './non-existent-file.js',
       };
 
-      await expect(AdapterFactory.createAdapter(config))
-        .rejects.toThrow('Local adapter file not found');
+      await expect(AdapterFactory.createAdapter(config)).rejects.toThrow('Local adapter file not found');
     });
 
     it('should throw error for local adapter without path', async () => {
       const config: AdapterConfig = {
-        type: 'local'
+        type: 'local',
       };
 
-      await expect(AdapterFactory.createAdapter(config))
-        .rejects.toThrow('Local adapter requires path');
+      await expect(AdapterFactory.createAdapter(config)).rejects.toThrow('Local adapter requires path');
     });
   });
 
@@ -256,7 +333,7 @@ describe('AdapterFactory', () => {
 
       const config: AdapterConfig = {
         type: 'built-in',
-        name: 'mock'
+        name: 'mock',
       };
 
       // Should not throw
@@ -268,11 +345,10 @@ describe('AdapterFactory', () => {
 
       const config: AdapterConfig = {
         type: 'built-in',
-        name: 'incomplete'
+        name: 'incomplete',
       };
 
-      await expect(AdapterFactory.createAdapter(config))
-        .rejects.toThrow('Adapter missing required method');
+      await expect(AdapterFactory.createAdapter(config)).rejects.toThrow('Adapter missing required method');
     });
   });
 
@@ -282,7 +358,7 @@ describe('AdapterFactory', () => {
 
       const config: AdapterConfig = {
         type: 'built-in',
-        name: 'mock'
+        name: 'mock',
       };
 
       const adapter = await AdapterFactory.createAdapter(config);
@@ -294,7 +370,7 @@ describe('AdapterFactory', () => {
     it('should return undefined for non-existent instance', () => {
       const config: AdapterConfig = {
         type: 'built-in',
-        name: 'nonexistent'
+        name: 'nonexistent',
       };
 
       const retrieved = AdapterFactory.getInstance(config);
@@ -306,7 +382,7 @@ describe('AdapterFactory', () => {
 
       const config: AdapterConfig = {
         type: 'built-in',
-        name: 'mock'
+        name: 'mock',
       };
 
       const adapter = await AdapterFactory.createAdapter(config);
@@ -322,13 +398,13 @@ describe('AdapterFactory', () => {
       const config1: AdapterConfig = {
         type: 'built-in',
         name: 'mock',
-        options: { id: 1 }
+        options: { id: 1 },
       };
 
       const config2: AdapterConfig = {
         type: 'built-in',
         name: 'mock',
-        options: { id: 2 }
+        options: { id: 2 },
       };
 
       await AdapterFactory.createAdapter(config1);
@@ -348,7 +424,7 @@ describe('AdapterFactory', () => {
     it('should create mock adapter', async () => {
       const config: AdapterConfig = {
         type: 'built-in',
-        name: 'mock'
+        name: 'mock',
       };
 
       const mockAdapter = await AdapterFactory.createAdapter(config);
@@ -358,49 +434,51 @@ describe('AdapterFactory', () => {
     it('should have working connect/disconnect/healthCheck', async () => {
       const config: AdapterConfig = {
         type: 'built-in',
-        name: 'mock'
+        name: 'mock',
       };
 
       const mockAdapter = await AdapterFactory.createAdapter(config);
 
       await expect(mockAdapter.connect()).resolves.toBeUndefined();
       await expect(mockAdapter.disconnect()).resolves.toBeUndefined();
-      
+
       const health = await mockAdapter.healthCheck();
       expect(health.status).toBe('healthy');
       expect(health.checks).toBeDefined();
     });
 
-    it('should throw errors for unimplemented methods', async () => {
+    it('should have working order methods', async () => {
       const config: AdapterConfig = {
         type: 'built-in',
-        name: 'mock'
+        name: 'mock',
       };
 
       const mockAdapter = await AdapterFactory.createAdapter(config);
-      
-      // The mock adapter actually implements these methods, so we need to test differently
-      // Let's test that they work rather than throw
+
+      // Test that the adapter methods work correctly
       await mockAdapter.connect();
-      
-      const orderResult = await mockAdapter.captureOrder({
-        customer: { id: 'test', email: 'test@example.com' },
-        items: [{ sku: 'TEST', quantity: 1, price: 10 }]
+
+      const orderResult = await mockAdapter.createSalesOrder({
+        order: {
+          lineItems: [{ id: 'li-1', sku: 'TEST', quantity: 1 }],
+        },
       } as any);
-      
+
       expect(orderResult).toBeDefined();
-      expect(orderResult.orderId).toBeDefined();
+      expect(orderResult.success).toBe(true);
+      if (orderResult.success) {
+        expect(orderResult.order).toBeDefined();
+      }
     });
   });
 
   describe('Error Handling', () => {
     it('should throw error for unknown adapter type', async () => {
       const config = {
-        type: 'unknown'
+        type: 'unknown',
       } as any;
 
-      await expect(AdapterFactory.createAdapter(config))
-        .rejects.toThrow('Unknown adapter type: unknown');
+      await expect(AdapterFactory.createAdapter(config)).rejects.toThrow('Unknown adapter type: unknown');
     });
 
     it('should handle adapter creation errors gracefully', async () => {
@@ -414,11 +492,10 @@ describe('AdapterFactory', () => {
 
       const config: AdapterConfig = {
         type: 'built-in',
-        name: 'error'
+        name: 'error',
       };
 
-      await expect(AdapterFactory.createAdapter(config))
-        .rejects.toThrow('Constructor error');
+      await expect(AdapterFactory.createAdapter(config)).rejects.toThrow('Constructor error');
     });
   });
 
@@ -428,13 +505,13 @@ describe('AdapterFactory', () => {
 
       const config1: AdapterConfig = {
         type: 'built-in',
-        name: 'mock'
+        name: 'mock',
       };
 
       const config2: AdapterConfig = {
         type: 'built-in',
         name: 'mock',
-        options: { test: true }
+        options: { test: true },
       };
 
       const adapter1 = await AdapterFactory.createAdapter(config1);
@@ -449,13 +526,13 @@ describe('AdapterFactory', () => {
       const config1: AdapterConfig = {
         type: 'built-in',
         name: 'mock',
-        options: { a: 1, b: 2 }
+        options: { a: 1, b: 2 },
       };
 
       const config2: AdapterConfig = {
         type: 'built-in',
         name: 'mock',
-        options: { a: 1, b: 2 }
+        options: { a: 1, b: 2 },
       };
 
       const adapter1 = await AdapterFactory.createAdapter(config1);

@@ -50,16 +50,6 @@ export const CustomerAddressSchema = z.object({
 });
 export type CustomerAddress = z.infer<typeof CustomerAddressSchema>;
 
-export const orderCustomerSchema = z.object({
-  id: z.string().optional(),
-  externalId: externalIdSchema,
-  company: z.string(),
-  firstName: z.string(),
-  lastName: z.string(),
-  type: z.enum(['individual', 'company']).describe('Customer type'),
-});
-export type OrderCustomer = z.infer<typeof orderCustomerSchema>;
-
 export const OrderLineItemSchema = z
   .object({
     id: z.string().describe('Unique identifier for this line item within the order'),

@@ -31,7 +31,7 @@ export class OrderService
    */
   async createSalesOrder(params: CreateSalesOrderInput): Promise<OrderResult> {
     return this.errorHandler.executeOperation('captureOrder', async () => {
-      Logger.info('Capturing order', { extOrderId: params.order.extOrderId });
+      Logger.info('Capturing order', { externalId: params.order.externalId });
 
       const result = await TimeoutHandler.withTimeout(() => this.adapter.createSalesOrder(params), 'adapter');
 
