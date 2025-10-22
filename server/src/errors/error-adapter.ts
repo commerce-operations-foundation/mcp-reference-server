@@ -4,19 +4,14 @@
  */
 
 import { McpError, ErrorCode } from '@modelcontextprotocol/sdk/types.js';
-import { 
-  FulfillmentError,
-  ValidationError,
-  ConfigurationError,
-  ConnectionError
-} from '../utils/errors.js';
+import { FulfillmentError, ValidationError, ConfigurationError, ConnectionError } from '../utils/errors.js';
 import { AdapterError } from '../types/adapter.js';
 import {
   InvalidParamsError,
   FulfillmentAdapterError,
   FulfillmentValidationError,
   ToolNotFoundError,
-  MethodNotFoundError
+  MethodNotFoundError,
 } from './index.js';
 
 /**
@@ -46,7 +41,7 @@ export function isProtocolError(error: Error): boolean {
       return isProtocolErrorValue;
     }
   }
-  
+
   // Protocol errors are validation, unknown tool, or malformed request errors
   return (
     error instanceof ValidationError ||
@@ -54,13 +49,12 @@ export function isProtocolError(error: Error): boolean {
     error instanceof MethodNotFoundError ||
     error instanceof InvalidParamsError ||
     error.name === 'ValidationError' ||
-    (typeof error.message === 'string' && (
-      error.message.toLowerCase().includes('validation') ||
-      error.message.toLowerCase().includes('required') ||
-      error.message.toLowerCase().includes('invalid') ||
-      error.message.toLowerCase().includes('unknown tool') ||
-      error.message.toLowerCase().includes('method not found')
-    ))
+    (typeof error.message === 'string' &&
+      (error.message.toLowerCase().includes('validation') ||
+        error.message.toLowerCase().includes('required') ||
+        error.message.toLowerCase().includes('invalid') ||
+        error.message.toLowerCase().includes('unknown tool') ||
+        error.message.toLowerCase().includes('method not found')))
   );
 }
 
@@ -75,18 +69,17 @@ export function isRetryableError(error: Error): boolean {
       return retryableValue;
     }
   }
-  
+
   if (error instanceof FulfillmentError) {
     return error.retryable;
   }
-  
+
   return (
     error instanceof ConnectionError ||
-    (typeof error.message === 'string' && (
-      error.message.toLowerCase().includes('timeout') ||
-      error.message.toLowerCase().includes('unavailable') ||
-      error.message.toLowerCase().includes('rate limit')
-    ))
+    (typeof error.message === 'string' &&
+      (error.message.toLowerCase().includes('timeout') ||
+        error.message.toLowerCase().includes('unavailable') ||
+        error.message.toLowerCase().includes('rate limit')))
   );
 }
 
@@ -101,71 +94,47 @@ export function mapToMcpError(error: Error): McpError {
 
   // Handle ValidationError specifically
   if (error instanceof ValidationError) {
-    return new McpError(
-      ErrorCode.InvalidParams,
-      error.message,
-      {
-        field: error.field,
-        value: error.value,
-        retryable: false
-      }
-    );
+    return new McpError(ErrorCode.InvalidParams, error.message, {
+      field: error.field,
+      value: error.value,
+      retryable: false,
+    });
   }
 
   // Handle AdapterError
   if (error instanceof AdapterError) {
-    return new McpError(
-      ErrorCode.InternalError,
-      `Adapter Error: ${error.message}`,
-      {
-        code: error.code,
-        details: error.details,
-        retryable: true
-      }
-    );
+    return new McpError(ErrorCode.InternalError, `Adapter Error: ${error.message}`, {
+      code: error.code,
+      details: error.details,
+      retryable: true,
+    });
   }
 
   // Handle tool-specific errors
   if (error instanceof ToolNotFoundError) {
-    return new McpError(
-      ErrorCode.MethodNotFound,
-      error.message,
-      error.data
-    );
+    return new McpError(ErrorCode.MethodNotFound, error.message, error.data);
   }
 
   if (error instanceof MethodNotFoundError) {
-    return new McpError(
-      ErrorCode.MethodNotFound,
-      error.message,
-      error.data
-    );
+    return new McpError(ErrorCode.MethodNotFound, error.message, error.data);
   }
 
   // Handle configuration errors
   if (error instanceof ConfigurationError) {
-    return new McpError(
-      ErrorCode.InternalError,
-      error.message,
-      {
-        code: error.code,
-        details: error.details,
-        retryable: false
-      }
-    );
+    return new McpError(ErrorCode.InternalError, error.message, {
+      code: error.code,
+      details: error.details,
+      retryable: false,
+    });
   }
 
   // Handle connection errors (retryable)
   if (error instanceof ConnectionError) {
-    return new McpError(
-      ErrorCode.InternalError,
-      error.message,
-      {
-        code: error.code,
-        details: error.details,
-        retryable: true
-      }
-    );
+    return new McpError(ErrorCode.InternalError, error.message, {
+      code: error.code,
+      details: error.details,
+      retryable: true,
+    });
   }
 
   // Handle existing MCP errors
@@ -179,14 +148,10 @@ export function mapToMcpError(error: Error): McpError {
   }
 
   // Default case: treat as internal error
-  return new McpError(
-    ErrorCode.InternalError,
-    error.message || 'Unknown error occurred',
-    {
-      originalError: error.name,
-      retryable: isRetryableError(error)
-    }
-  );
+  return new McpError(ErrorCode.InternalError, error.message || 'Unknown error occurred', {
+    originalError: error.name,
+    retryable: isRetryableError(error),
+  });
 }
 
 /**
@@ -194,15 +159,15 @@ export function mapToMcpError(error: Error): McpError {
  */
 export function createErrorResponse(error: Error) {
   const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-  
+
   return {
     content: [
       {
         type: 'text' as const,
-        text: errorMessage
-      }
+        text: errorMessage,
+      },
     ],
-    isError: true
+    isError: true,
   };
 }
 
@@ -214,15 +179,15 @@ export function createSuccessResponse(result: any) {
   if (result && typeof result === 'object' && 'content' in result && Array.isArray(result.content)) {
     return result;
   }
-  
+
   // Auto-wrap the result in MCP content format
   return {
     content: [
       {
         type: 'text' as const,
-        text: typeof result === 'string' ? result : JSON.stringify(result, null, 2)
-      }
-    ]
+        text: typeof result === 'string' ? result : JSON.stringify(result, null, 2),
+      },
+    ],
   };
 }
 
@@ -238,13 +203,13 @@ export class ErrorAdapter {
       // Protocol errors should be thrown to let MCP SDK handle them
       return {
         shouldThrow: true,
-        mcpError: mapToMcpError(error)
+        mcpError: mapToMcpError(error),
       };
     } else {
       // Tool execution errors should be returned as error responses
       return {
         shouldThrow: false,
-        toolResponse: createErrorResponse(error)
+        toolResponse: createErrorResponse(error),
       };
     }
   }
@@ -254,15 +219,15 @@ export class ErrorAdapter {
    */
   static toMcpFormat(error: Error) {
     const processed = this.processError(error);
-    
+
     if (processed.shouldThrow && processed.mcpError) {
       return processed.mcpError;
     }
-    
+
     if (processed.toolResponse) {
       return processed.toolResponse;
     }
-    
+
     // Fallback
     return createErrorResponse(error);
   }

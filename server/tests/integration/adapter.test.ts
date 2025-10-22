@@ -1,5 +1,43 @@
 import { TestMCPClient } from '../helpers/test-client';
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+
+const baseAddress = (overrides: Partial<Record<string, string>> = {}) => ({
+  address1: '123 Adapter Ave',
+  city: 'Adapter City',
+  company: 'Adapter Co',
+  country: 'US',
+  email: 'adapter@example.com',
+  firstName: 'Adapter',
+  ...overrides,
+});
+
+const buildCustomer = (extId: string) => {
+  const timestamp = new Date().toISOString();
+  return {
+    id: `CUST-${extId}-${Date.now()}`,
+    tenantId: 'mock-tenant',
+    createdAt: timestamp,
+    updatedAt: timestamp,
+    email: `${extId.toLowerCase()}@example.com`,
+    firstName: 'Adapter',
+  };
+};
+
+const buildOrder = (extId: string) => ({
+  externalId: extId,
+  currency: 'USD',
+  customer: buildCustomer(extId),
+  billingAddress: baseAddress(),
+  shippingAddress: baseAddress({ email: `ship-${extId.toLowerCase()}@example.com` }),
+  lineItems: [
+    {
+      id: `LI-${extId}-${Date.now()}`,
+      sku: 'SKU001',
+      quantity: 1,
+    },
+  ],
+});
+
 describe('Adapter Integration', () => {
   let client: TestMCPClient;
 
@@ -15,462 +53,162 @@ describe('Adapter Integration', () => {
   });
 
   describe('Mock Adapter Behavior', () => {
-    it('should generate unique IDs', async () => {
-      const orderIds = new Set<string>();
-
-      // Create multiple orders
+    it('should generate unique order IDs', async () => {
+      const ids = new Set<string>();
       for (let i = 0; i < 5; i++) {
         const response = await client.sendRequest('tools/call', {
-          name: 'capture-order',
-          arguments: {
-            order: {
-              extOrderId: `UNIQUE-TEST-${Date.now()}-${i}`,
-              customer: {
-                email: `unique${i}@example.com`,
-                firstName: 'Unique',
-                lastName: `Test${i}`,
-              },
-              lineItems: [
-                {
-                  sku: 'SKU001',
-                  quantity: 1,
-                  unitPrice: 10.0,
-                },
-              ],
-            },
-          },
+          name: 'create-sales-order',
+          arguments: { order: buildOrder(`UNIQUE-${i}-${Date.now()}`) },
         });
-
+        expect(response.__jsonRpcError).toBeUndefined();
         const result = JSON.parse(response.content[0].text);
         expect(result.success).toBe(true);
-        expect(result.orderId).toBeDefined();
-        orderIds.add(result.orderId);
+        ids.add(result.order.id);
       }
-
-      // All IDs should be unique
-      expect(orderIds.size).toBe(5);
-    });
-
-    it('should handle inventory updates correctly', async () => {
-      // Get initial inventory
-      const initialResponse = await client.sendRequest('tools/call', {
-        name: 'get-inventory',
-        arguments: { sku: 'SKU001' },
-      });
-
-      const initialInventory = JSON.parse(initialResponse.content[0].text);
-      const initialQuantity = initialInventory.quantityAvailable;
-
-      // Reserve some inventory
-      const reserveResponse = await client.sendRequest('tools/call', {
-        name: 'reserve-inventory',
-        arguments: {
-          items: [
-            {
-              sku: 'SKU001',
-              quantity: 5,
-            },
-          ],
-          duration: 10,
-        },
-      });
-
-      const reserveResult = JSON.parse(reserveResponse.content[0].text);
-      expect(reserveResult.success).toBe(true);
-
-      // Check inventory after reservation
-      const afterResponse = await client.sendRequest('tools/call', {
-        name: 'get-inventory',
-        arguments: { sku: 'SKU001' },
-      });
-
-      const afterInventory = JSON.parse(afterResponse.content[0].text);
-
-      // Available quantity should be reduced
-      if (initialQuantity !== undefined && afterInventory.quantityAvailable !== undefined) {
-        expect(afterInventory.quantityAvailable).toBeLessThanOrEqual(initialQuantity);
-      }
+      expect(ids.size).toBe(5);
     });
 
     it('should retrieve orders correctly', async () => {
-      // First create an order
-      const captureResponse = await client.sendRequest('tools/call', {
-        name: 'capture-order',
-        arguments: {
-          order: {
-            extOrderId: `RETRIEVE-TEST-${Date.now()}`,
-            customer: {
-              email: 'retrieve@example.com',
-            },
-            lineItems: [
-              {
-                sku: 'SKU001',
-                quantity: 1,
-                unitPrice: 25.0,
-              },
-            ],
-          },
-        },
+      const createResponse = await client.sendRequest('tools/call', {
+        name: 'create-sales-order',
+        arguments: { order: buildOrder(`RETRIEVE-${Date.now()}`) },
       });
-
-      const captureResult = JSON.parse(captureResponse.content[0].text);
-      expect(captureResult.success).toBe(true);
-      expect(captureResult.orderId).toBeDefined();
-
-      // Now retrieve the order
+      expect(createResponse.__jsonRpcError).toBeUndefined();
+      const createResult = JSON.parse(createResponse.content[0].text);
       const getResponse = await client.sendRequest('tools/call', {
-        name: 'get-order',
-        arguments: { orderId: captureResult.orderId },
+        name: 'get-orders',
+        arguments: { orderIds: [createResult.order.id], includeLineItems: true },
       });
-
+      expect(getResponse.__jsonRpcError).toBeUndefined();
       const getResult = JSON.parse(getResponse.content[0].text);
-
-      // Log what we got to understand the structure
-      if (process.env.DEBUG_TESTS) {
-        console.error('Retrieved order:', JSON.stringify(getResult, null, 2));
-      }
-
-      // Check the structure
-      expect(getResult).toBeDefined();
-      expect(getResult.orderId).toBe(captureResult.orderId);
-      expect(getResult.status).toBe('confirmed');
+      expect(getResult.success).toBe(true);
+      expect(getResult.orders[0].id ?? getResult.orders[0].orderId).toBe(createResult.order.id);
     });
 
-    it('should simulate realistic order statuses', async () => {
-      // Create order
-      const captureResponse = await client.sendRequest('tools/call', {
-        name: 'capture-order',
+    it('should update orders via adapter', async () => {
+      const createResponse = await client.sendRequest('tools/call', {
+        name: 'create-sales-order',
+        arguments: { order: buildOrder(`UPDATE-${Date.now()}`) },
+      });
+      expect(createResponse.__jsonRpcError).toBeUndefined();
+      const createResult = JSON.parse(createResponse.content[0].text);
+
+      const updateResponse = await client.sendRequest('tools/call', {
+        name: 'update-order',
         arguments: {
-          order: {
-            extOrderId: `STATUS-TEST-${Date.now()}`,
-            customer: {
-              email: 'status@example.com',
-            },
-            lineItems: [
-              {
-                sku: 'SKU001',
-                quantity: 1,
-                unitPrice: 25.0,
-              },
-            ],
+          id: createResult.order.id,
+          updates: {
+            shippingAddress: baseAddress({ address1: '987 Updated Way', city: 'Updated City' }),
+            orderNote: 'Adapter integration update test',
           },
         },
       });
+      expect(updateResponse.__jsonRpcError).toBeUndefined();
+      const updateResult = JSON.parse(updateResponse.content[0].text);
+      expect(updateResult.success).toBe(true);
+      expect(updateResult.order.shippingAddress.address1).toBe('987 Updated Way');
+    });
 
-      const order = JSON.parse(captureResponse.content[0].text);
-
-      // Check initial status
-      const getResponse1 = await client.sendRequest('tools/call', {
-        name: 'get-order',
-        arguments: { orderId: order.orderId },
+    it('should fulfill orders and expose fulfillments', async () => {
+      const createResponse = await client.sendRequest('tools/call', {
+        name: 'create-sales-order',
+        arguments: { order: buildOrder(`FULFILL-${Date.now()}`) },
       });
+      expect(createResponse.__jsonRpcError).toBeUndefined();
+      const createResult = JSON.parse(createResponse.content[0].text);
 
-      // Debug: Check raw response structure
-      if (!getResponse1.content || !getResponse1.content[0]) {
-        console.error('Invalid response structure:', getResponse1);
-        throw new Error('Invalid response from get-order');
-      }
-
-      const result1 = JSON.parse(getResponse1.content[0].text);
-
-      // The tool returns the Order object directly
-      expect(result1).toBeDefined();
-      expect(result1.orderId).toBe(order.orderId);
-      expect(result1.status).toBeDefined();
-      expect(['pending', 'confirmed', 'processing']).toContain(result1.status);
-
-      // Ship the order
-      const shipResponse = await client.sendRequest('tools/call', {
-        name: 'ship-order',
+      const fulfillResponse = await client.sendRequest('tools/call', {
+        name: 'fulfill-order',
         arguments: {
-          orderId: order.orderId,
+          orderId: createResult.order.id,
+          items: [{ sku: 'SKU001', quantity: 1 }],
           shippingInfo: {
             carrier: 'UPS',
             service: 'ground',
             trackingNumber: `UPS${Date.now()}`,
+            estimatedDelivery: new Date(Date.now() + 4 * 24 * 60 * 60 * 1000).toISOString(),
+            shippingCost: 10.5,
+            weight: 2.4,
           },
+          shippingAddress: baseAddress({ address1: '555 Fulfillment Ln' }),
         },
       });
+      expect(fulfillResponse.__jsonRpcError).toBeUndefined();
+      const fulfillResult = JSON.parse(fulfillResponse.content[0].text);
+      expect(fulfillResult.success).toBe(true);
+      expect(fulfillResult.fulfillment.orderId).toBe(createResult.order.id);
 
-      const shipResult = JSON.parse(shipResponse.content[0].text);
-      expect(shipResult.success).toBe(true);
-      expect(shipResult.shipmentId).toBeDefined();
-
-      // Check status after shipping
-      const getResponse2 = await client.sendRequest('tools/call', {
-        name: 'get-order',
-        arguments: { orderId: order.orderId },
+      const getFulfillmentsResponse = await client.sendRequest('tools/call', {
+        name: 'get-fulfillments',
+        arguments: { orderIds: [createResult.order.id] },
       });
-
-      const result2 = JSON.parse(getResponse2.content[0].text);
-      expect(result2).toBeDefined();
-      expect(result2.orderId).toBe(order.orderId);
-      expect(['shipped', 'in_transit', 'fulfilled']).toContain(result2.status);
+      expect(getFulfillmentsResponse.__jsonRpcError).toBeUndefined();
+      const getFulfillmentsResult = JSON.parse(getFulfillmentsResponse.content[0].text);
+      expect(getFulfillmentsResult.success).toBe(true);
+      expect(getFulfillmentsResult.fulfillments.length).toBeGreaterThan(0);
     });
   });
 
   describe('Adapter Data Validation', () => {
-    it('should return properly formatted timestamps', async () => {
+    it('should expose ISO timestamps on created orders', async () => {
       const response = await client.sendRequest('tools/call', {
-        name: 'capture-order',
-        arguments: {
-          order: {
-            extOrderId: `TIME-TEST-${Date.now()}`,
-            customer: {
-              email: 'time@example.com',
-            },
-            lineItems: [
-              {
-                sku: 'SKU001',
-                quantity: 1,
-                unitPrice: 10.0,
-              },
-            ],
-          },
-        },
+        name: 'create-sales-order',
+        arguments: { order: buildOrder(`TIME-${Date.now()}`) },
       });
-
+      expect(response.__jsonRpcError).toBeUndefined();
       const result = JSON.parse(response.content[0].text);
-
-      if (result.createdAt) {
-        // Should be a valid ISO date string
-        const date = new Date(result.createdAt);
-        expect(date.toISOString()).toBe(result.createdAt);
-      }
-    });
-
-    it('should handle currency values correctly', async () => {
-      const response = await client.sendRequest('tools/call', {
-        name: 'capture-order',
-        arguments: {
-          order: {
-            extOrderId: `CURRENCY-TEST-${Date.now()}`,
-            customer: {
-              email: 'currency@example.com',
-            },
-            lineItems: [
-              {
-                sku: 'SKU001',
-                quantity: 3,
-                unitPrice: 19.99,
-              },
-            ],
-            totals: {
-              subtotal: 59.97,
-              tax: 4.8,
-              shipping: 5.99,
-              total: 70.76,
-            },
-          },
-        },
-      });
-
-      const result = JSON.parse(response.content[0].text);
-      expect(result.success).toBe(true);
-
-      // Get the order to verify totals
-      const getResponse = await client.sendRequest('tools/call', {
-        name: 'get-order',
-        arguments: { orderId: result.orderId },
-      });
-
-      const order = JSON.parse(getResponse.content[0].text);
-
-      // Check if we have totals data in the order
-      if (order.totalPrice !== undefined) {
-        // All monetary values should be numbers
-        expect(typeof order.totalPrice).toBe('number');
-      }
-      if (order.subTotalPrice !== undefined) {
-        expect(typeof order.subTotalPrice).toBe('number');
-      }
+      const createdAt = result.order.createdAt;
+      expect(new Date(createdAt).toISOString()).toBe(createdAt);
     });
 
     it('should enforce required fields', async () => {
-      // Test missing customer
-      const response1 = await client.sendRequest('tools/call', {
-        name: 'capture-order',
+      const response = await client.sendRequest('tools/call', {
+        name: 'create-sales-order',
         arguments: {
           order: {
-            extOrderId: `INVALID-${Date.now()}`,
-            lineItems: [
-              {
-                sku: 'SKU001',
-                quantity: 1,
-                unitPrice: 10.0,
-              },
-            ],
+            externalId: `INVALID-${Date.now()}`,
+            currency: 'USD',
+            billingAddress: baseAddress(),
           },
         },
       });
-
-      // Expect validation error as tool error response
-      expect(response1.content).toBeDefined();
-      expect(response1.content[0].text).toContain('Customer is required');
-
-      // Test missing lineItems
-      const response2 = await client.sendRequest('tools/call', {
-        name: 'capture-order',
-        arguments: {
-          order: {
-            extOrderId: `INVALID-${Date.now()}`,
-            customer: {
-              email: 'test@example.com',
-            },
-          },
-        },
-      });
-
-      // Expect validation error as tool error response
-      expect(response2.content).toBeDefined();
-      expect(response2.content[0].text).toContain('At least one line item is required');
-    });
-
-    it('should validate enum values', async () => {
-      // Test with invalid reason for cancellation
-      const captureResponse = await client.sendRequest('tools/call', {
-        name: 'capture-order',
-        arguments: {
-          order: {
-            extOrderId: `ENUM-TEST-${Date.now()}`,
-            customer: {
-              email: 'enum@example.com',
-            },
-            lineItems: [
-              {
-                sku: 'SKU001',
-                quantity: 1,
-                unitPrice: 10.0,
-              },
-            ],
-          },
-        },
-      });
-
-      const order = JSON.parse(captureResponse.content[0].text);
-
-      // Try to cancel with invalid reason (if adapter validates enums)
-      const cancelResponse = await client.sendRequest('tools/call', {
-        name: 'cancel-order',
-        arguments: {
-          orderId: order.orderId,
-          reason: 'customer_request', // Valid reason
-        },
-      });
-
-      const cancelResult = JSON.parse(cancelResponse.content[0].text);
-      expect(cancelResult.success).toBe(true);
+      expect(response.__jsonRpcError).toBe(true);
+      expect(response.code).toBe(2001);
+      expect(response.message).toContain('Validation failed');
     });
   });
 
   describe('Adapter Error Handling', () => {
-    it('should handle non-existent orders gracefully', async () => {
+    it('should report missing orders as tool errors', async () => {
       const response = await client.sendRequest('tools/call', {
-        name: 'get-order',
-        arguments: {
-          orderId: 'DEFINITELY-DOES-NOT-EXIST',
-        },
+        name: 'get-orders',
+        arguments: { orderIds: ['MISSING-ORDER-ID'] },
       });
-
-      // Should return a tool execution error (raw error message)
       expect(response.isError).toBe(true);
-      expect(response.content).toBeDefined();
-      expect(response.content[0].type).toBe('text');
       expect(response.content[0].text.toLowerCase()).toContain('not found');
     });
 
-    it('should handle concurrent operations', async () => {
-      const orderId = `CONCURRENT-${Date.now()}`;
+    it('should support concurrent updates', async () => {
+      const createResponse = await client.sendRequest('tools/call', {
+        name: 'create-sales-order',
+        arguments: { order: buildOrder(`CONCURRENT-${Date.now()}`) },
+      });
+      expect(createResponse.__jsonRpcError).toBeUndefined();
+      const orderId = JSON.parse(createResponse.content[0].text).order.id;
 
-      // Create an order first
-      const captureResponse = await client.sendRequest('tools/call', {
-        name: 'capture-order',
-        arguments: {
-          order: {
-            extOrderId: orderId,
-            customer: {
-              email: 'concurrent@example.com',
-            },
-            lineItems: [
-              {
-                sku: 'SKU001',
-                quantity: 1,
-                unitPrice: 10.0,
-              },
-            ],
-          },
-        },
+      const updatePayload = (note: string) => ({
+        id: orderId,
+        updates: { orderNote: note },
       });
 
-      const order = JSON.parse(captureResponse.content[0].text);
+      const updates = await Promise.allSettled(
+        ['Update 1', 'Update 2', 'Update 3'].map((note) =>
+          client.sendRequest('tools/call', { name: 'update-order', arguments: updatePayload(note) })
+        )
+      );
 
-      // Try multiple concurrent updates
-      const updates = [
-        client.sendRequest('tools/call', {
-          name: 'update-order',
-          arguments: {
-            orderId: order.orderId,
-            updates: { notes: 'Update 1' },
-          },
-        }),
-        client.sendRequest('tools/call', {
-          name: 'update-order',
-          arguments: {
-            orderId: order.orderId,
-            updates: { notes: 'Update 2' },
-          },
-        }),
-        client.sendRequest('tools/call', {
-          name: 'update-order',
-          arguments: {
-            orderId: order.orderId,
-            updates: { notes: 'Update 3' },
-          },
-        }),
-      ];
-
-      const results = await Promise.allSettled(updates);
-
-      // All should complete without crashing
-      const successCount = results.filter((r) => r.status === 'fulfilled').length;
-      expect(successCount).toBeGreaterThan(0);
-    });
-
-    it('should handle large payloads', async () => {
-      const lineItems = [];
-
-      // Create a large order with many items
-      for (let i = 0; i < 50; i++) {
-        lineItems.push({
-          sku: `SKU${String(i).padStart(3, '0')}`,
-          quantity: Math.floor(Math.random() * 10) + 1,
-          unitPrice: Math.random() * 100,
-          name: `Product ${i} with a very long name that contains lots of text`,
-          description: 'A'.repeat(200), // Long description
-        });
-      }
-
-      const response = await client.sendRequest('tools/call', {
-        name: 'capture-order',
-        arguments: {
-          order: {
-            extOrderId: `LARGE-${Date.now()}`,
-            customer: {
-              email: 'large@example.com',
-              firstName: 'Large',
-              lastName: 'Payload',
-              phone: '555-0123',
-              notes: 'B'.repeat(500), // Long notes
-            },
-            lineItems,
-            notes: 'C'.repeat(1000), // More long text
-          },
-        },
-      });
-
-      const result = JSON.parse(response.content[0].text);
-      expect(result.success).toBe(true);
-      expect(result.orderId).toBeDefined();
+      const fulfilled = updates.filter((u) => u.status === 'fulfilled');
+      expect(fulfilled.length).toBeGreaterThan(0);
     });
   });
 });

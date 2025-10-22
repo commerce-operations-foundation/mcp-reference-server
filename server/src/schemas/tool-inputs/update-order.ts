@@ -14,9 +14,6 @@ const immutableOrderFields = [
 ] as const satisfies (keyof Order)[];
 const immutableLineItemFields = ['id'] as const satisfies (keyof OrderLineItem)[];
 const updateLineItemSchema = OrderLineItemSchema.omit(makeZodFieldMap(immutableLineItemFields))
-  .extend({
-    lineItemId: z.string().optional(),
-  })
   .partial()
   .required({ sku: true, quantity: true, unitPrice: true });
 

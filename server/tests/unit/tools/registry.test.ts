@@ -6,6 +6,7 @@ import { vi, describe, it, expect, beforeEach, afterEach, beforeAll, afterAll } 
 import { ToolRegistry } from '../../../src/tools/registry';
 import { BaseTool } from '../../../src/tools/base-tool';
 import { JSONSchema } from '../../../src/types/mcp';
+import { vi, describe, it, expect, beforeEach } from 'vitest';
 
 // Mock ServiceOrchestrator
 const mockServiceOrchestrator = {

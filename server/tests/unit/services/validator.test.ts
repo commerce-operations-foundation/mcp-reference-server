@@ -2,7 +2,7 @@
  * Unit tests for Validator service
  */
 
-import { vi, describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { Validator } from '../../../src/services/validator';
 import { ValidationError } from '../../../src/utils/errors';
 
@@ -20,15 +20,15 @@ describe('Validator', () => {
         properties: {
           name: { type: 'string' },
           age: { type: 'number' },
-          email: { type: 'string', format: 'email' }
+          email: { type: 'string', format: 'email' },
         },
-        required: ['name']
+        required: ['name'],
       };
 
       const validData = {
         name: 'John Doe',
         age: 30,
-        email: 'john@example.com'
+        email: 'john@example.com',
       };
 
       const result = await validator.validate(validData, schema);
@@ -40,17 +40,16 @@ describe('Validator', () => {
         type: 'object',
         properties: {
           name: { type: 'string' },
-          age: { type: 'number' }
+          age: { type: 'number' },
         },
-        required: ['name']
+        required: ['name'],
       };
 
       const invalidData = {
-        age: 30 // missing required 'name'
+        age: 30, // missing required 'name'
       };
 
-      await expect(validator.validate(invalidData, schema))
-        .rejects.toThrow(ValidationError);
+      await expect(validator.validate(invalidData, schema)).rejects.toThrow(ValidationError);
     });
 
     it('should validate partial data correctly', async () => {
@@ -58,13 +57,13 @@ describe('Validator', () => {
         type: 'object',
         properties: {
           name: { type: 'string' },
-          age: { type: 'number' }
+          age: { type: 'number' },
         },
-        required: ['name']
+        required: ['name'],
       };
 
       const partialData = {
-        age: 25 // missing required 'name' but should pass partial validation
+        age: 25, // missing required 'name' but should pass partial validation
       };
 
       const result = await validator.validatePartial(partialData, schema);
@@ -73,13 +72,12 @@ describe('Validator', () => {
 
     it('should throw error for invalid schema', async () => {
       const invalidSchema = {
-        type: 'invalid'
+        type: 'invalid',
       } as any;
 
       const data = { test: 'value' };
 
-      await expect(validator.validate(data, invalidSchema))
-        .rejects.toThrow('Invalid schema:');
+      await expect(validator.validate(data, invalidSchema)).rejects.toThrow('Invalid schema:');
     });
   });
 
@@ -88,8 +86,8 @@ describe('Validator', () => {
       const phoneSchema = {
         type: 'object',
         properties: {
-          phone: { type: 'string', format: 'phone' }
-        }
+          phone: { type: 'string', format: 'phone' },
+        },
       };
 
       const validPhone = { phone: '+1-234-567-8900' };
@@ -103,8 +101,8 @@ describe('Validator', () => {
       const currencySchema = {
         type: 'object',
         properties: {
-          currency: { type: 'string', format: 'currency' }
-        }
+          currency: { type: 'string', format: 'currency' },
+        },
       };
 
       const validCurrency = { currency: 'USD' };
@@ -118,8 +116,8 @@ describe('Validator', () => {
       const skuSchema = {
         type: 'object',
         properties: {
-          sku: { type: 'string', format: 'sku' }
-        }
+          sku: { type: 'string', format: 'sku' },
+        },
       };
 
       const validSku = { sku: 'ABC-123' };
@@ -135,9 +133,9 @@ describe('Validator', () => {
       const schema = {
         type: 'object',
         properties: {
-          name: { type: 'string' }
+          name: { type: 'string' },
         },
-        required: ['name']
+        required: ['name'],
       };
 
       try {
@@ -150,8 +148,7 @@ describe('Validator', () => {
 
     it('should handle invalid schema types', async () => {
       // Test with non-object, non-boolean schema
-      await expect(validator.validate({}, 'invalid-schema' as any))
-        .rejects.toThrow('Invalid schema:');
+      await expect(validator.validate({}, 'invalid-schema' as any)).rejects.toThrow('Invalid schema:');
     });
   });
 
@@ -162,9 +159,9 @@ describe('Validator', () => {
         properties: {
           name: { type: 'string' },
           age: { type: 'number' },
-          email: { type: 'string', format: 'email' }
+          email: { type: 'string', format: 'email' },
         },
-        required: ['name', 'age', 'email']
+        required: ['name', 'age', 'email'],
       };
 
       // Should pass even with missing required fields
@@ -174,8 +171,7 @@ describe('Validator', () => {
 
       // Should still validate types
       const invalidPartialData = { age: 'not-a-number' };
-      await expect(validator.validatePartial(invalidPartialData, schema))
-        .rejects.toThrow(ValidationError);
+      await expect(validator.validatePartial(invalidPartialData, schema)).rejects.toThrow(ValidationError);
     });
   });
 });

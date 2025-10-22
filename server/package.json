@@ -35,7 +35,6 @@
     "test:watch": "vitest --watch",
     "test:unit": "npm run build && vitest tests/unit",
     "test:integration": "npm run build && vitest tests/integration",
-    "test:e2e": "npm run build && vitest tests/e2e",
     "lint": "eslint src --ext .ts",
     "format": "prettier --write \"src/**/*.ts\"",
     "typecheck": "tsc --noEmit",

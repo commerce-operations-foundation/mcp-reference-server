@@ -1,4 +1,5 @@
 import { Sanitizer } from '../../../src/utils/sanitizer';
+import { describe, it, expect } from 'vitest';
 
 describe('Sanitizer', () => {
   describe('sanitizeForLogging', () => {
@@ -13,7 +14,7 @@ describe('Sanitizer', () => {
         ssn: '123-45-6789',
         taxId: 'TAX123',
         cvv: '123',
-        normalField: 'normal-value'
+        normalField: 'normal-value',
       };
 
       const sanitized = Sanitizer.sanitizeForLogging(data);
@@ -36,13 +37,13 @@ describe('Sanitizer', () => {
           name: 'john',
           credentials: {
             password: 'secret123',
-            apiKey: 'api-key-123'
-          }
+            apiKey: 'api-key-123',
+          },
         },
         config: {
           dbPassword: 'db-secret',
-          normalSetting: 'value'
-        }
+          normalSetting: 'value',
+        },
       };
 
       const sanitized = Sanitizer.sanitizeForLogging(data);
@@ -57,7 +58,7 @@ describe('Sanitizer', () => {
     it('should handle arrays', () => {
       const data = [
         { name: 'user1', password: 'secret1' },
-        { name: 'user2', token: 'token2' }
+        { name: 'user2', token: 'token2' },
       ];
 
       const sanitized = Sanitizer.sanitizeForLogging(data);
@@ -81,7 +82,7 @@ describe('Sanitizer', () => {
         PASSWORD: 'secret',
         ApiKey: 'key',
         TOKEN: 'token',
-        CreditCard: '1234-5678-9012-3456'
+        CreditCard: '1234-5678-9012-3456',
       };
 
       const sanitized = Sanitizer.sanitizeForLogging(data);
@@ -160,7 +161,7 @@ describe('Sanitizer', () => {
         undefinedValue: undefined,
         emptyString: '',
         zero: 0,
-        falsy: false
+        falsy: false,
       };
 
       const cleaned = Sanitizer.removeEmpty(obj);
@@ -169,7 +170,7 @@ describe('Sanitizer', () => {
         valid: 'value',
         emptyString: '',
         zero: 0,
-        falsy: false
+        falsy: false,
       });
       expect(cleaned.nullValue).toBeUndefined();
       expect(cleaned.undefinedValue).toBeUndefined();
@@ -182,10 +183,10 @@ describe('Sanitizer', () => {
           nullValue: null,
           level2: {
             nested: 'nested-value',
-            undefinedValue: undefined
-          }
+            undefinedValue: undefined,
+          },
         },
-        anotherNull: null
+        anotherNull: null,
       };
 
       const cleaned = Sanitizer.removeEmpty(obj);
@@ -194,9 +195,9 @@ describe('Sanitizer', () => {
         level1: {
           valid: 'value',
           level2: {
-            nested: 'nested-value'
-          }
-        }
+            nested: 'nested-value',
+          },
+        },
       });
     });
 
@@ -212,15 +213,12 @@ describe('Sanitizer', () => {
         { valid: 'value1', nullValue: null },
         { valid: 'value2', undefinedValue: undefined },
         null,
-        undefined
+        undefined,
       ];
 
       const cleaned = Sanitizer.removeEmpty(arr);
 
-      expect(cleaned).toEqual([
-        { valid: 'value1' },
-        { valid: 'value2' }
-      ]);
+      expect(cleaned).toEqual([{ valid: 'value1' }, { valid: 'value2' }]);
     });
 
     it('should handle primitive values', () => {
