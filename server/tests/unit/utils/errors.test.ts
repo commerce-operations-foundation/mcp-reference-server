@@ -8,19 +8,15 @@ import {
   PaymentFailedError,
   RateLimitExceededError,
   TimeoutError,
-  NotImplementedError
+  NotImplementedError,
 } from '../../../src/utils/errors';
 import { AdapterError } from '../../../src/types/adapter';
+import { describe, it, expect } from 'vitest';
 
 describe('FulfillmentError and subclasses', () => {
   describe('FulfillmentError', () => {
     it('should create error with correct properties', () => {
-      const error = new FulfillmentError(
-        FulfillmentErrorCode.VALIDATION_ERROR,
-        'Test error',
-        true,
-        { test: 'data' }
-      );
+      const error = new FulfillmentError(FulfillmentErrorCode.VALIDATION_ERROR, 'Test error', true, { test: 'data' });
 
       expect(error.code).toBe(FulfillmentErrorCode.VALIDATION_ERROR);
       expect(error.message).toBe('Test error');
@@ -37,21 +33,16 @@ describe('FulfillmentError and subclasses', () => {
     });
 
     it('should convert to JSON-RPC error format', () => {
-      const error = new FulfillmentError(
-        FulfillmentErrorCode.VALIDATION_ERROR,
-        'Test error',
-        true,
-        { field: 'test' }
-      );
+      const error = new FulfillmentError(FulfillmentErrorCode.VALIDATION_ERROR, 'Test error', true, { field: 'test' });
 
       const jsonRpcError = error.toJSONRPCError();
-      
+
       expect(jsonRpcError.code).toBe(FulfillmentErrorCode.VALIDATION_ERROR);
       expect(jsonRpcError.message).toContain('Test error');
       expect(jsonRpcError.data).toEqual({
         retryable: true,
         isProtocolError: false,
-        field: 'test'
+        field: 'test',
       });
     });
   });
@@ -79,7 +70,7 @@ describe('FulfillmentError and subclasses', () => {
       expect(error.data).toEqual({
         sku: 'SKU-123',
         requested: 10,
-        available: 5
+        available: 5,
       });
     });
   });
@@ -94,7 +85,7 @@ describe('FulfillmentError and subclasses', () => {
       expect(error.data).toEqual({
         field: 'email',
         reason: 'invalid format',
-        value: 'not-an-email'
+        value: 'not-an-email',
       });
     });
 
@@ -104,7 +95,7 @@ describe('FulfillmentError and subclasses', () => {
       expect(error.data).toEqual({
         field: 'phone',
         reason: 'required field missing',
-        value: undefined
+        value: undefined,
       });
     });
   });
@@ -129,7 +120,7 @@ describe('FulfillmentError and subclasses', () => {
       expect(error.retryable).toBe(false);
       expect(error.data).toEqual({
         paymentId: 'pay-123',
-        reason: 'insufficient funds'
+        reason: 'insufficient funds',
       });
     });
 
@@ -139,7 +130,7 @@ describe('FulfillmentError and subclasses', () => {
       expect(error.message).toBe('Payment failed: pay-456');
       expect(error.data).toEqual({
         paymentId: 'pay-456',
-        reason: undefined
+        reason: undefined,
       });
     });
   });
@@ -171,7 +162,7 @@ describe('FulfillmentError and subclasses', () => {
       expect(error.retryable).toBe(true);
       expect(error.data).toEqual({
         operation: 'database-query',
-        timeout: 30000
+        timeout: 30000,
       });
     });
   });

@@ -3,9 +3,9 @@
  * Task 11: Comprehensive testing of mock adapter functionality
  */
 
-import { vi, describe, it, expect, beforeEach, afterEach, beforeAll, afterAll } from 'vitest';
+import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { MockAdapter } from '../../../src/adapters/mock/mock-adapter';
-import type { CreateSalesOrderInput, CancelOrderInput, UpdateOrderInput } from '../../../src/schemas/index';
+import type { CreateSalesOrderInput, UpdateOrderInput } from '../../../src/schemas/index';
 
 describe('MockAdapter', () => {
   let adapter: MockAdapter;
@@ -49,13 +49,13 @@ describe('MockAdapter', () => {
       expect(healthStatus).toHaveProperty('timestamp');
       expect(healthStatus.checks).toHaveLength(3);
 
-      const connectionCheck = healthStatus.checks.find((c) => c.name === 'connection');
+      const connectionCheck = healthStatus.checks?.find((c) => c.name === 'connection');
       expect(connectionCheck?.status).toBe('pass');
 
-      const dataCheck = healthStatus.checks.find((c) => c.name === 'data_store');
+      const dataCheck = healthStatus.checks?.find((c) => c.name === 'data_store');
       expect(dataCheck?.status).toBe('pass');
 
-      const configCheck = healthStatus.checks.find((c) => c.name === 'configuration');
+      const configCheck = healthStatus.checks?.find((c) => c.name === 'configuration');
       expect(configCheck?.status).toBe('pass');
     });
   });

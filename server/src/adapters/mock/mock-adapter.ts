@@ -268,11 +268,9 @@ export class MockAdapter implements IFulfillmentAdapter {
         const quantity = item.quantity ?? 1;
         const unitPrice = item.unitPrice ?? 0;
         const totalPrice = item.totalPrice ?? unitPrice * quantity;
-        const id = item.lineItemId ?? `LI-${IdGenerator.random(8)}`;
 
         return {
           ...item,
-          id,
           totalPrice,
           sku: item.sku ?? `SKU-${IdGenerator.random(4)}`,
           quantity,

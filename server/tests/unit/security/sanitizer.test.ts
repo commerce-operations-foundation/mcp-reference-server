@@ -3,6 +3,7 @@
  */
 
 import { LogSanitizer } from '../../../src/security/log-sanitizer';
+import { describe, it, expect } from 'vitest';
 
 describe('LogSanitizer', () => {
   describe('redactSensitive', () => {
@@ -10,7 +11,7 @@ describe('LogSanitizer', () => {
       const obj = {
         username: 'john',
         password: 'secret123',
-        email: 'john@example.com'
+        email: 'john@example.com',
       };
 
       const result = LogSanitizer.redactSensitive(obj);
@@ -18,7 +19,7 @@ describe('LogSanitizer', () => {
       expect(result).toEqual({
         username: 'john',
         password: '[REDACTED]',
-        email: 'john@example.com'  // email is not a sensitive field by default
+        email: 'john@example.com', // email is not a sensitive field by default
       });
     });
 
@@ -27,7 +28,7 @@ describe('LogSanitizer', () => {
         apiKey: 'key123',
         api_key: 'another_key',
         token: 'bearer_token',
-        secret: 'top_secret'
+        secret: 'top_secret',
       };
 
       const result = LogSanitizer.redactSensitive(obj);
@@ -36,7 +37,7 @@ describe('LogSanitizer', () => {
         apiKey: '[REDACTED]',
         api_key: '[REDACTED]',
         token: '[REDACTED]',
-        secret: '[REDACTED]'
+        secret: '[REDACTED]',
       });
     });
 
@@ -45,7 +46,7 @@ describe('LogSanitizer', () => {
         creditCard: '4111-1111-1111-1111',
         credit_card: '4222-2222-2222-2222',
         ssn: '123-45-6789',
-        social_security: '987-65-4321'
+        social_security: '987-65-4321',
       };
 
       const result = LogSanitizer.redactSensitive(obj);
@@ -54,7 +55,7 @@ describe('LogSanitizer', () => {
         creditCard: '[REDACTED]',
         credit_card: '[REDACTED]',
         ssn: '[REDACTED]',
-        social_security: '[REDACTED]'
+        social_security: '[REDACTED]',
       });
     });
 
@@ -65,15 +66,15 @@ describe('LogSanitizer', () => {
           password: 'secret',
           preferences: {
             theme: 'dark',
-            apiKey: 'nested_key'
-          }
+            apiKey: 'nested_key',
+          },
         },
         config: {
           database: {
             host: 'localhost',
-            password: 'db_secret'
-          }
-        }
+            password: 'db_secret',
+          },
+        },
       };
 
       const result = LogSanitizer.redactSensitive(obj);
@@ -84,15 +85,15 @@ describe('LogSanitizer', () => {
           password: '[REDACTED]',
           preferences: {
             theme: 'dark',
-            apiKey: '[REDACTED]'
-          }
+            apiKey: '[REDACTED]',
+          },
         },
         config: {
           database: {
             host: 'localhost',
-            password: '[REDACTED]'
-          }
-        }
+            password: '[REDACTED]',
+          },
+        },
       });
     });
 
@@ -100,8 +101,8 @@ describe('LogSanitizer', () => {
       const obj = {
         users: [
           { name: 'John', password: 'secret1' },
-          { name: 'Jane', apiKey: 'key123' }
-        ]
+          { name: 'Jane', apiKey: 'key123' },
+        ],
       };
 
       const result = LogSanitizer.redactSensitive(obj);
@@ -109,8 +110,8 @@ describe('LogSanitizer', () => {
       expect(result).toEqual({
         users: [
           { name: 'John', password: '[REDACTED]' },
-          { name: 'Jane', apiKey: '[REDACTED]' }
-        ]
+          { name: 'Jane', apiKey: '[REDACTED]' },
+        ],
       });
     });
 
@@ -121,7 +122,7 @@ describe('LogSanitizer', () => {
         email: 'test@example.com', // This will NOT be redacted (email is not sensitive by default)
         username: 'testuser',
         role: 'admin',
-        createdAt: '2025-01-17T18:00:00Z'
+        createdAt: '2025-01-17T18:00:00Z',
       };
 
       const result = LogSanitizer.redactSensitive(obj);
@@ -129,10 +130,10 @@ describe('LogSanitizer', () => {
       expect(result).toEqual({
         id: '123',
         name: 'Test User',
-        email: 'test@example.com',  // email is preserved
+        email: 'test@example.com', // email is preserved
         username: 'testuser',
         role: 'admin',
-        createdAt: '2025-01-17T18:00:00Z'
+        createdAt: '2025-01-17T18:00:00Z',
       });
     });
 
@@ -141,7 +142,7 @@ describe('LogSanitizer', () => {
         normalField: 'value',
         nullField: null,
         undefinedField: undefined,
-        password: 'secret'
+        password: 'secret',
       };
 
       const result = LogSanitizer.redactSensitive(obj);
@@ -150,7 +151,7 @@ describe('LogSanitizer', () => {
         normalField: 'value',
         nullField: null,
         undefinedField: undefined,
-        password: '[REDACTED]'
+        password: '[REDACTED]',
       });
     });
 
@@ -172,7 +173,7 @@ describe('LogSanitizer', () => {
       const obj = {
         PASSWORD: 'secret1',
         ApiKey: 'key123',
-        SECRET_VALUE: 'secret2'
+        SECRET_VALUE: 'secret2',
       };
 
       const result = LogSanitizer.redactSensitive(obj);
@@ -180,7 +181,7 @@ describe('LogSanitizer', () => {
       expect(result).toEqual({
         PASSWORD: '[REDACTED]',
         ApiKey: '[REDACTED]',
-        SECRET_VALUE: '[REDACTED]'
+        SECRET_VALUE: '[REDACTED]',
       });
     });
   });
@@ -201,8 +202,8 @@ describe('LogSanitizer', () => {
     it('should detect personal information references', () => {
       expect(LogSanitizer.containsSensitiveData('SSN required')).toBe(true);
       expect(LogSanitizer.containsSensitiveData('social_security number')).toBe(true);
-      expect(LogSanitizer.containsSensitiveData('email address')).toBe(false);  // email is not considered sensitive by default
-      expect(LogSanitizer.containsSensitiveData('phone number')).toBe(false);  // phone is not considered sensitive by default
+      expect(LogSanitizer.containsSensitiveData('email address')).toBe(false); // email is not considered sensitive by default
+      expect(LogSanitizer.containsSensitiveData('phone number')).toBe(false); // phone is not considered sensitive by default
     });
 
     it('should not flag non-sensitive strings', () => {

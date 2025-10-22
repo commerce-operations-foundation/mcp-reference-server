@@ -1,5 +1,5 @@
 import { DateUtils } from '../../../src/utils/date-utils';
-import { vi, describe, it, expect, beforeEach, afterEach, beforeAll, afterAll } from 'vitest';
+import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 describe('DateUtils', () => {
   beforeEach(() => {
     // Set a fixed time for consistent testing
@@ -91,8 +91,8 @@ describe('DateUtils', () => {
     it('should count business days correctly', () => {
       // Monday to Thursday (same week) - 4 business days
       const start = new Date(2023, 7, 14); // Monday, Aug 14
-      const end = new Date(2023, 7, 17);   // Thursday, Aug 17
-      
+      const end = new Date(2023, 7, 17); // Thursday, Aug 17
+
       const businessDays = DateUtils.businessDaysBetween(start, end);
       expect(businessDays).toBe(4); // Mon, Tue, Wed, Thu
     });
@@ -100,8 +100,8 @@ describe('DateUtils', () => {
     it('should exclude weekends', () => {
       // Monday to Sunday (includes weekend)
       const start = new Date(2023, 7, 14); // Monday, Aug 14
-      const end = new Date(2023, 7, 20);   // Sunday, Aug 20
-      
+      const end = new Date(2023, 7, 20); // Sunday, Aug 20
+
       const businessDays = DateUtils.businessDaysBetween(start, end);
       expect(businessDays).toBe(5); // Mon, Tue, Wed, Thu, Fri (excludes Sat, Sun)
     });
@@ -114,16 +114,16 @@ describe('DateUtils', () => {
 
     it('should handle weekend-only range', () => {
       const start = new Date(2023, 7, 19); // Saturday, Aug 19
-      const end = new Date(2023, 7, 19);   // Saturday, Aug 19 (same day)
-      
+      const end = new Date(2023, 7, 19); // Saturday, Aug 19 (same day)
+
       const businessDays = DateUtils.businessDaysBetween(start, end);
       expect(businessDays).toBe(0);
     });
 
     it('should handle multi-week ranges', () => {
       const start = new Date(2023, 7, 14); // Monday week 1, Aug 14
-      const end = new Date(2023, 7, 24);   // Thursday week 2, Aug 24
-      
+      const end = new Date(2023, 7, 24); // Thursday week 2, Aug 24
+
       const businessDays = DateUtils.businessDaysBetween(start, end);
       expect(businessDays).toBe(9); // 5 days first week + 4 days second week
     });
@@ -139,7 +139,7 @@ describe('DateUtils', () => {
     it('should parse valid date string formats', () => {
       const result1 = DateUtils.parse('2023-08-15');
       const result2 = DateUtils.parse('August 15, 2023');
-      
+
       expect(result1).toBeInstanceOf(Date);
       expect(result2).toBeInstanceOf(Date);
     });
@@ -148,7 +148,7 @@ describe('DateUtils', () => {
       const result1 = DateUtils.parse('invalid-date');
       const result2 = DateUtils.parse('2023-13-45'); // Invalid month/day
       const result3 = DateUtils.parse('');
-      
+
       expect(result1).toBeNull();
       expect(result2).toBeNull();
       expect(result3).toBeNull();
@@ -157,7 +157,7 @@ describe('DateUtils', () => {
     it('should handle edge cases', () => {
       const result1 = DateUtils.parse('NaN');
       const result2 = DateUtils.parse('undefined');
-      
+
       expect(result1).toBeNull();
       expect(result2).toBeNull();
     });

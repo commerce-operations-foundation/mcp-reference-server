@@ -1,5 +1,5 @@
 import { TestMCPClient } from '../helpers/test-client';
-import { vi, describe, it, expect, beforeEach, afterEach, beforeAll, afterAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 describe('MCP Server Integration', () => {
   let client: TestMCPClient;
 
@@ -19,12 +19,12 @@ describe('MCP Server Integration', () => {
       const response = await client.sendRequest('initialize', {
         protocolVersion: '2024-11-05',
         capabilities: {
-          tools: {}
+          tools: {},
         },
         clientInfo: {
           name: 'test-client',
-          version: '1.0.0'
-        }
+          version: '1.0.0',
+        },
       });
 
       expect(response.protocolVersion).toBe('2024-11-05');
@@ -37,27 +37,22 @@ describe('MCP Server Integration', () => {
       const response = await client.sendRequest('tools/list');
 
       expect(response.tools).toBeInstanceOf(Array);
-      expect(response.tools.length).toBeGreaterThanOrEqual(15);
+      expect(response.tools.length).toBeGreaterThanOrEqual(10);
 
       const toolNames = response.tools.map((t: any) => t.name);
 
       // Verify all required tools are present
       const requiredTools = [
-        'capture-order',
+        'create-sales-order',
         'cancel-order',
         'update-order',
-        'return-order',
-        'exchange-order',
-        'ship-order',
-        'hold-order',
-        'split-order',
-        'reserve-inventory',
-        'get-order',
+        'fulfill-order',
+        'get-orders',
+        'get-customers',
+        'get-products',
+        'get-product-variants',
         'get-inventory',
-        'get-product',
-        'get-customer',
-        'get-shipment',
-        'get-buyer'
+        'get-fulfillments',
       ];
 
       for (const toolName of requiredTools) {
@@ -88,7 +83,7 @@ describe('MCP Server Integration', () => {
     it('should handle malformed tool call', async () => {
       const response = await client.sendRequest('tools/call', {
         // Missing required fields
-        invalidParam: true
+        invalidParam: true,
       });
 
       // Expect JSON-RPC protocol error (malformed request)
@@ -100,7 +95,7 @@ describe('MCP Server Integration', () => {
     it('should handle tool not found', async () => {
       const response = await client.sendRequest('tools/call', {
         name: 'non-existent-tool',
-        arguments: {}
+        arguments: {},
       });
 
       // Expect JSON-RPC protocol error (tool not found is a protocol error)
@@ -111,11 +106,11 @@ describe('MCP Server Integration', () => {
 
     it('should handle invalid tool arguments', async () => {
       const response = await client.sendRequest('tools/call', {
-        name: 'capture-order',
+        name: 'create-sales-order',
         arguments: {
           // Missing required fields
-          invalid: 'data'
-        }
+          invalid: 'data',
+        },
       });
 
       // Expect JSON-RPC protocol error (validation errors are protocol errors)
@@ -130,8 +125,8 @@ describe('MCP Server Integration', () => {
       const response = await client.sendRequest('tools/call', {
         name: 'get-inventory',
         arguments: {
-          sku: 'SKU001'
-        }
+          skus: ['SKU001'],
+        },
       });
 
       expect(response).toBeDefined();
@@ -140,12 +135,9 @@ describe('MCP Server Integration', () => {
       expect(response.isError).toBeUndefined(); // isError should only be present for error responses
 
       const result = JSON.parse(response.content[0].text);
-      // The tool returns the inventory data directly, not wrapped in success
-      expect(result).toHaveProperty('sku', 'SKU001');
-      expect(result).toHaveProperty('available');
-      expect(typeof result.available).toBe('number');
-      expect(result).toHaveProperty('onHand');
-      expect(typeof result.onHand).toBe('number');
+      expect(result.success).toBe(true);
+      expect(result.inventory).toBeInstanceOf(Array);
+      expect(result.inventory[0]).toHaveProperty('sku', 'SKU001');
     });
 
     it('should handle concurrent tool calls', async () => {
@@ -155,10 +147,10 @@ describe('MCP Server Integration', () => {
       for (let i = 0; i < 5; i++) {
         promises.push(
           client.sendRequest('tools/call', {
-            name: 'get-product',
+            name: 'get-products',
             arguments: {
-              sku: `SKU00${i + 1}`
-            }
+              skus: [`SKU00${i + 1}`],
+            },
           })
         );
       }
@@ -192,9 +184,7 @@ describe('MCP Server Integration', () => {
       await tempClient.disconnect();
 
       // Verify disconnected - should throw
-      await expect(
-        tempClient.sendRequest('tools/list')
-      ).rejects.toThrow('Client not connected');
+      await expect(tempClient.sendRequest('tools/list')).rejects.toThrow('Client not connected');
     });
 
     it('should handle multiple client connections', async () => {
@@ -208,7 +198,7 @@ describe('MCP Server Integration', () => {
         // Both clients should work independently
         const [response1, response2] = await Promise.all([
           client1.sendRequest('tools/list'),
-          client2.sendRequest('tools/list')
+          client2.sendRequest('tools/list'),
         ]);
 
         expect(response1.tools).toBeInstanceOf(Array);
