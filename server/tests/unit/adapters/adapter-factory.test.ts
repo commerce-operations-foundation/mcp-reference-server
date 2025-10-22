@@ -3,20 +3,8 @@
  */
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { AdapterFactory } from '../../../src/adapters/adapter-factory';
-import {
-  IFulfillmentAdapter,
-  AdapterConfig,
-  OrderResult,
-  FulfillmentToolResult,
-} from '../../../src/types/adapter';
-import type {
-  Order,
-  Inventory,
-  Product,
-  ProductVariant,
-  Customer,
-  Fulfillment,
-} from '../../../src/schemas/index';
+import { IFulfillmentAdapter, AdapterConfig, OrderResult, FulfillmentToolResult } from '../../../src/types/adapter';
+import type { Order, Inventory, Product, ProductVariant, Customer, Fulfillment } from '../../../src/schemas/index';
 
 // Mock adapter class for testing - minimal implementation with proper types
 class MockFulfillmentAdapter implements IFulfillmentAdapter {
