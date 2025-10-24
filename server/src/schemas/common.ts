@@ -41,7 +41,7 @@ export const AddressSchema = z
     zipCodeOrPostalCode: z.string().describe('ZIP code (US) or postal code (international) for the address'),
   })
   .partial()
-  .required(makeZodFieldMap(['address1', 'city', 'company', 'country', 'email', 'firstName'] as const));
+  .required(makeZodFieldMap([] as const));
 export type Address = z.infer<typeof AddressSchema>;
 
 export const CustomerAddressSchema = z.object({

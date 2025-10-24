@@ -13,6 +13,10 @@
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
     },
+    "./adapter-template-types": {
+      "import": "./dist/adapter-template-types.js",
+      "types": "./dist/adapter-template-types.d.ts"
+    },
     "./types/*": {
       "types": "./dist/types/*",
       "default": "./dist/types/*"
@@ -20,6 +24,9 @@
   },
   "typesVersions": {
     "*": {
+      "adapter-template-types": [
+        "dist/adapter-template-types.d.ts"
+      ],
       "types/*": [
         "dist/types/*"
       ]

@@ -46,6 +46,7 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
-    "axios": "^1.6.0"
+    "axios": "^1.6.0",
+    "@cof-org/mcp": "file:../server"
   }
 }
