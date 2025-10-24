@@ -24,33 +24,19 @@ import { GetInventoryTool } from './queries/get-inventory.js';
 import { GetFulfillments } from './queries/get-fulfillments.js';
 
 /**
- * Register all action tools
+ * Register all tools at once
  */
-export function registerActionTools(registry: ToolRegistry, serviceLayer: ServiceOrchestrator): void {
+export function registerTools(registry: ToolRegistry, serviceLayer: ServiceOrchestrator): void {
   registry.register(new CreateSalesOrderTool(serviceLayer));
   registry.register(new CancelOrderTool(serviceLayer));
   registry.register(new UpdateOrderTool(serviceLayer));
   registry.register(new FulfillOrderTool(serviceLayer));
-}
-
-/**
- * Register all query tools
- */
-export function registerQueryTools(registry: ToolRegistry, serviceLayer: ServiceOrchestrator): void {
   registry.register(new GetOrdersTool(serviceLayer));
   registry.register(new GetCustomersTool(serviceLayer));
   registry.register(new GetProductsTool(serviceLayer));
   registry.register(new GetProductVariantsTool(serviceLayer));
   registry.register(new GetInventoryTool(serviceLayer));
   registry.register(new GetFulfillments(serviceLayer));
-}
-
-/**
- * Register all tools at once
- */
-export function registerAllTools(registry: ToolRegistry, serviceLayer: ServiceOrchestrator): void {
-  registerActionTools(registry, serviceLayer);
-  registerQueryTools(registry, serviceLayer);
 }
 
 // Export all tool classes for external use

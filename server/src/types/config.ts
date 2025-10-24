@@ -61,29 +61,3 @@ export interface ServerConfig {
     [key: string]: boolean;
   };
 }
-
-export interface PluginConfig {
-  // Directory to scan for local plugins
-  pluginPath?: string;
-
-  // Auto-discover NPM adapters on startup
-  autoDiscoverNpm?: boolean;
-
-  // Auto-discover local adapters on startup
-  autoDiscoverLocal?: boolean;
-
-  // Validate adapters on load
-  validateOnLoad?: boolean;
-
-  // Watch plugin directory for changes
-  watchForChanges?: boolean;
-
-  // Cache discovery results
-  cacheDiscovery?: boolean;
-
-  // Allowed adapter name patterns (regex strings)
-  allowedPatterns?: string[];
-
-  // Blocked adapter name patterns (regex strings)
-  blockedPatterns?: string[];
-}

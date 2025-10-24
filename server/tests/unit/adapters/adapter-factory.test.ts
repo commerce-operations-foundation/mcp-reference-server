@@ -3,185 +3,9 @@
  */
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { AdapterFactory } from '../../../src/adapters/adapter-factory';
-import { IFulfillmentAdapter, AdapterConfig, OrderResult, FulfillmentToolResult } from '../../../src/types/adapter';
-import type { Order, Inventory, Product, ProductVariant, Customer, Fulfillment } from '../../../src/schemas/index';
+import { AdapterConfig } from '../../../src/types/adapter';
 
-// Mock adapter class for testing - minimal implementation with proper types
-class MockFulfillmentAdapter implements IFulfillmentAdapter {
-  constructor(_config: AdapterConfig) {}
-
-  async connect(): Promise<void> {
-    return Promise.resolve();
-  }
-
-  async disconnect(): Promise<void> {
-    return Promise.resolve();
-  }
-
-  async healthCheck() {
-    return {
-      status: 'healthy' as const,
-      timestamp: new Date().toISOString(),
-      checks: [],
-    };
-  }
-
-  async createSalesOrder(): Promise<OrderResult> {
-    return {
-      success: true,
-      order: {
-        id: 'test-order',
-        externalId: 'ext-123',
-        lineItems: [],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        tenantId: 'test-tenant',
-      } as Order,
-    };
-  }
-
-  async cancelOrder(): Promise<OrderResult> {
-    return {
-      success: true,
-      order: {
-        id: 'test-order',
-        externalId: 'ext-123',
-        lineItems: [],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        tenantId: 'test-tenant',
-      } as Order,
-    };
-  }
-
-  async updateOrder(): Promise<OrderResult> {
-    return {
-      success: true,
-      order: {
-        id: 'test-order',
-        externalId: 'ext-123',
-        lineItems: [],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        tenantId: 'test-tenant',
-      } as Order,
-    };
-  }
-
-  async fulfillOrder(): Promise<FulfillmentToolResult<{ fulfillment: Fulfillment }>> {
-    return {
-      success: true,
-      fulfillment: {
-        id: 'fulfillment-123',
-        externalId: 'ext-fulfillment-123',
-        orderId: 'test-order',
-        lineItems: [],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        tenantId: 'test-tenant',
-      } as Fulfillment,
-    };
-  }
-
-  async getOrders(): Promise<FulfillmentToolResult<{ orders: Order[] }>> {
-    return {
-      success: true,
-      orders: [
-        {
-          id: 'test-order',
-          externalId: 'ext-123',
-          lineItems: [],
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          tenantId: 'test-tenant',
-        } as Order,
-      ],
-    };
-  }
-
-  async getInventory(): Promise<FulfillmentToolResult<{ inventory: Inventory[] }>> {
-    return {
-      success: true,
-      inventory: [
-        {
-          id: 'inv-123',
-          externalId: 'ext-inv-123',
-          sku: 'test-sku',
-          locationId: 'loc-123',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          tenantId: 'test-tenant',
-        } as Inventory,
-      ],
-    };
-  }
-
-  async getProducts(): Promise<FulfillmentToolResult<{ products: Product[] }>> {
-    return {
-      success: true,
-      products: [
-        {
-          id: 'prod-123',
-          externalId: 'ext-prod-123',
-          name: 'Test Product',
-          options: [],
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          tenantId: 'test-tenant',
-        } as Product,
-      ],
-    };
-  }
-
-  async getProductVariants(): Promise<FulfillmentToolResult<{ productVariants: ProductVariant[] }>> {
-    return {
-      success: true,
-      productVariants: [
-        {
-          id: 'variant-123',
-          externalId: 'ext-variant-123',
-          productId: 'prod-123',
-          sku: 'test-sku',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          tenantId: 'test-tenant',
-        } as ProductVariant,
-      ],
-    };
-  }
-
-  async getCustomers(): Promise<FulfillmentToolResult<{ customers: Customer[] }>> {
-    return {
-      success: true,
-      customers: [
-        {
-          id: 'cust-123',
-          externalId: 'ext-cust-123',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          tenantId: 'test-tenant',
-        } as Customer,
-      ],
-    };
-  }
-
-  async getFulfillments(): Promise<FulfillmentToolResult<{ fulfillments: Fulfillment[] }>> {
-    return {
-      success: true,
-      fulfillments: [
-        {
-          id: 'fulfillment-123',
-          externalId: 'ext-fulfillment-123',
-          orderId: 'test-order',
-          lineItems: [],
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          tenantId: 'test-tenant',
-        } as Fulfillment,
-      ],
-    };
-  }
-}
+import { MockAdapter } from '../../../src/adapters/mock/mock-adapter';
 
 // Incomplete adapter for validation testing
 class IncompleteAdapter {
@@ -203,7 +27,7 @@ describe('AdapterFactory', () => {
   describe('Built-in Adapters', () => {
     it('should register built-in adapter', () => {
       expect(() => {
-        AdapterFactory.registerBuiltInAdapter('mock', MockFulfillmentAdapter);
+        AdapterFactory.registerBuiltInAdapter('mock', MockAdapter);
       }).not.toThrow();
 
       const available = AdapterFactory.getAvailableAdapters();
@@ -211,7 +35,7 @@ describe('AdapterFactory', () => {
     });
 
     it('should create built-in adapter instance', async () => {
-      AdapterFactory.registerBuiltInAdapter('mock', MockFulfillmentAdapter);
+      AdapterFactory.registerBuiltInAdapter('mock', MockAdapter);
 
       const config: AdapterConfig = {
         type: 'built-in',
@@ -219,11 +43,11 @@ describe('AdapterFactory', () => {
       };
 
       const adapter = await AdapterFactory.createAdapter(config);
-      expect(adapter).toBeInstanceOf(MockFulfillmentAdapter);
+      expect(adapter).toBeInstanceOf(MockAdapter);
     });
 
     it('should return same instance for same config', async () => {
-      AdapterFactory.registerBuiltInAdapter('mock', MockFulfillmentAdapter);
+      AdapterFactory.registerBuiltInAdapter('mock', MockAdapter);
 
       const config: AdapterConfig = {
         type: 'built-in',
@@ -237,7 +61,7 @@ describe('AdapterFactory', () => {
     });
 
     it('should create new instance for different config', async () => {
-      AdapterFactory.registerBuiltInAdapter('mock', MockFulfillmentAdapter);
+      AdapterFactory.registerBuiltInAdapter('mock', MockAdapter);
 
       const config1: AdapterConfig = {
         type: 'built-in',
@@ -317,7 +141,7 @@ describe('AdapterFactory', () => {
 
   describe('Validation', () => {
     it('should validate adapter implements interface', async () => {
-      AdapterFactory.registerBuiltInAdapter('mock', MockFulfillmentAdapter);
+      AdapterFactory.registerBuiltInAdapter('mock', MockAdapter);
 
       const config: AdapterConfig = {
         type: 'built-in',
@@ -342,7 +166,7 @@ describe('AdapterFactory', () => {
 
   describe('Instance Management', () => {
     it('should get existing adapter instance', async () => {
-      AdapterFactory.registerBuiltInAdapter('mock', MockFulfillmentAdapter);
+      AdapterFactory.registerBuiltInAdapter('mock', MockAdapter);
 
       const config: AdapterConfig = {
         type: 'built-in',
@@ -366,7 +190,7 @@ describe('AdapterFactory', () => {
     });
 
     it('should remove adapter instance', async () => {
-      AdapterFactory.registerBuiltInAdapter('mock', MockFulfillmentAdapter);
+      AdapterFactory.registerBuiltInAdapter('mock', MockAdapter);
 
       const config: AdapterConfig = {
         type: 'built-in',
@@ -381,7 +205,7 @@ describe('AdapterFactory', () => {
     });
 
     it('should clear all instances', async () => {
-      AdapterFactory.registerBuiltInAdapter('mock', MockFulfillmentAdapter);
+      AdapterFactory.registerBuiltInAdapter('mock', MockAdapter);
 
       const config1: AdapterConfig = {
         type: 'built-in',
@@ -428,11 +252,12 @@ describe('AdapterFactory', () => {
       const mockAdapter = await AdapterFactory.createAdapter(config);
 
       await expect(mockAdapter.connect()).resolves.toBeUndefined();
-      await expect(mockAdapter.disconnect()).resolves.toBeUndefined();
 
       const health = await mockAdapter.healthCheck();
       expect(health.status).toBe('healthy');
       expect(health.checks).toBeDefined();
+
+      await expect(mockAdapter.disconnect()).resolves.toBeUndefined();
     });
 
     it('should have working order methods', async () => {
@@ -489,7 +314,7 @@ describe('AdapterFactory', () => {
 
   describe('Cache Key Generation', () => {
     it('should generate different cache keys for different configs', async () => {
-      AdapterFactory.registerBuiltInAdapter('mock', MockFulfillmentAdapter);
+      AdapterFactory.registerBuiltInAdapter('mock', MockAdapter);
 
       const config1: AdapterConfig = {
         type: 'built-in',
@@ -509,7 +334,7 @@ describe('AdapterFactory', () => {
     });
 
     it('should generate same cache key for equivalent configs', async () => {
-      AdapterFactory.registerBuiltInAdapter('mock', MockFulfillmentAdapter);
+      AdapterFactory.registerBuiltInAdapter('mock', MockAdapter);
 
       const config1: AdapterConfig = {
         type: 'built-in',

@@ -9,14 +9,12 @@ import { Customer, InventoryItem, Order, Product, ProductVariant } from '../../s
 const tenantId = 'tenant_001';
 
 export class MockData {
-  private orders: Map<string, any> = new Map();
-  private ordersByNumber: Map<string, any> = new Map();
-  private products: Map<string, Product> = new Map();
-  private productAliases: Map<string, string> = new Map();
-  private productVariants: Map<string, ProductVariant> = new Map();
-  private variantAliases: Map<string, string> = new Map();
-  private customers: Map<string, Customer> = new Map();
-  private inventory: Map<string, InventoryItem> = new Map();
+  public readonly orders: Map<string, Order> = new Map();
+  public readonly products: Map<string, Product> = new Map();
+  public readonly productAliases: Map<string, string> = new Map();
+  public readonly productVariants: Map<string, ProductVariant> = new Map();
+  public readonly customers: Map<string, Customer> = new Map();
+  public readonly inventory: Map<string, InventoryItem> = new Map();
 
   constructor() {
     this.generateSampleData();
@@ -235,16 +233,11 @@ export class MockData {
         }
 
         if (variant.sku) {
-          this.variantAliases.set(variant.sku, variant.id!);
           this.productAliases.set(variant.sku, variant.productId);
         }
 
         if (variant.externalId) {
-          this.variantAliases.set(variant.externalId, variant.id!);
-        }
-
-        if (variant.externalProductId) {
-          this.variantAliases.set(`${variant.externalProductId}:${variant.id}`, variant.id!);
+          this.productAliases.set(variant.externalId, variant.productId);
         }
       });
     });
@@ -510,294 +503,6 @@ export class MockData {
     });
   }
 
-  /**
-   * Add new order to mock data
-   */
-  addOrder(order: any): void {
-    this.orders.set(order.orderId, order);
-    // orderNumber not in schema
-    // if (order.orderNumber) {
-    //   this.ordersByNumber.set(order.orderNumber, order);
-    // }
-  }
-
-  /**
-   * Get order by ID
-   */
-  getOrder(orderId: string): Order | undefined {
-    return this.orders.get(orderId);
-  }
-
-  /**
-   * Get order by order number
-   */
-  getOrderByNumber(orderNumber: string | undefined): any | undefined {
-    if (!orderNumber) {
-      return undefined;
-    }
-    // orderNumber not in schema - search through all orders for compatibility
-    // This is kept for backward compatibility with OrderIdentifier interface
-    for (const order of this.orders.values()) {
-      if ((order as any).orderNumber === orderNumber) {
-        return order;
-      }
-    }
-    return undefined;
-  }
-
-  /**
-   * Get order by external order ID
-   */
-  getOrderByExtOrderId(extOrderId: string | undefined): any | undefined {
-    if (!extOrderId) {
-      return undefined;
-    }
-    for (const order of this.orders.values()) {
-      if (order.extOrderId === extOrderId) {
-        return order;
-      }
-    }
-    return undefined;
-  }
-
-  /**
-   * Get product by ID or SKU
-   */
-  getProduct(identifier: string | undefined): Product {
-    if (!identifier) {
-      throw new Error('Product identifier is required');
-    }
-
-    const resolvedProductId = this.resolveProductId(identifier);
-    if (resolvedProductId) {
-      const product = this.products.get(resolvedProductId);
-      if (product) {
-        return product;
-      }
-    }
-
-    return this.createDynamicProductAndVariant(identifier).product;
-  }
-
-  getProductVariant(identifier: string | undefined): ProductVariant {
-    if (!identifier) {
-      throw new Error('Product variant identifier is required');
-    }
-
-    const variant = this.findVariant(identifier);
-    if (variant) {
-      return variant;
-    }
-
-    // If identifier refers to a product, return the first known variant or create one dynamically
-    const productId = this.resolveProductId(identifier);
-    if (productId) {
-      const variants = this.getProductVariantsByProductId(productId);
-      if (variants.length > 0) {
-        return variants[0];
-      }
-
-      return this.createAdHocVariant(identifier, productId);
-    }
-
-    // Fall back to dynamically generating both product and variant for unknown identifiers
-    return this.createDynamicProductAndVariant(identifier).variant;
-  }
-
-  getProductVariantsByProductId(productId: string): ProductVariant[] {
-    return Array.from(this.productVariants.values()).filter((variant) => variant.productId === productId);
-  }
-
-  private resolveProductId(identifier: string): string | undefined {
-    if (this.products.has(identifier)) {
-      return identifier;
-    }
-
-    const alias = this.productAliases.get(identifier);
-    if (alias) {
-      return alias;
-    }
-
-    const variant = this.findVariant(identifier);
-    if (variant) {
-      return variant.productId;
-    }
-
-    return undefined;
-  }
-
-  private findVariant(identifier: string): ProductVariant | undefined {
-    if (this.productVariants.has(identifier)) {
-      return this.productVariants.get(identifier);
-    }
-
-    const variantId = this.variantAliases.get(identifier);
-    if (variantId) {
-      return this.productVariants.get(variantId);
-    }
-
-    return undefined;
-  }
-
-  private createDynamicProductAndVariant(identifier: string): { product: Product; variant: ProductVariant } {
-    const productId = `prod_${identifier}`;
-    const variantId = `variant_${identifier}`;
-
-    const product: Product = {
-      id: productId,
-      externalId: productId,
-      externalProductId: productId,
-      name: `Dynamic Product ${identifier}`,
-      description: `Auto-generated product for ${identifier}`,
-      status: 'active',
-      tags: ['generated'],
-      vendor: 'DynamicVendor',
-      categories: ['Generated'],
-      options: [],
-      imageURLs: [],
-      customFields: [
-        { name: 'generated', value: 'true' },
-        { name: 'timestamp', value: DateUtils.now() },
-      ],
-      createdAt: DateUtils.now(),
-      updatedAt: DateUtils.now(),
-      tenantId: 'tenant_dynamic',
-    };
-
-    const variant: ProductVariant = {
-      id: variantId,
-      productId,
-      externalId: variantId,
-      externalProductId: productId,
-      sku: identifier,
-      title: `Dynamic Variant ${identifier}`,
-      barcode: identifier,
-      price: 0,
-      currency: 'USD',
-      cost: 0,
-      costCurrency: 'USD',
-      weight: { value: 0.5, unit: 'lb' },
-      imageURLs: [],
-      selectedOptions: [],
-      inventoryNotTracked: true,
-      taxable: false,
-      customFields: [{ name: 'generated', value: 'true' }],
-      createdAt: DateUtils.now(),
-      updatedAt: DateUtils.now(),
-      tenantId: 'tenant_dynamic',
-    };
-
-    this.products.set(productId, product);
-    this.productAliases.set(productId, productId);
-
-    this.productVariants.set(variantId, variant);
-    this.variantAliases.set(identifier, variantId);
-    this.productAliases.set(identifier, productId);
-
-    if (variant.externalId) {
-      this.variantAliases.set(variant.externalId, variantId);
-    }
-
-    return { product, variant };
-  }
-
-  private createAdHocVariant(identifier: string, productId: string): ProductVariant {
-    const variantId = `variant_${productId}_${Date.now()}`;
-    const externalVariantId = `ext_variant_${productId}_${Date.now()}`;
-    const variant: ProductVariant = {
-      id: variantId,
-      externalId: externalVariantId,
-      externalProductId: productId,
-      productId,
-      sku: identifier,
-      title: `Generated Variant ${identifier}`,
-      createdAt: DateUtils.now(),
-      updatedAt: DateUtils.now(),
-      tenantId: 'tenant_dynamic',
-    };
-
-    this.productVariants.set(variantId, variant);
-    this.variantAliases.set(identifier, variantId);
-    this.productAliases.set(identifier, productId);
-
-    if (variant.id) {
-      this.variantAliases.set(variant.id, variantId);
-    }
-
-    return variant;
-  }
-
-  /**
-   * Get customer by ID or email
-   */
-  getCustomer(identifier: string | undefined): Customer {
-    if (!identifier) {
-      throw new Error('Customer identifier is required');
-    }
-
-    const customer = this.customers.get(identifier);
-    if (!customer) {
-      // Generate a dynamic customer if not found
-      return {
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        tenantId,
-        id: `cust_${identifier}`,
-        firstName: 'Generated',
-        lastName: 'Customer',
-        email: identifier.includes('@') ? identifier : `${identifier}@example.com`,
-        phone: '555-0100',
-        type: 'individual',
-        addresses: [
-          {
-            name: 'home',
-            address: {
-              address1: '123 Generic St',
-              city: 'Sample City',
-              stateOrProvince: 'CA',
-              zipCodeOrPostalCode: '90210',
-              country: 'US',
-              company: 'N/A',
-              email: identifier.includes('@') ? identifier : `${identifier}@example.com`,
-              firstName: 'Generated',
-              lastName: 'Customer',
-            },
-          },
-        ],
-        customFields: [
-          { name: 'generated', value: 'true' },
-          { name: 'timestamp', value: DateUtils.now() },
-        ],
-      };
-    }
-
-    return customer;
-  }
-
-  /**
-   * Get inventory for SKU and warehouse
-   */
-  getInventory(sku: string, locationId: string = 'WH001'): InventoryItem {
-    const key = `${sku}_${locationId}`;
-    const inventory = this.inventory.get(key);
-
-    if (!inventory) {
-      const unavailable = Math.floor(Math.random() * 20);
-      const onHand = unavailable + Math.floor(Math.random() * 100) + 10;
-      const available = onHand - unavailable;
-
-      return {
-        sku,
-        locationId,
-        onHand,
-        unavailable,
-        available,
-        tenantId,
-      };
-    }
-
-    return inventory;
-  }
 
   /**
    * Get data size for health checks
@@ -817,11 +522,9 @@ export class MockData {
    */
   clear(): void {
     this.orders.clear();
-    this.ordersByNumber.clear();
     this.products.clear();
     this.productAliases.clear();
     this.productVariants.clear();
-    this.variantAliases.clear();
     this.customers.clear();
     this.inventory.clear();
   }
