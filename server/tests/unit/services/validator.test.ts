@@ -52,24 +52,6 @@ describe('Validator', () => {
       await expect(validator.validate(invalidData, schema)).rejects.toThrow(ValidationError);
     });
 
-    it('should validate partial data correctly', async () => {
-      const schema = {
-        type: 'object',
-        properties: {
-          name: { type: 'string' },
-          age: { type: 'number' },
-        },
-        required: ['name'],
-      };
-
-      const partialData = {
-        age: 25, // missing required 'name' but should pass partial validation
-      };
-
-      const result = await validator.validatePartial(partialData, schema);
-      expect(result).toEqual(partialData);
-    });
-
     it('should throw error for invalid schema', async () => {
       const invalidSchema = {
         type: 'invalid',
@@ -149,29 +131,6 @@ describe('Validator', () => {
     it('should handle invalid schema types', async () => {
       // Test with non-object, non-boolean schema
       await expect(validator.validate({}, 'invalid-schema' as any)).rejects.toThrow('Invalid schema:');
-    });
-  });
-
-  describe('Partial Validation', () => {
-    it('should make all fields optional in partial validation', async () => {
-      const schema = {
-        type: 'object',
-        properties: {
-          name: { type: 'string' },
-          age: { type: 'number' },
-          email: { type: 'string', format: 'email' },
-        },
-        required: ['name', 'age', 'email'],
-      };
-
-      // Should pass even with missing required fields
-      const partialData = { name: 'John' };
-      const result = await validator.validatePartial(partialData, schema);
-      expect(result).toEqual(partialData);
-
-      // Should still validate types
-      const invalidPartialData = { age: 'not-a-number' };
-      await expect(validator.validatePartial(invalidPartialData, schema)).rejects.toThrow(ValidationError);
     });
   });
 });

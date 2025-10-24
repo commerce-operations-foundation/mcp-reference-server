@@ -3,14 +3,13 @@
  * Enhanced tool registry with auto-discovery and registration
  */
 
-import * as fs from 'fs';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
 import { BaseTool } from './base-tool.js';
 import { ServiceOrchestrator } from '../services/service-orchestrator.js';
 import { ToolDescription } from '../types/index.js';
 import { Logger } from '../utils/logger.js';
-import { registerAllTools } from './index.js';
+import { registerTools } from './index.js';
 
 // ES module dirname helpers - used by auto-discovery when enabled
 const __filename = fileURLToPath(import.meta.url);
@@ -68,7 +67,6 @@ export class ToolRegistry {
 
       Logger.debug(`Tool ${name} executed successfully`);
       return result;
-
     } catch (error) {
       Logger.error(`Tool ${name} execution failed:`, error);
       throw error;
@@ -79,7 +77,7 @@ export class ToolRegistry {
    * List all available tools
    */
   list(): ToolDescription[] {
-    return Array.from(this.tools.values()).map(tool => {
+    return Array.from(this.tools.values()).map((tool) => {
       const desc = tool.getDescription();
       // Ensure inputSchema has type: "object" for SDK compatibility
       return {
@@ -87,8 +85,8 @@ export class ToolRegistry {
         description: desc.description,
         inputSchema: {
           ...desc.inputSchema,
-          type: 'object' as const
-        }
+          type: 'object' as const,
+        },
       };
     });
   }
@@ -126,7 +124,7 @@ export class ToolRegistry {
    */
   private discoverAndRegisterTools(): void {
     // Register all tools using the centralized registration functions
-    registerAllTools(this, this.serviceLayer);
+    registerTools(this, this.serviceLayer);
 
     // Auto-discovery capability preserved for future use
     // To enable auto-discovery, uncomment the lines below:
@@ -134,93 +132,6 @@ export class ToolRegistry {
     // Logger.debug(`Scanning for tools in: ${toolsDir}`);
     // this.scanDirectory(toolsDir);
     void __dirname; // Preserve for auto-discovery
-  }
-
-
-  /**
-   * Recursively scan directory for tool files
-   * @deprecated Currently unused - for future dynamic tool loading
-   */
-  // @ts-ignore - Preserved for future use
-  private async scanDirectory(dir: string): Promise<void> {
-    try {
-      const entries = await fs.promises.readdir(dir, { withFileTypes: true });
-
-      for (const entry of entries) {
-        const fullPath = path.join(dir, entry.name);
-
-        if (entry.isDirectory() && entry.name !== 'node_modules' && !entry.name.startsWith('.')) {
-          await this.scanDirectory(fullPath);
-        } else if (entry.isFile() &&
-          (entry.name.endsWith('.ts') || entry.name.endsWith('.js')) &&
-          !entry.name.endsWith('.test.ts') &&
-          !entry.name.endsWith('.spec.ts') &&
-          !entry.name.endsWith('.test.js') &&
-          !entry.name.endsWith('.spec.js') &&
-          !entry.name.endsWith('.d.ts')) {
-          await this.loadToolFromFile(fullPath);
-        }
-      }
-    } catch (error) {
-      Logger.warn(`Failed to scan directory ${dir}:`, error);
-    }
-  }
-
-  /**
-   * Load tool from file if it's a valid tool class
-   */
-  private async loadToolFromFile(filePath: string): Promise<void> {
-    try {
-      // Skip the registry file itself and base-tool file
-      if (filePath.endsWith('registry.ts') ||
-        filePath.endsWith('base-tool.ts') ||
-        filePath.endsWith('registry.js') ||
-        filePath.endsWith('base-tool.js')) {
-        return;
-      }
-
-      Logger.debug(`Attempting to load tool from: ${filePath}`);
-      const module = await import(filePath);
-
-      // Look for exported classes that extend BaseTool
-      for (const exportKey of Object.keys(module)) {
-        const exported = module[exportKey];
-
-        if (this.isToolClass(exported)) {
-          try {
-            const toolInstance = new exported(this.serviceLayer);
-            this.register(toolInstance);
-            Logger.debug(`Auto-registered tool from ${filePath}: ${toolInstance.name}`);
-          } catch (error) {
-            Logger.warn(`Failed to instantiate tool from ${filePath}:`, error);
-          }
-        }
-      }
-    } catch (error) {
-      Logger.debug(`Failed to load tool from ${filePath}:`, error);
-    }
-  }
-
-  /**
-   * Check if exported item is a tool class
-   */
-  private isToolClass(exported: any): boolean {
-    if (typeof exported !== 'function') {
-      return false;
-    }
-
-    try {
-      // Check if it has the BaseTool prototype structure
-      const instance = Object.create(exported.prototype);
-      return (
-        'name' in instance &&
-        'description' in instance &&
-        'inputSchema' in instance &&
-        'execute' in instance
-      );
-    } catch {
-      return false;
-    }
   }
 
   /**
@@ -240,7 +151,7 @@ export class ToolRegistry {
       'Fulfillment Management': [],
       'Query Operations': [],
       'Inventory Operations': [],
-      'Other': []
+      Other: [],
     };
 
     for (const tool of this.tools.values()) {
@@ -252,11 +163,16 @@ export class ToolRegistry {
         ...description,
         inputSchema: {
           ...description.inputSchema,
-          type: 'object' as const
-        }
+          type: 'object' as const,
+        },
       };
 
-      if (toolName.includes('order') || toolName.includes('return') || toolName.includes('exchange') || toolName.includes('ship')) {
+      if (
+        toolName.includes('order') ||
+        toolName.includes('return') ||
+        toolName.includes('exchange') ||
+        toolName.includes('ship')
+      ) {
         categories['Fulfillment Management'].push(formattedDescription);
       } else if (toolName.startsWith('get-')) {
         categories['Query Operations'].push(formattedDescription);
@@ -268,7 +184,7 @@ export class ToolRegistry {
     }
 
     // Remove empty categories
-    Object.keys(categories).forEach(key => {
+    Object.keys(categories).forEach((key) => {
       if (categories[key].length === 0) {
         delete categories[key];
       }

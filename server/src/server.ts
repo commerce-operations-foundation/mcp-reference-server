@@ -12,7 +12,7 @@ import {
   ListResourcesRequestSchema,
   PingRequestSchema,
   McpError,
-  ErrorCode
+  ErrorCode,
 } from '@modelcontextprotocol/sdk/types.js';
 import { ToolRegistry } from './tools/registry.js';
 import { ServiceOrchestrator } from './services/service-orchestrator.js';
@@ -123,13 +123,9 @@ export class MCPServerSDK {
   async start(): Promise<void> {
     Logger.info('Starting MCP server with SDK transport...');
 
-    // Initialize services with adapter config from server config
     await this.serviceOrchestrator.initialize(this.config.adapter);
-
-    // Register all tools
     await this.registerTools();
 
-    // Create and connect transport
     const transport = new StdioServerTransport();
     await this.server.connect(transport);
 

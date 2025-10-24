@@ -95,8 +95,6 @@ describe('ToolRegistry', () => {
       const result = await registry.execute(mockTool.name, input);
 
       expect(result).toEqual({ result: 'Processed: test' });
-      // Validator is no longer used in refactored code
-      // expect(mockServiceOrchestrator.validator.validate).toHaveBeenCalledTimes(2);
     });
 
     it('should throw error when tool not found', async () => {

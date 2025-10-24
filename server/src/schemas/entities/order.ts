@@ -9,6 +9,7 @@ import { CustomerSchema } from './customer.js';
  */
 export const orderSchema = z
   .object({
+    name: z.string().describe('Order name'),
     status: z.string().describe('Order status'),
     billingAddress: AddressSchema.describe('Purchaser Address'),
     currency: z.string().describe('Order currency code'),

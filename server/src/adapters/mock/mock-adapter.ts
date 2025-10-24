@@ -154,7 +154,7 @@ export class MockAdapter implements IFulfillmentAdapter {
     // Store order in mock data
     const savedOrder = {
       ...order,
-      status: 'confirmed',
+      status: 'new',
       customer: this.buildCustomer(order.customer),
       lineItems: items,
       billingAddress: this.buildAddress(order.billingAddress),
@@ -173,7 +173,7 @@ export class MockAdapter implements IFulfillmentAdapter {
 
     savedOrder.orderId = orderId;
 
-    this.mockData.addOrder(savedOrder);
+    this.mockData.orders.set(orderId, savedOrder);
 
     Logger.info('Order captured', { orderId, totalPrice });
 
@@ -200,7 +200,7 @@ export class MockAdapter implements IFulfillmentAdapter {
       data: { orderId, reason, lineItems, notifyCustomer, notes },
     } = parseResult;
 
-    const order = this.mockData.getOrder(orderId);
+    const order = this.mockData.orders.get(orderId);
     if (!order) {
       throw new AdapterError(`Order not found: ${orderId}`, 'ORDER_NOT_FOUND', { orderId });
     }
@@ -256,7 +256,7 @@ export class MockAdapter implements IFulfillmentAdapter {
       data: { id: orderId, updates },
     } = parseResult;
 
-    const order = this.mockData.getOrder(orderId);
+    const order = this.mockData.orders.get(orderId);
     if (!order) {
       throw new AdapterError(`Order not found: ${orderId}`, 'ORDER_NOT_FOUND', { orderId });
     }
@@ -332,7 +332,8 @@ export class MockAdapter implements IFulfillmentAdapter {
       data: { orderId, trackingNumber, lineItems, shippingAddress, shippingCarrier, expectedDeliveryDate },
     } = parseResult;
 
-    const order = this.mockData.getOrder(orderId);
+    const order = this.mockData.orders.get(orderId);
+
     if (!order) {
       return {
         success: false,
@@ -380,7 +381,9 @@ export class MockAdapter implements IFulfillmentAdapter {
       createdAt: shippedAt,
       updatedAt: shippedAt,
       tenantId: baseTenantId,
-      lineItems: order.lineItems.filter((orderLineItem) => lineItems.some((item: { sku: string }) => item.sku === orderLineItem.sku)),
+      lineItems: order.lineItems.filter((orderLineItem) =>
+        lineItems.some((item: { sku: string }) => item.sku === orderLineItem.sku)
+      ),
     };
 
     Logger.info('Order shipped', { orderId, fulfillmentId, trackingNumber });
@@ -420,39 +423,17 @@ export class MockAdapter implements IFulfillmentAdapter {
       };
     }
 
-    const orders: Order[] = [];
-    const seen = new Set<string>();
+    let orders: Order[] = Array.from(this.mockData.orders.values());
     const data = parseResult.data;
 
-    const addOrder = (ord: any) => {
-      if (!ord) {
-        return;
-      }
-      const cleanOrder: Order = {
-        ...ord,
-        customer: this.buildCustomer(ord.customer),
-        billingAddress: this.buildAddress(ord.billingAddress, false),
-        shippingAddress: this.buildAddress(ord.shippingAddress, false),
-      };
-      const key = this.getOrderId(cleanOrder);
-      if (!seen.has(key)) {
-        orders.push(cleanOrder);
-        seen.add(key);
-      }
-    };
-
-    data.orderIds?.forEach((orderId) => addOrder(this.mockData.getOrder(orderId)));
-    data.extOrderIds?.forEach((extOrderId) => addOrder(this.mockData.getOrderByExtOrderId(extOrderId)));
-    data.orderNames?.forEach((orderNumber) => addOrder(this.mockData.getOrderByNumber(orderNumber)));
-
-    if (orders.length === 0) {
-      const identifier = (data.orderIds?.[0] && { orderId: data.orderIds[0] }) ||
-        (data.extOrderIds?.[0] && { extOrderId: data.extOrderIds[0] }) ||
-        (data.orderNames?.[0] && { orderNumber: data.orderNames[0] }) || { orderId: 'unknown' };
-      return {
-        success: false,
-        error: new AdapterError(`Order not found: ${JSON.stringify(identifier)}`, 'ORDER_NOT_FOUND', identifier),
-      };
+    if (data.ids) {
+      orders = orders.filter((order) => data.ids!.includes(order.id));
+    }
+    if (data.externalIds) {
+      orders = orders.filter((order) => data.externalIds!.includes(order.externalId!));
+    }
+    if (data.names) {
+      orders = orders.filter((order) => data.names!.includes(order.name!));
     }
 
     return {
@@ -495,10 +476,10 @@ export class MockAdapter implements IFulfillmentAdapter {
     for (const sku of data.skus) {
       if (data.locationIds && data.locationIds.length > 0) {
         for (const locationId of data.locationIds) {
-          results.push(this.mockData.getInventory(sku, locationId));
+          results.push(this.getInventoryItem(sku, locationId));
         }
       } else {
-        results.push(this.mockData.getInventory(sku));
+        results.push(this.getInventoryItem(sku));
       }
     }
 
@@ -544,7 +525,7 @@ export class MockAdapter implements IFulfillmentAdapter {
       if (!identifier) {
         return;
       }
-      const product = this.mockData.getProduct(identifier);
+      const product = this.resolveProduct(identifier);
       const key = product.id ?? product.externalId ?? identifier;
       if (!seen.has(key)) {
         products.push(product);
@@ -616,7 +597,7 @@ export class MockAdapter implements IFulfillmentAdapter {
         return;
       }
 
-      const variant = this.mockData.getProductVariant(identifier);
+      const variant = this.resolveProductVariant(identifier);
       const key = variant.id ?? variant.sku ?? identifier;
       if (!seen.has(key)) {
         variants.push(variant);
@@ -632,9 +613,8 @@ export class MockAdapter implements IFulfillmentAdapter {
 
     data.ids?.forEach((id) => addVariant(id));
     data.skus?.forEach((sku) => addVariant(sku));
-
     data.productIds?.forEach((productId) => {
-      const productVariants = this.mockData.getProductVariantsByProductId(productId);
+      const productVariants = this.getProductVariantsByProductId(productId);
       productVariants.forEach((variant) => addVariant(variant.id));
     });
 
@@ -684,7 +664,7 @@ export class MockAdapter implements IFulfillmentAdapter {
       if (!identifier) {
         return;
       }
-      const customer = this.mockData.getCustomer(identifier);
+      const customer = this.resolveCustomer(identifier);
       const key = customer.id ?? customer.email ?? identifier;
       if (!seen.has(key)) {
         customers.push(customer);
@@ -692,20 +672,9 @@ export class MockAdapter implements IFulfillmentAdapter {
       }
     };
 
-    const data = parseResult.data;
-    data.ids?.forEach((id) => addCustomer(id));
-    data.emails?.forEach((email) => addCustomer(email));
-
-    if (customers.length === 0) {
-      const identifier = (data.ids?.[0] && { customerId: data.ids[0] }) ||
-        (data.emails?.[0] && { email: data.emails[0] }) || {
-          customerId: 'unknown',
-        };
-      return {
-        success: false,
-        error: new AdapterError(`Customer not found: ${JSON.stringify(identifier)}`, 'CUSTOMER_NOT_FOUND', identifier),
-      };
-    }
+    const filter = parseResult.data;
+    filter.ids?.forEach((id) => addCustomer(id));
+    filter.emails?.forEach((email) => addCustomer(email));
 
     return {
       success: true,
@@ -743,13 +712,12 @@ export class MockAdapter implements IFulfillmentAdapter {
 
     const data = parseResult.data;
     const fulfillments: Fulfillment[] = [];
-
     const now = DateUtils.now();
     const targetIds = data.ids?.length ? data.ids : [IdGenerator.fulfillmentId()];
 
     for (const fulfillmentId of targetIds) {
       const requestedOrderId = data.orderIds?.[0] ?? `order_${IdGenerator.random(6)}`;
-      const order = this.mockData.getOrder(requestedOrderId);
+      const order = this.mockData.orders.get(requestedOrderId);
       const address = this.buildAddress(order?.shippingAddress ?? order?.billingAddress, true)!;
       const resolvedOrderId = order ? this.getOrderId(order) : requestedOrderId;
 
@@ -785,6 +753,230 @@ export class MockAdapter implements IFulfillmentAdapter {
 
   private shouldSimulateError(operation: string): boolean {
     return this.config.shouldSimulateError(operation);
+  }
+
+  private resolveProductId(identifier: string): string | undefined {
+    if (this.mockData.products.has(identifier)) {
+      return identifier;
+    }
+
+    const alias = this.mockData.productAliases.get(identifier);
+    if (alias) {
+      return alias;
+    }
+
+    const variant = this.findVariant(identifier);
+    if (variant) {
+      return variant.productId;
+    }
+
+    return undefined;
+  }
+
+  private findVariant(identifier: string): ProductVariant | undefined {
+    // Check if identifier is a direct ID
+    if (this.mockData.productVariants.has(identifier)) {
+      return this.mockData.productVariants.get(identifier);
+    }
+
+    // Search through all variants for matching sku, externalId, or externalProductId
+    for (const variant of this.mockData.productVariants.values()) {
+      if (variant.sku === identifier || variant.externalId === identifier) {
+        return variant;
+      }
+    }
+
+    return undefined;
+  }
+
+  private resolveProduct(identifier: string | undefined): Product {
+    if (!identifier) {
+      throw new Error('Product identifier is required');
+    }
+
+    const resolvedProductId = this.resolveProductId(identifier);
+    if (resolvedProductId) {
+      const product = this.mockData.products.get(resolvedProductId);
+      if (product) {
+        return product;
+      }
+    }
+
+    return this.createDynamicProductAndVariant(identifier).product;
+  }
+
+  private resolveProductVariant(identifier: string | undefined): ProductVariant {
+    if (!identifier) {
+      throw new Error('Product variant identifier is required');
+    }
+
+    const variant = this.findVariant(identifier);
+    if (variant) {
+      return variant;
+    }
+
+    // If identifier refers to a product, return the first known variant or create one dynamically
+    const productId = this.resolveProductId(identifier);
+    if (productId) {
+      const variants = this.getProductVariantsByProductId(productId);
+      if (variants.length > 0) {
+        return variants[0];
+      }
+
+      return this.createAdHocVariant(identifier, productId);
+    }
+
+    // Fall back to dynamically generating both product and variant for unknown identifiers
+    return this.createDynamicProductAndVariant(identifier).variant;
+  }
+
+  private getProductVariantsByProductId(productId: string): ProductVariant[] {
+    return Array.from(this.mockData.productVariants.values()).filter((variant) => variant.productId === productId);
+  }
+
+  private createDynamicProductAndVariant(identifier: string): { product: Product; variant: ProductVariant } {
+    const productId = `prod_${identifier}`;
+    const variantId = `variant_${identifier}`;
+
+    const product: Product = {
+      id: productId,
+      externalId: productId,
+      externalProductId: productId,
+      name: `Dynamic Product ${identifier}`,
+      description: `Auto-generated product for ${identifier}`,
+      status: 'active',
+      tags: ['generated'],
+      vendor: 'DynamicVendor',
+      categories: ['Generated'],
+      options: [],
+      imageURLs: [],
+      customFields: [
+        { name: 'generated', value: 'true' },
+        { name: 'timestamp', value: DateUtils.now() },
+      ],
+      createdAt: DateUtils.now(),
+      updatedAt: DateUtils.now(),
+      tenantId: 'tenant_dynamic',
+    };
+
+    const variant: ProductVariant = {
+      id: variantId,
+      productId,
+      externalId: variantId,
+      externalProductId: productId,
+      sku: identifier,
+      title: `Dynamic Variant ${identifier}`,
+      barcode: identifier,
+      price: 0,
+      currency: 'USD',
+      cost: 0,
+      costCurrency: 'USD',
+      weight: { value: 0.5, unit: 'lb' },
+      imageURLs: [],
+      selectedOptions: [],
+      inventoryNotTracked: true,
+      taxable: false,
+      customFields: [{ name: 'generated', value: 'true' }],
+      createdAt: DateUtils.now(),
+      updatedAt: DateUtils.now(),
+      tenantId: 'tenant_dynamic',
+    };
+
+    this.mockData.products.set(productId, product);
+    this.mockData.productAliases.set(productId, productId);
+
+    this.mockData.productVariants.set(variantId, variant);
+    this.mockData.productAliases.set(identifier, productId);
+
+    return { product, variant };
+  }
+
+  private createAdHocVariant(identifier: string, productId: string): ProductVariant {
+    const variantId = `variant_${productId}_${Date.now()}`;
+    const externalVariantId = `ext_variant_${productId}_${Date.now()}`;
+    const variant: ProductVariant = {
+      id: variantId,
+      externalId: externalVariantId,
+      externalProductId: productId,
+      productId,
+      sku: identifier,
+      title: `Generated Variant ${identifier}`,
+      createdAt: DateUtils.now(),
+      updatedAt: DateUtils.now(),
+      tenantId: 'tenant_dynamic',
+    };
+
+    this.mockData.productVariants.set(variantId, variant);
+    this.mockData.productAliases.set(identifier, productId);
+
+    return variant;
+  }
+
+  private resolveCustomer(identifier: string | undefined): Customer {
+    if (!identifier) {
+      throw new Error('Customer identifier is required');
+    }
+
+    const customer = this.mockData.customers.get(identifier);
+
+    if (!customer) {
+      // Generate a dynamic customer if not found
+      return {
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        tenantId: 'tenant_001',
+        id: `cust_${identifier}`,
+        firstName: 'Generated',
+        lastName: 'Customer',
+        email: identifier.includes('@') ? identifier : `${identifier}@example.com`,
+        phone: '555-0100',
+        type: 'individual',
+        addresses: [
+          {
+            name: 'home',
+            address: {
+              address1: '123 Generic St',
+              city: 'Sample City',
+              stateOrProvince: 'CA',
+              zipCodeOrPostalCode: '90210',
+              country: 'US',
+              company: 'N/A',
+              email: identifier.includes('@') ? identifier : `${identifier}@example.com`,
+              firstName: 'Generated',
+              lastName: 'Customer',
+            },
+          },
+        ],
+        customFields: [
+          { name: 'generated', value: 'true' },
+          { name: 'timestamp', value: DateUtils.now() },
+        ],
+      };
+    }
+
+    return customer;
+  }
+
+  private getInventoryItem(sku: string, locationId: string = 'WH001'): InventoryItem {
+    const key = `${sku}_${locationId}`;
+    const inventory = this.mockData.inventory.get(key);
+
+    if (!inventory) {
+      const unavailable = Math.floor(Math.random() * 20);
+      const onHand = unavailable + Math.floor(Math.random() * 100) + 10;
+      const available = onHand - unavailable;
+
+      return {
+        sku,
+        locationId,
+        onHand,
+        unavailable,
+        available,
+        tenantId: 'tenant_001',
+      };
+    }
+
+    return inventory;
   }
 
   private buildAddress(
@@ -840,16 +1032,6 @@ export class MockAdapter implements IFulfillmentAdapter {
       order.externalId ??
       `order-${IdGenerator.random(6)}`
     );
-  }
-
-  private cleanObject(obj: any): any {
-    const cleaned: any = {};
-    for (const [key, value] of Object.entries(obj)) {
-      if (value !== null && value !== undefined) {
-        cleaned[key] = value;
-      }
-    }
-    return cleaned;
   }
 
   private calculateSubtotal(items: OrderLineItem[]): number {

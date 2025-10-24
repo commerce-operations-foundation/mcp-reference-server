@@ -103,6 +103,9 @@ export class YourFulfillmentAdapter implements IFulfillmentAdapter {
       debugMode: this.options.debugMode || false,
     });
   }
+  reserveInventory(reservation: ReservationRequest): Promise<ReservationResult> {
+    throw new Error('Method not implemented.');
+  }
   initialize?(config: AdapterConfig): Promise<void> {
     throw new Error('Method not implemented.');
   }
