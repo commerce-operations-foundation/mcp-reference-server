@@ -1,90 +1,61 @@
 /**
  * YourFulfillment Adapter Implementation
  *
- * This is a template adapter that implements the IFulfillmentAdapter interface.
- * Customize this file to integrate with your specific Fulfillment system.
+ * This template demonstrates how to wire an adapter to the MCP server types.
+ * Replace the placeholder API calls and mappings with your fulfillment system's logic.
  */
 
-// Import types from the MCP server package
-// When developing locally, you may need to:
-// 1. Use relative imports to the server's dist/types directory
-// 2. Or copy the type definitions to your adapter project
-// 3. Or wait for @cof-org/mcp to be published to NPM
-
-// For NPM-published adapters:
-// import type {
-//   IFulfillmentAdapter,
-//   AdapterConfig,
-//   HealthStatus,
-//   OrderResult,
-//   // ... other types
-// } from '@cof-org/mcp/dist/types/adapter';
-
-// For local development, use relative imports or copy types:
-import {
+import type {
   IFulfillmentAdapter,
+  AdapterConfig,
+  AdapterCapabilities,
   HealthStatus,
   OrderResult,
-  CancelResult,
-  UpdateResult,
-  ReturnResult,
-  ExchangeResult,
-  ShipmentResult,
-  HoldResult,
-  SplitResult,
-  ReservationResult,
-  ReservationRequest,
-  AdapterError,
-  OrderNotFoundError,
-  ProductNotFoundError,
-  CustomerNotFoundError,
-  InsufficientInventoryError,
-  InvalidOrderStateError,
-  AdapterCapabilities,
-  AdapterConfig,
-} from './mocks/types/adapter.js';
-
-import {
+  FulfillmentToolResult,
   Order,
-  OrderRequest,
-  OrderUpdates,
-  Customer,
+  Fulfillment,
+  InventoryItem,
   Product,
-  Inventory,
-  Shipment,
-  Buyer,
-  OrderIdentifier,
-  ProductIdentifier,
-  CustomerIdentifier,
-  ShipmentIdentifier,
-  ShippingInfo,
-  ExchangeParams,
-  ReturnItem,
-} from './mocks/types/fulfillment.js';
-
+  ProductVariant,
+  Customer,
+  CreateSalesOrderInput,
+  CancelOrderInput,
+  UpdateOrderInput,
+  FulfillOrderInput,
+  GetOrdersInput,
+  GetInventoryInput,
+  GetProductsInput,
+  GetProductVariantsInput,
+  GetCustomersInput,
+  GetFulfillmentsInput,
+  Address,
+  CustomerAddress,
+  OrderLineItem,
+  CustomField,
+} from '@cof-org/mcp/adapter-template-types';
+import { AdapterError } from '@cof-org/mcp/types/index.js';
 import { ApiClient } from './utils/api-client.js';
-import {
-  AdapterOptions,
+import type {
+  AdapterOptions as TemplateAdapterOptions,
+  YourFulfillmentApiResponse,
   YourFulfillmentOrder,
   YourFulfillmentProduct,
   YourFulfillmentCustomer,
   YourFulfillmentInventory,
   YourFulfillmentShipment,
-  STATUS_MAP,
-  ErrorCode,
+  YourFulfillmentAddress,
 } from './types.js';
+import { STATUS_MAP, ErrorCode } from './types.js';
 import { getErrorMessage } from './utils/type-guards.js';
 
 export class YourFulfillmentAdapter implements IFulfillmentAdapter {
   private client: ApiClient;
-  private connected: boolean = false;
-  private options: AdapterOptions;
+  private connected = false;
+  private options: TemplateAdapterOptions;
 
   constructor(config: any = {}) {
-    // Extract options from AdapterConfig if present (matches mock adapter pattern)
     const options = config.options || config;
 
-    // Ensure we have the required options with defaults
     this.options = {
       apiUrl: options.apiUrl || 'https://api.yourfulfillment.com',
       apiKey: options.apiKey || '',
@@ -94,72 +65,25 @@ export class YourFulfillmentAdapter implements IFulfillmentAdapter {
       debugMode: options.debugMode || false,
     };
 
-    // Initialize API client
     this.client = new ApiClient({
       baseUrl: this.options.apiUrl,
       apiKey: this.options.apiKey,
       timeout: this.options.timeout,
-      retryAttempts: this.options.retryAttempts || 3,
-      debugMode: this.options.debugMode || false,
+      retryAttempts: this.options.retryAttempts,
+      debugMode: this.options.debugMode,
     });
   }
-  reserveInventory(reservation: ReservationRequest): Promise<ReservationResult> {
-    throw new Error('Method not implemented.');
-  }
-  initialize?(config: AdapterConfig): Promise<void> {
-    throw new Error('Method not implemented.');
-  }
-  cleanup?(): Promise<void> {
-    throw new Error('Method not implemented.');
-  }
-  checkHealth?(): Promise<HealthStatus> {
-    throw new Error('Method not implemented.');
-  }
-  getCapabilities?(): Promise<AdapterCapabilities> {
-    throw new Error('Method not implemented.');
-  }
-  updateConfig?(config: AdapterConfig): Promise<void> {
-    throw new Error('Method not implemented.');
-  }
-  returnOrder(orderId: string, items: ReturnItem[]): Promise<ReturnResult> {
-    throw new Error('Method not implemented.');
-  }
-  exchangeOrder(params: ExchangeParams): Promise<ExchangeResult> {
-    throw new Error('Method not implemented.');
-  }
-  releaseReservation?(reservationId: string): Promise<void> {
-    throw new Error('Method not implemented.');
-  }
-  adjustInventory?(sku: string, adjustment: number, reason: string, locationId?: string): Promise<Inventory> {
-    throw new Error('Method not implemented.');
-  }
-  transferInventory?(
-    sku: string,
-    quantity: number,
-    fromLocationId: string,
-    toLocationId: string,
-    reason?: string
-  ): Promise<{ from: Inventory; to: Inventory }> {
-    throw new Error('Method not implemented.');
-  }
-  searchOrders?(filters: any): Promise<{ orders: Order[]; total: number }> {
-    throw new Error('Method not implemented.');
-  }
-  searchProducts?(filters: any): Promise<{ products: Product[]; total: number }> {
-    throw new Error('Method not implemented.');
-  }
-  getCustomerOrders?(
-    customerId: string,
-    options?: { limit?: number; offset?: number }
-  ): Promise<{ orders: Order[]; total: number }> {
-    throw new Error('Method not implemented.');
+
+  async initialize?(config: AdapterConfig): Promise<void> {
+    this.updateOptions(config.options ?? {});
   }
 
-  // ==================== Lifecycle Methods ====================
+  async cleanup?(): Promise<void> {
+    this.connected = false;
+  }
 
   async connect(): Promise<void> {
     try {
-      // Test connection to your Fulfillment API
       const response = await this.client.get('/health');
 
       if (!response.success) {
@@ -175,15 +99,8 @@ export class YourFulfillmentAdapter implements IFulfillmentAdapter {
   }
 
   async disconnect(): Promise<void> {
-    try {
-      // Perform any cleanup operations if needed
-      // For example: close websocket connections, clear caches, etc.
-
-      this.connected = false;
-      console.info('Disconnected from YourFulfillment');
-    } catch (error: unknown) {
-      throw new AdapterError(`Disconnect failed: ${getErrorMessage(error)}`, ErrorCode.UNKNOWN_ERROR, error);
-    }
+    this.connected = false;
+    console.info('Disconnected from YourFulfillment');
   }
 
   async healthCheck(): Promise<HealthStatus> {
@@ -192,7 +109,7 @@ export class YourFulfillmentAdapter implements IFulfillmentAdapter {
 
       return {
         status: response.success ? 'healthy' : 'unhealthy',
-        timestamp: new Date().toISOString(),
+        timestamp: this.now(),
         checks: [
           {
             name: 'api_connection',
@@ -210,7 +127,7 @@ export class YourFulfillmentAdapter implements IFulfillmentAdapter {
     } catch (error: unknown) {
       return {
         status: 'unhealthy',
-        timestamp: new Date().toISOString(),
+        timestamp: this.now(),
         checks: [
           {
             name: 'api_connection',
@@ -222,644 +139,715 @@ export class YourFulfillmentAdapter implements IFulfillmentAdapter {
     }
   }
 
-  // ==================== Order Actions ====================
+  async checkHealth?(): Promise<HealthStatus> {
+    return this.healthCheck();
+  }
 
-  async captureOrder(params: OrderRequest): Promise<OrderResult> {
+  async getCapabilities?(): Promise<AdapterCapabilities> {
+    return {
+      supportsOrderCapture: true,
+      supportsShipping: true,
+      supportsCustomFields: true,
+      maxBatchSize: 50,
+    };
+  }
+
+  async updateConfig?(config: AdapterConfig): Promise<void> {
+    this.updateOptions(config.options ?? {});
+  }
+
+  async createSalesOrder(input: CreateSalesOrderInput): Promise<OrderResult> {
     try {
-      // Transform UOIS order format to your Fulfillment format
-      const fulfillmentOrder = this.transformToFulfillmentOrder(params);
+      const payload = this.transformCreateSalesOrderInput(input);
+      const response = await this.client.post<YourFulfillmentOrder>('/orders', payload);
 
-      // Call your Fulfillment API to create the order
-      const response = await this.client.post('/orders', fulfillmentOrder);
-
-      if (!response.success) {
-        throw new AdapterError('Failed to capture order', ErrorCode.API_ERROR, response.error);
+      if (!response.success || !response.data) {
+        return this.failure<{ order: Order }>('Failed to create order', response.error ?? response);
       }
 
-      // Transform response back to UOIS format
-      return this.transformToOrderResult(response.data as YourFulfillmentOrder);
+      return this.success<{ order: Order }>({ order: this.transformToOrder(response.data) });
     } catch (error: unknown) {
-      if (error instanceof AdapterError) {
-        throw error;
-      }
-      throw new AdapterError(`Order capture failed: ${getErrorMessage(error)}`, ErrorCode.UNKNOWN_ERROR, error);
+      return this.failure<{ order: Order }>(`Order creation failed: ${getErrorMessage(error)}`, error);
     }
   }
 
-  async cancelOrder(orderId: string, reason?: string): Promise<CancelResult> {
+  async cancelOrder(input: CancelOrderInput): Promise<OrderResult> {
+    if (!input.orderId) {
+      return this.failure<{ order: Order }>('orderId is required to cancel an order');
+    }
+
     try {
-      // First, get the order to check its current status
-      const orderResponse = await this.client.get(`/orders/${orderId}`);
-
-      if (!orderResponse.success) {
-        throw new OrderNotFoundError({ orderId });
-      }
-
-      const order = orderResponse.data as YourFulfillmentOrder;
-
-      // Check if order can be cancelled
-      if (['delivered', 'cancelled'].includes(order.status)) {
-        throw new InvalidOrderStateError(orderId, order.status, 'cancel');
-      }
-
-      // Cancel the order
-      const response = await this.client.post(`/orders/${orderId}/cancel`, {
-        reason: reason || 'Customer requested cancellation',
-        cancelled_by: 'customer',
-        cancelled_at: new Date().toISOString(),
+      const response = await this.client.post<YourFulfillmentOrder>(`/orders/${input.orderId}/cancel`, {
+        reason: input.reason ?? 'Customer requested cancellation',
+        notify_customer: input.notifyCustomer ?? false,
+        notes: input.notes,
+        cancelled_at: this.now(),
       });
 
       if (!response.success) {
-        throw new AdapterError('Failed to cancel order', ErrorCode.API_ERROR, response.error);
+        return this.failure<{ order: Order }>('Failed to cancel order', response.error ?? response);
       }
 
-      return {
-        success: true,
-        orderId,
-        status: 'cancelled',
-        cancelledAt: new Date().toISOString(),
-        refundInitiated: (response.data as any)?.refund_initiated || false,
-        message: `Order ${orderId} cancelled successfully`,
-      };
-    } catch (error: unknown) {
-      if (error instanceof AdapterError) {
-        throw error;
+      const orderData = response.data ?? (await this.fetchOrderById(input.orderId)).data;
+
+      if (!orderData) {
+        return this.failure<{ order: Order }>('Order not found after cancellation', { orderId: input.orderId });
       }
-      throw new AdapterError(`Order cancellation failed: ${getErrorMessage(error)}`, ErrorCode.UNKNOWN_ERROR, error);
+
+      return this.success<{ order: Order }>({ order: this.transformToOrder(orderData) });
+    } catch (error: unknown) {
+      return this.failure<{ order: Order }>(`Order cancellation failed: ${getErrorMessage(error)}`, error);
     }
   }
 
-  async updateOrder(orderId: string, updates: OrderUpdates): Promise<UpdateResult> {
+  async updateOrder(input: UpdateOrderInput): Promise<OrderResult> {
     try {
-      // Transform updates to your Fulfillment format
-      const fulfillmentUpdates = this.transformOrderUpdates(updates);
-
-      // Update the order
-      const response = await this.client.patch(`/orders/${orderId}`, fulfillmentUpdates);
+      const response = await this.client.patch<YourFulfillmentOrder>(
+        `/orders/${input.id}`,
+        this.transformOrderUpdates(input.updates)
+      );
 
       if (!response.success) {
-        if (response.error?.code === 'ORDER_NOT_FOUND') {
-          throw new OrderNotFoundError({ orderId });
-        }
-        throw new AdapterError('Failed to update order', ErrorCode.API_ERROR, response.error);
+        return this.failure<{ order: Order }>('Failed to update order', response.error ?? response);
       }
 
-      return {
-        success: true,
-        orderId,
-        updatedFields: Object.keys(updates),
-        version: (response.data as any)?.version,
-        message: `Order ${orderId} updated successfully`,
-      };
-    } catch (error: unknown) {
-      if (error instanceof AdapterError) {
-        throw error;
+      const orderData = response.data ?? (await this.fetchOrderById(input.id)).data;
+
+      if (!orderData) {
+        return this.failure<{ order: Order }>('Order not found after update', { orderId: input.id });
       }
-      throw new AdapterError(`Order update failed: ${getErrorMessage(error)}`, ErrorCode.UNKNOWN_ERROR, error);
+
+      return this.success<{ order: Order }>({ order: this.transformToOrder(orderData) });
+    } catch (error: unknown) {
+      return this.failure<{ order: Order }>(`Order update failed: ${getErrorMessage(error)}`, error);
     }
   }
 
-  async shipOrder(orderId: string, shipping: ShippingInfo): Promise<ShipmentResult> {
+  async fulfillOrder(input: FulfillOrderInput): Promise<FulfillmentToolResult<{ fulfillment: Fulfillment }>> {
+    if (!input.orderId) {
+      return this.failure<{ fulfillment: Fulfillment }>('orderId is required to fulfill an order');
+    }
+
     try {
-      // Create shipment
-      const response = await this.client.post(`/orders/${orderId}/shipments`, {
-        carrier: shipping.carrier,
-        service: shipping.service,
-        tracking_number: shipping.trackingNumber,
-        items: shipping.items,
-        shipped_at: new Date().toISOString(),
-      });
+      const response = await this.client.post<YourFulfillmentShipment>(
+        `/orders/${input.orderId}/shipments`,
+        this.transformFulfillOrderInput(input)
+      );
+
+      if (!response.success || !response.data) {
+        return this.failure<{ fulfillment: Fulfillment }>('Failed to create fulfillment', response.error ?? response);
+      }
+
+      return this.success<{ fulfillment: Fulfillment }>({ fulfillment: this.transformToFulfillment(response.data) });
+    } catch (error: unknown) {
+      return this.failure<{ fulfillment: Fulfillment }>(`Fulfillment failed: ${getErrorMessage(error)}`, error);
+    }
+  }
+
+  async getOrders(input: GetOrdersInput): Promise<FulfillmentToolResult<{ orders: Order[] }>> {
+    try {
+      const response = await this.client.get<YourFulfillmentOrder[] | YourFulfillmentOrder>(
+        '/orders',
+        this.mapOrderFilters(input)
+      );
 
       if (!response.success) {
-        throw new AdapterError('Failed to create shipment', ErrorCode.API_ERROR, response.error);
+        return this.failure<{ orders: Order[] }>('Failed to fetch orders', response.error ?? response);
       }
 
-      return {
-        success: true,
-        shipmentId: (response.data as any)?.shipment_id,
-        trackingNumber: (response.data as any)?.tracking_number,
-        carrier: (response.data as any)?.carrier,
-        shippedAt: (response.data as any)?.shipped_at,
-        trackingUrl: (response.data as any)?.tracking_url,
-        estimatedDelivery: (response.data as any)?.estimated_delivery,
-        message: `Shipment created for order ${orderId}`,
-      };
+      const orders = this.ensureArray(response.data).map((order) => this.transformToOrder(order));
+      return this.success<{ orders: Order[] }>({ orders });
     } catch (error: unknown) {
-      if (error instanceof AdapterError) {
-        throw error;
-      }
-      throw new AdapterError(`Shipment creation failed: ${getErrorMessage(error)}`, ErrorCode.UNKNOWN_ERROR, error);
+      return this.failure<{ orders: Order[] }>(`Order lookup failed: ${getErrorMessage(error)}`, error);
     }
   }
 
-  // ==================== Management Operations ====================
-
-  async holdOrder(orderId: string, holdParams: HoldParams): Promise<HoldResult> {
+  async getInventory(input: GetInventoryInput): Promise<FulfillmentToolResult<{ inventory: InventoryItem[] }>> {
     try {
-      const response = await this.client.post(`/orders/${orderId}/hold`, {
-        reason: holdParams.reason,
-        until: holdParams.until,
-        auto_release: holdParams.autoRelease,
-        notes: holdParams.notes,
-      });
+      const response = await this.client.get<YourFulfillmentInventory[] | YourFulfillmentInventory>(
+        '/inventory',
+        this.mapInventoryFilters(input)
+      );
 
       if (!response.success) {
-        throw new AdapterError('Failed to hold order', ErrorCode.API_ERROR, response.error);
+        return this.failure<{ inventory: InventoryItem[] }>('Failed to fetch inventory', response.error ?? response);
       }
 
-      return {
-        success: true,
-        orderId,
-        holdId: (response.data as any)?.hold_id,
-        status: 'on_hold',
-        reason: holdParams.reason,
-        autoRelease: holdParams.autoRelease,
-        message: `Order ${orderId} placed on hold`,
-      };
+      const inventory = this.ensureArray(response.data).flatMap((item) => this.transformToInventoryItems(item));
+      return this.success<{ inventory: InventoryItem[] }>({ inventory });
     } catch (error: unknown) {
-      if (error instanceof AdapterError) {
-        throw error;
-      }
-      throw new AdapterError(`Hold order failed: ${getErrorMessage(error)}`, ErrorCode.UNKNOWN_ERROR, error);
+      return this.failure<{ inventory: InventoryItem[] }>(`Inventory lookup failed: ${getErrorMessage(error)}`, error);
     }
   }
 
-  async splitOrder(orderId: string, splits: SplitParams[]): Promise<SplitResult> {
+  async getProducts(input: GetProductsInput): Promise<FulfillmentToolResult<{ products: Product[] }>> {
     try {
-      const response = await this.client.post(`/orders/${orderId}/split`, {
-        splits: splits.map((split) => ({
-          items: split.items,
-          warehouse: split.warehouse,
-          ship_date: split.shipDate,
-        })),
-      });
+      const response = await this.client.get<YourFulfillmentProduct[] | YourFulfillmentProduct>(
+        '/products',
+        this.mapProductFilters(input)
+      );
 
       if (!response.success) {
-        throw new AdapterError('Failed to split order', ErrorCode.API_ERROR, response.error);
+        return this.failure<{ products: Product[] }>('Failed to fetch products', response.error ?? response);
       }
 
-      return {
-        success: true,
-        originalOrderId: orderId,
-        newOrderIds: (response.data as any)?.new_order_ids,
-        splitCount: (response.data as any)?.split_count,
-        shipments: (response.data as any)?.shipments?.map((s: any) => ({
-          orderId: s.order_id,
-          warehouse: s.warehouse,
-          estimatedShipDate: s.estimated_ship_date,
-        })),
-        message: `Order ${orderId} split into ${(response.data as any)?.split_count} orders`,
-      };
+      const products = this.ensureArray(response.data).map((product) => this.transformToProduct(product));
+      return this.success<{ products: Product[] }>({ products });
     } catch (error: unknown) {
-      if (error instanceof AdapterError) {
-        throw error;
-      }
-      throw new AdapterError(`Split order failed: ${getErrorMessage(error)}`, ErrorCode.UNKNOWN_ERROR, error);
+      return this.failure<{ products: Product[] }>(`Product lookup failed: ${getErrorMessage(error)}`, error);
     }
   }
 
-  // ==================== Query Operations ====================
-
-  async getOrder(identifier: OrderIdentifier): Promise<Order> {
+  async getProductVariants(
+    input: GetProductVariantsInput
+  ): Promise<FulfillmentToolResult<{ productVariants: ProductVariant[] }>> {
     try {
-      let response;
-
-      if (identifier.orderId) {
-        response = await this.client.get(`/orders/${identifier.orderId}`);
-      } else if (identifier.orderNumber) {
-        response = await this.client.get(`/orders/by-number/${identifier.orderNumber}`);
-      } else {
-        throw new AdapterError('Either orderId or orderNumber must be provided', ErrorCode.INVALID_REQUEST);
-      }
+      const response = await this.client.get<YourFulfillmentProduct[] | YourFulfillmentProduct>(
+        '/products',
+        this.mapProductVariantFilters(input)
+      );
 
       if (!response.success) {
-        throw new OrderNotFoundError(identifier);
+        return this.failure<{ productVariants: ProductVariant[] }>(
+          'Failed to fetch product variants',
+          response.error ?? response
+        );
       }
 
-      // Transform YourFulfillment order to UOIS Order format
-      return this.transformToOrder(response.data as YourFulfillmentOrder);
+      const productVariants = this.ensureArray(response.data).map((product) => this.transformToProductVariant(product));
+      return this.success<{ productVariants: ProductVariant[] }>({ productVariants });
     } catch (error: unknown) {
-      if (error instanceof AdapterError) {
-        throw error;
-      }
-      throw new AdapterError(`Failed to get order: ${getErrorMessage(error)}`, ErrorCode.UNKNOWN_ERROR, error);
+      return this.failure<{ productVariants: ProductVariant[] }>(
+        `Product variant lookup failed: ${getErrorMessage(error)}`,
+        error
+      );
     }
   }
 
-  async getInventory(sku: string, locationId?: string): Promise<Inventory> {
+  async getCustomers(input: GetCustomersInput): Promise<FulfillmentToolResult<{ customers: Customer[] }>> {
     try {
-      const params: any = { sku };
-      if (locationId) {
-        params.location_id = locationId;
-      }
-
-      const response = await this.client.get('/inventory', params);
+      const response = await this.client.get<YourFulfillmentCustomer[] | YourFulfillmentCustomer>(
+        '/customers',
+        this.mapCustomerFilters(input)
+      );
 
       if (!response.success) {
-        throw new AdapterError('Failed to get inventory', ErrorCode.API_ERROR, response.error);
+        return this.failure<{ customers: Customer[] }>('Failed to fetch customers', response.error ?? response);
       }
 
-      // Transform to UOIS Inventory format
-      return this.transformToInventory(response.data as YourFulfillmentInventory);
+      const customers = this.ensureArray(response.data).map((customer) => this.transformToCustomer(customer));
+      return this.success<{ customers: Customer[] }>({ customers });
     } catch (error: unknown) {
-      if (error instanceof AdapterError) {
-        throw error;
-      }
-      throw new AdapterError(`Failed to get inventory: ${getErrorMessage(error)}`, ErrorCode.UNKNOWN_ERROR, error);
+      return this.failure<{ customers: Customer[] }>(`Customer lookup failed: ${getErrorMessage(error)}`, error);
     }
   }
 
-  async getProduct(identifier: ProductIdentifier): Promise<Product> {
+  async getFulfillments(input: GetFulfillmentsInput): Promise<FulfillmentToolResult<{ fulfillments: Fulfillment[] }>> {
     try {
-      let response;
-
-      if (identifier.productId) {
-        response = await this.client.get(`/products/${identifier.productId}`);
-      } else if (identifier.sku) {
-        response = await this.client.get(`/products/by-sku/${identifier.sku}`);
-      } else {
-        throw new AdapterError('Either productId or sku must be provided', ErrorCode.INVALID_REQUEST);
-      }
+      const response = await this.client.get<YourFulfillmentShipment[] | YourFulfillmentShipment>(
+        '/shipments',
+        this.mapFulfillmentFilters(input)
+      );
 
       if (!response.success) {
-        throw new ProductNotFoundError(identifier);
+        return this.failure<{ fulfillments: Fulfillment[] }>(
+          'Failed to fetch fulfillments',
+          response.error ?? response
+        );
       }
 
-      // Transform to UOIS Product format
-      return this.transformToProduct(response.data as YourFulfillmentProduct);
+      const fulfillments = this.ensureArray(response.data).map((shipment) => this.transformToFulfillment(shipment));
+      return this.success<{ fulfillments: Fulfillment[] }>({ fulfillments });
     } catch (error: unknown) {
-      if (error instanceof AdapterError) {
-        throw error;
-      }
-      throw new AdapterError(`Failed to get product: ${getErrorMessage(error)}`, ErrorCode.UNKNOWN_ERROR, error);
+      return this.failure<{ fulfillments: Fulfillment[] }>(
+        `Fulfillment lookup failed: ${getErrorMessage(error)}`,
+        error
+      );
     }
   }
 
-  async getCustomer(identifier: CustomerIdentifier): Promise<Customer> {
-    try {
-      let response;
+  private updateOptions(options: Partial<TemplateAdapterOptions>): void {
+    if (!options) {
+      return;
+    }
 
-      if (identifier.customerId) {
-        response = await this.client.get(`/customers/${identifier.customerId}`);
-      } else if (identifier.email) {
-        response = await this.client.get(`/customers/by-email/${identifier.email}`);
-      } else {
-        throw new AdapterError('Either customerId or email must be provided', ErrorCode.INVALID_REQUEST);
-      }
+    this.options = {
+      ...this.options,
+      ...options,
+    };
 
-      if (!response.success) {
-        throw new CustomerNotFoundError(identifier);
-      }
+    if (options.apiKey) {
+      this.client.updateApiKey(options.apiKey);
+    }
 
-      // Transform to UOIS Customer format
-      return this.transformToCustomer(response.data as YourFulfillmentCustomer);
-    } catch (error: unknown) {
-      if (error instanceof AdapterError) {
-        throw error;
-      }
-      throw new AdapterError(`Failed to get customer: ${getErrorMessage(error)}`, ErrorCode.UNKNOWN_ERROR, error);
+    if (typeof options.debugMode === 'boolean') {
+      this.client.setDebugMode(options.debugMode);
     }
   }
 
-  async getShipment(identifier: ShipmentIdentifier): Promise<Shipment> {
-    try {
-      let response;
-
-      if (identifier.shipmentId) {
-        response = await this.client.get(`/shipments/${identifier.shipmentId}`);
-      } else if (identifier.trackingNumber) {
-        response = await this.client.get(`/shipments/by-tracking/${identifier.trackingNumber}`);
-      } else {
-        throw new AdapterError('Either shipmentId or trackingNumber must be provided', ErrorCode.INVALID_REQUEST);
-      }
-
-      if (!response.success) {
-        throw new AdapterError(`Shipment not found: ${JSON.stringify(identifier)}`, ErrorCode.API_ERROR, identifier);
-      }
-
-      // Transform to UOIS Shipment format
-      return this.transformToShipment(response.data as YourFulfillmentShipment);
-    } catch (error: unknown) {
-      if (error instanceof AdapterError) {
-        throw error;
-      }
-      throw new AdapterError(`Failed to get shipment: ${getErrorMessage(error)}`, ErrorCode.UNKNOWN_ERROR, error);
-    }
+  private success<T>(payload: T): FulfillmentToolResult<T> {
+    return { success: true, ...payload } as FulfillmentToolResult<T>;
   }
 
-  async getBuyer(buyerId: string): Promise<Buyer> {
-    try {
-      const response = await this.client.get(`/buyers/${buyerId}`);
-
-      if (!response.success) {
-        throw new AdapterError(`Buyer not found: ${buyerId}`, ErrorCode.API_ERROR, { buyerId });
-      }
-
-      // Transform to UOIS Buyer format
-      return this.transformToBuyer(response.data as any);
-    } catch (error: unknown) {
-      if (error instanceof AdapterError) {
-        throw error;
-      }
-      throw new AdapterError(`Failed to get buyer: ${getErrorMessage(error)}`, ErrorCode.UNKNOWN_ERROR, error);
-    }
+  private failure<T>(message: string, error?: unknown): FulfillmentToolResult<T> {
+    return {
+      success: false,
+      error: error ?? new AdapterError(message, ErrorCode.API_ERROR, { message }),
+      message,
+    } as FulfillmentToolResult<T>;
   }
 
-  // ==================== Private Helper Methods ====================
+  private ensureArray<T>(data: T | T[] | undefined | null): T[] {
+    if (!data) {
+      return [];
+    }
+    return Array.isArray(data) ? data : [data];
+  }
 
-  private transformToFulfillmentOrder(params: OrderRequest): any {
-    // Transform UOIS order format to your Fulfillment format
-    // This is where you map UOIS fields to your Fulfillment-specific fields
+  private transformCreateSalesOrderInput(input: CreateSalesOrderInput): Record<string, unknown> {
+    const order = input.order;
+    if (!order) {
+      return {};
+    }
 
     return {
-      external_id: params.extOrderId,
-      customer: {
-        id: params.customer?.customerId,
-        email: params.customer?.email,
-        first_name: params.customer?.firstName,
-        last_name: params.customer?.lastName,
-        phone: params.customer?.phone,
-      },
-      items: params.lineItems?.map((item) => ({
+      external_id: order.externalId ?? order.name,
+      status: order.status,
+      total: order.totalPrice,
+      currency: order.currency ?? 'USD',
+      customer: order.customer
+        ? {
+            id: order.customer.id ?? order.customer.externalId ?? order.customer.email,
+            email: order.customer.email,
+            first_name: order.customer.firstName,
+            last_name: order.customer.lastName,
+            phone: order.customer.phone,
+          }
+        : undefined,
+      items: order.lineItems?.map((item) => ({
         sku: item.sku,
         name: item.name,
-        quantity: item.quantity,
-        price: item.price,
-        discount: item.discount || 0,
-        tax: item.tax || 0,
+        quantity: item.quantity ?? 0,
+        price: item.unitPrice ?? 0,
+        subtotal: item.totalPrice ?? item.unitPrice ?? 0,
+        discount: 0,
+        tax: 0,
       })),
-      shipping_address: params.shippingAddress
-        ? {
-            street1: params.shippingAddress.address1,
-            street2: params.shippingAddress.address2,
-            city: params.shippingAddress.city,
-            state: params.shippingAddress.state,
-            postal_code: params.shippingAddress.zip,
-            country: params.shippingAddress.country,
-            name: `${params.shippingAddress.firstName} ${params.shippingAddress.lastName}`,
-            phone: params.shippingAddress.phone,
-          }
-        : undefined,
-      billing_address: params.billingAddress
-        ? {
-            street1: params.billingAddress.address1,
-            street2: params.billingAddress.address2,
-            city: params.billingAddress.city,
-            state: params.billingAddress.state,
-            postal_code: params.billingAddress.zip,
-            country: params.billingAddress.country,
-            name: `${params.billingAddress.firstName} ${params.billingAddress.lastName}`,
-            phone: params.billingAddress.phone,
-          }
-        : undefined,
-      total: params.totalPrice,
-      currency: params.currency || 'USD',
-      notes: params.orderNote,
+      shipping_address: this.mapOrderAddress(order.shippingAddress),
+      billing_address: this.mapOrderAddress(order.billingAddress),
+      notes: order.orderNote,
       metadata: {
-        source: params.orderSource,
+        source: order.orderSource,
         workspace: this.options.workspace,
       },
     };
   }
 
-  private transformOrderUpdates(updates: OrderUpdates): any {
-    // Transform UOIS update format to your Fulfillment format
-    const fulfillmentUpdates: any = {};
-
-    if (updates.status) {
-      // Reverse map UOIS status to your Fulfillment status
-      const reverseStatusMap: Record<string, string> = {};
-      for (const [fulfillmentStatus, uoisStatus] of Object.entries(STATUS_MAP)) {
-        reverseStatusMap[uoisStatus] = fulfillmentStatus;
-      }
-      fulfillmentUpdates.status = reverseStatusMap[updates.status] || updates.status;
+  private mapOrderAddress(address?: Address): YourFulfillmentAddress | undefined {
+    if (!address) {
+      return undefined;
     }
 
-    if (updates.shippingAddress) {
-      fulfillmentUpdates.shipping_address = {
-        street1: updates.shippingAddress.address1,
-        street2: updates.shippingAddress.address2,
-        city: updates.shippingAddress.city,
-        state: updates.shippingAddress.state,
-        postal_code: updates.shippingAddress.zip,
-        country: updates.shippingAddress.country,
-      };
-    }
-
-    if (updates.notes) {
-      fulfillmentUpdates.notes = updates.notes;
-    }
-
-    if (updates.tags) {
-      fulfillmentUpdates.tags = updates.tags;
-    }
-
-    return fulfillmentUpdates;
-  }
-
-  private transformToOrderResult(fulfillmentResponse: any): OrderResult {
-    // Transform your Fulfillment response to UOIS format
     return {
-      success: true,
-      orderId: fulfillmentResponse.id,
-      orderNumber: fulfillmentResponse.number,
-      status: this.mapOrderStatus(fulfillmentResponse.status),
-      createdAt: fulfillmentResponse.created_at,
-      message: `Order ${fulfillmentResponse.number} created successfully`,
+      street1: address.address1 ?? '',
+      street2: address.address2,
+      city: address.city ?? '',
+      state: address.stateOrProvince ?? '',
+      postal_code: address.zipCodeOrPostalCode ?? '',
+      country: address.country ?? '',
+      phone: address.phone,
+      email: address.email,
+      name: this.composeName(address.firstName, address.lastName),
+      company: address.company,
     };
   }
 
-  private transformToOrder(fulfillmentOrder: YourFulfillmentOrder): Order {
-    // Transform your Fulfillment order to UOIS Order format
+  private transformOrderUpdates(updates: UpdateOrderInput['updates']): Record<string, unknown> {
+    const payload: Record<string, unknown> = {};
+
+    const status = this.valueOrUndefined((updates as { status?: string | null | undefined }).status);
+    if (status) {
+      payload.status = this.reverseMapStatus(status);
+    }
+
+    const shippingAddress = this.valueOrUndefined((updates as { shippingAddress?: Address | null }).shippingAddress);
+    if (shippingAddress) {
+      payload.shipping_address = this.mapOrderAddress(shippingAddress);
+    }
+
+    const billingAddress = this.valueOrUndefined((updates as { billingAddress?: Address | null }).billingAddress);
+    if (billingAddress) {
+      payload.billing_address = this.mapOrderAddress(billingAddress);
+    }
+
+    const notes = this.valueOrUndefined((updates as { notes?: string | null }).notes);
+    if (notes) {
+      payload.notes = notes;
+    }
+
+    const tags = this.valueOrUndefined((updates as { tags?: string[] | null }).tags);
+    if (Array.isArray(tags)) {
+      payload.tags = tags;
+    }
+
+    return payload;
+  }
+
+  private transformFulfillOrderInput(input: FulfillOrderInput): Record<string, unknown> {
     return {
-      orderId: fulfillmentOrder.id,
-      extOrderId: fulfillmentOrder.external_id,
-      status: this.mapOrderStatus(fulfillmentOrder.status),
-      customer: {
-        customerId: fulfillmentOrder.customer.id,
-        email: fulfillmentOrder.customer.email,
-        firstName: fulfillmentOrder.customer.first_name,
-        lastName: fulfillmentOrder.customer.last_name,
-        phone: fulfillmentOrder.customer.phone,
+      tracking_number: input.trackingNumber ?? undefined,
+      carrier: input.shippingCarrier,
+      service: input.shippingClass,
+      location_id: input.locationId,
+      shipped_at: input.shipByDate ?? this.now(),
+      expected_delivery: input.expectedDeliveryDate,
+      items: input.lineItems?.map((item) => ({
+        sku: item.sku,
+        quantity: item.quantity ?? 0,
+      })),
+      shipping_address: this.mapOrderAddress(input.shippingAddress),
+      incoterms: input.incoterms,
+      notes: input.giftNote,
+    };
+  }
+
+  private transformToOrder(order: YourFulfillmentOrder): Order {
+    return {
+      id: order.id,
+      externalId: order.external_id,
+      name: order.number,
+      status: this.mapOrderStatus(order.status),
+      totalPrice: order.total,
+      currency: order.currency,
+      customer: this.transformToCustomerFromOrder(order),
+      shippingAddress: this.transformToAddress(order.shipping_address),
+      billingAddress: this.transformToAddress(order.billing_address),
+      lineItems: order.items.map((item, index) => this.transformToOrderLineItem(order.id, item, index)),
+      createdAt: order.created_at,
+      updatedAt: order.updated_at,
+      tenantId: this.getTenantId(),
+      customFields: this.transformMetadataToCustomFields(order.metadata),
+      orderSource: order.metadata?.source,
+      orderNote: order.metadata?.note,
+    };
+  }
+
+  private transformToCustomer(customer: YourFulfillmentCustomer): Customer {
+    return {
+      id: customer.id,
+      email: customer.email,
+      firstName: customer.first_name,
+      lastName: customer.last_name,
+      phone: customer.phone,
+      addresses: this.transformToCustomerAddresses(customer.addresses),
+      tags: customer.tags,
+      createdAt: customer.created_at ?? this.now(),
+      updatedAt: customer.updated_at ?? this.now(),
+      tenantId: this.getTenantId(),
+      status: 'active',
+      type: 'customer',
+    };
+  }
+
+  private transformToCustomerFromOrder(order: YourFulfillmentOrder): Customer {
+    return this.transformToCustomer({
+      id: order.customer.id,
+      email: order.customer.email,
+      first_name: order.customer.first_name,
+      last_name: order.customer.last_name,
+      phone: order.customer.phone,
+      created_at: order.created_at,
+      updated_at: order.updated_at,
+      addresses: [order.shipping_address, order.billing_address].filter(Boolean) as YourFulfillmentAddress[],
+      tags: [],
+      metadata: order.metadata,
+    });
+  }
+
+  private transformToCustomerAddresses(addresses?: YourFulfillmentAddress[]): CustomerAddress[] | undefined {
+    if (!addresses?.length) {
+      return undefined;
+    }
+
+    const mapped = addresses
+      .map((addr) => {
+        const address = this.transformToAddress(addr);
+        if (!address) {
+          return undefined;
+        }
+        return {
+          name: addr.name ?? this.composeName(address.firstName, address.lastName),
+          address,
+        };
+      })
+      .filter(Boolean) as CustomerAddress[];
+
+    return mapped.length ? mapped : undefined;
+  }
+
+  private transformToAddress(address?: YourFulfillmentAddress): Address | undefined {
+    if (!address) {
+      return undefined;
+    }
+
+    const { firstName, lastName } = this.splitName(address.name);
+
+    return {
+      address1: address.street1 ?? '',
+      address2: address.street2,
+      city: address.city ?? '',
+      country: address.country ?? '',
+      email: address.email,
+      firstName,
+      lastName,
+      phone: address.phone,
+      stateOrProvince: address.state ?? '',
+      zipCodeOrPostalCode: address.postal_code ?? '',
+      company: address.company,
+    };
+  }
+
+  private transformToOrderLineItem(
+    orderId: string,
+    item: YourFulfillmentOrder['items'][number],
+    index: number
+  ): OrderLineItem {
+    return {
+      id: `${orderId}-${item.sku}-${index}`,
+      sku: item.sku,
+      quantity: item.quantity,
+      unitPrice: item.price,
+      totalPrice: item.subtotal ?? item.price * item.quantity,
+      name: item.name,
+    };
+  }
+
+  private transformMetadataToCustomFields(metadata?: Record<string, unknown>): CustomField[] | undefined {
+    if (!metadata) {
+      return undefined;
+    }
+
+    const entries = Object.entries(metadata)
+      .filter(([, value]) => value !== undefined && value !== null)
+      .map(([name, value]) => ({
+        name,
+        value: String(value),
+      }));
+
+    return entries.length ? entries : undefined;
+  }
+
+  private transformToFulfillment(shipment: YourFulfillmentShipment): Fulfillment {
+    return {
+      id: shipment.id,
+      externalId: shipment.tracking_number,
+      orderId: shipment.order_id,
+      trackingNumber: shipment.tracking_number,
+      shippingCarrier: shipment.carrier,
+      shippingClass: shipment.service,
+      status: shipment.status,
+      shippingAddress: this.transformToAddress(shipment.to_address),
+      lineItems: shipment.items.map((item, index) => ({
+        id: `${shipment.id}-${item.sku}-${index}`,
+        sku: item.sku,
+        quantity: item.quantity,
+      })),
+      createdAt: shipment.shipped_at ?? this.now(),
+      updatedAt: shipment.delivered_at ?? shipment.shipped_at ?? this.now(),
+      tenantId: this.getTenantId(),
+      expectedDeliveryDate: shipment.delivered_at,
+      expectedShipDate: shipment.shipped_at,
+      shippingLabels: shipment.tracking_url ? [shipment.tracking_url] : undefined,
+      shippingNote: shipment.tracking_url,
+    };
+  }
+
+  private transformToInventoryItems(inventory: YourFulfillmentInventory): InventoryItem[] {
+    const tenantId = this.getTenantId();
+
+    if (inventory.warehouse_locations?.length) {
+      return inventory.warehouse_locations.map((location) => ({
+        locationId: location.location_id,
+        sku: inventory.sku,
+        available: location.available,
+        onHand: location.available + location.reserved,
+        unavailable: location.reserved,
+        tenantId,
+      }));
+    }
+
+    return [
+      {
+        locationId: '',
+        sku: inventory.sku,
+        available: inventory.available,
+        onHand: inventory.total,
+        unavailable: inventory.total - inventory.available,
+        tenantId,
       },
-      lineItems: fulfillmentOrder.items.map((item) => ({
-        lineItemId: `line_${item.sku}_${Date.now()}`, // Generate a unique line item ID
-        sku: item.sku,
-        name: item.name,
-        quantity: item.quantity,
-        unitPrice: item.price,
-        totalPrice: item.subtotal,
-        price: item.price,
-        discount: item.discount,
-        tax: item.tax,
-        subtotal: item.subtotal,
-      })),
-      shippingAddress: fulfillmentOrder.shipping_address
-        ? {
-            firstName: fulfillmentOrder.shipping_address.name?.split(' ')[0],
-            lastName: fulfillmentOrder.shipping_address.name?.split(' ').slice(1).join(' '),
-            address1: fulfillmentOrder.shipping_address.street1,
-            address2: fulfillmentOrder.shipping_address.street2,
-            city: fulfillmentOrder.shipping_address.city,
-            state: fulfillmentOrder.shipping_address.state,
-            zip: fulfillmentOrder.shipping_address.postal_code,
-            country: fulfillmentOrder.shipping_address.country,
-            phone: fulfillmentOrder.shipping_address.phone,
-          }
-        : undefined,
-      billingAddress: fulfillmentOrder.billing_address
-        ? {
-            firstName: fulfillmentOrder.billing_address.name?.split(' ')[0],
-            lastName: fulfillmentOrder.billing_address.name?.split(' ').slice(1).join(' '),
-            address1: fulfillmentOrder.billing_address.street1,
-            address2: fulfillmentOrder.billing_address.street2,
-            city: fulfillmentOrder.billing_address.city,
-            state: fulfillmentOrder.billing_address.state,
-            zip: fulfillmentOrder.billing_address.postal_code,
-            country: fulfillmentOrder.billing_address.country,
-            phone: fulfillmentOrder.billing_address.phone,
-          }
-        : undefined,
-      totalPrice: fulfillmentOrder.total,
-      currency: fulfillmentOrder.currency,
-      createdAt: fulfillmentOrder.created_at,
-      updatedAt: fulfillmentOrder.updated_at,
-    };
+    ];
   }
 
-  private transformToInventory(fulfillmentInventory: YourFulfillmentInventory): Inventory {
+  private transformToProduct(product: YourFulfillmentProduct): Product {
     return {
-      sku: fulfillmentInventory.sku,
-      available: fulfillmentInventory.available,
-      reserved: fulfillmentInventory.reserved,
-      total: fulfillmentInventory.total,
-      locations: fulfillmentInventory.warehouse_locations?.map((loc) => ({
-        locationId: loc.location_id,
-        available: loc.available,
-        reserved: loc.reserved,
-      })),
-      lastUpdated: fulfillmentInventory.updated_at,
+      id: product.id,
+      externalId: product.sku,
+      name: product.name,
+      description: product.description,
+      status: product.status,
+      options: [],
+      tags: product.attributes ? Object.keys(product.attributes) : undefined,
+      createdAt: product.created_at,
+      updatedAt: product.updated_at,
+      tenantId: this.getTenantId(),
     };
   }
 
-  private transformToProduct(fulfillmentProduct: YourFulfillmentProduct): Product {
+  private transformToProductVariant(product: YourFulfillmentProduct): ProductVariant {
     return {
-      productId: fulfillmentProduct.id,
-      sku: fulfillmentProduct.sku,
-      name: fulfillmentProduct.name,
-      description: fulfillmentProduct.description,
-      price: fulfillmentProduct.price,
-      status: fulfillmentProduct.status,
-      inventory: fulfillmentProduct.inventory,
-      attributes: fulfillmentProduct.attributes,
-      createdAt: fulfillmentProduct.created_at,
-      updatedAt: fulfillmentProduct.updated_at,
+      id: `${product.id}-default`,
+      productId: product.id,
+      sku: product.sku,
+      title: product.name,
+      price: product.price,
+      currency: 'USD',
+      createdAt: product.created_at,
+      updatedAt: product.updated_at,
+      tenantId: this.getTenantId(),
     };
   }
 
-  private transformToCustomer(fulfillmentCustomer: YourFulfillmentCustomer): Customer {
+  private mapOrderFilters(input: GetOrdersInput): Record<string, unknown> {
     return {
-      customerId: fulfillmentCustomer.id,
-      email: fulfillmentCustomer.email,
-      firstName: fulfillmentCustomer.first_name,
-      lastName: fulfillmentCustomer.last_name,
-      phone: fulfillmentCustomer.phone,
-      addresses: fulfillmentCustomer.addresses?.map((addr) => ({
-        type: 'shipping',
-        firstName: addr.name?.split(' ')[0],
-        lastName: addr.name?.split(' ').slice(1).join(' '),
-        address1: addr.street1,
-        address2: addr.street2,
-        city: addr.city,
-        state: addr.state,
-        zip: addr.postal_code,
-        country: addr.country,
-        phone: addr.phone,
-      })),
-      tags: fulfillmentCustomer.tags,
-      metadata: fulfillmentCustomer.metadata,
-      createdAt: fulfillmentCustomer.created_at,
-      updatedAt: fulfillmentCustomer.updated_at,
+      ids: input.ids,
+      external_ids: input.externalIds,
+      statuses: input.statuses,
+      updated_at_min: input.updatedAtMin,
+      updated_at_max: input.updatedAtMax,
+      created_at_min: input.createdAtMin,
+      created_at_max: input.createdAtMax,
+      limit: input.pageSize,
+      offset: input.skip,
     };
   }
 
-  private transformToShipment(fulfillmentShipment: YourFulfillmentShipment): Shipment {
+  private mapInventoryFilters(input: GetInventoryInput): Record<string, unknown> {
     return {
-      shipmentId: fulfillmentShipment.id,
-      extOrderId: fulfillmentShipment.order_id, // Required field
-      shippingAddress: fulfillmentShipment.to_address
-        ? {
-            // Required field
-            firstName: fulfillmentShipment.to_address.name?.split(' ')[0],
-            lastName: fulfillmentShipment.to_address.name?.split(' ').slice(1).join(' '),
-            address1: fulfillmentShipment.to_address.street1,
-            address2: fulfillmentShipment.to_address.street2,
-            city: fulfillmentShipment.to_address.city,
-            state: fulfillmentShipment.to_address.state,
-            zip: fulfillmentShipment.to_address.postal_code,
-            country: fulfillmentShipment.to_address.country,
-            phone: fulfillmentShipment.to_address.phone,
-          }
-        : {},
-      orderId: fulfillmentShipment.order_id,
-      trackingNumber: fulfillmentShipment.tracking_number,
-      carrier: fulfillmentShipment.carrier,
-      service: fulfillmentShipment.service,
-      status: fulfillmentShipment.status,
-      shippedAt: fulfillmentShipment.shipped_at,
-      deliveredAt: fulfillmentShipment.delivered_at,
-      trackingUrl: fulfillmentShipment.tracking_url,
-      items: fulfillmentShipment.items.map((item) => ({
-        sku: item.sku,
-        quantity: item.quantity,
-      })),
-      fromAddress: fulfillmentShipment.from_address
-        ? {
-            firstName: fulfillmentShipment.from_address.name?.split(' ')[0],
-            lastName: fulfillmentShipment.from_address.name?.split(' ').slice(1).join(' '),
-            address1: fulfillmentShipment.from_address.street1,
-            address2: fulfillmentShipment.from_address.street2,
-            city: fulfillmentShipment.from_address.city,
-            state: fulfillmentShipment.from_address.state,
-            zip: fulfillmentShipment.from_address.postal_code,
-            country: fulfillmentShipment.from_address.country,
-            phone: fulfillmentShipment.from_address.phone,
-          }
-        : undefined,
-      toAddress: fulfillmentShipment.to_address
-        ? {
-            firstName: fulfillmentShipment.to_address.name?.split(' ')[0],
-            lastName: fulfillmentShipment.to_address.name?.split(' ').slice(1).join(' '),
-            address1: fulfillmentShipment.to_address.street1,
-            address2: fulfillmentShipment.to_address.street2,
-            city: fulfillmentShipment.to_address.city,
-            state: fulfillmentShipment.to_address.state,
-            zip: fulfillmentShipment.to_address.postal_code,
-            country: fulfillmentShipment.to_address.country,
-            phone: fulfillmentShipment.to_address.phone,
-          }
-        : undefined,
+      skus: input.skus,
+      location_ids: input.locationIds,
     };
   }
 
-  private transformToBuyer(fulfillmentBuyer: any): Buyer {
+  private mapProductFilters(input: GetProductsInput): Record<string, unknown> {
     return {
-      buyerId: fulfillmentBuyer.id,
-      name: fulfillmentBuyer.name,
-      email: fulfillmentBuyer.email,
-      roles: fulfillmentBuyer.roles || [],
-      phone: fulfillmentBuyer.phone,
-      company: fulfillmentBuyer.company,
-      type: fulfillmentBuyer.type || 'individual',
-      status: fulfillmentBuyer.status || 'active',
-      metadata: fulfillmentBuyer.metadata,
-      createdAt: fulfillmentBuyer.created_at,
-      updatedAt: fulfillmentBuyer.updated_at,
+      ids: input.ids,
+      skus: input.skus,
+      updated_at_min: input.updatedAtMin,
+      updated_at_max: input.updatedAtMax,
+      created_at_min: input.createdAtMin,
+      created_at_max: input.createdAtMax,
+      limit: input.pageSize,
+      offset: input.skip,
     };
   }
 
-  private mapOrderStatus(fulfillmentStatus: string): string {
-    // Map your Fulfillment status to UOIS standard status
-    return STATUS_MAP[fulfillmentStatus] || fulfillmentStatus;
+  private mapProductVariantFilters(input: GetProductVariantsInput): Record<string, unknown> {
+    return {
+      ids: input.ids,
+      skus: input.skus,
+      product_ids: input.productIds,
+      updated_at_min: input.updatedAtMin,
+      updated_at_max: input.updatedAtMax,
+      created_at_min: input.createdAtMin,
+      created_at_max: input.createdAtMax,
+      limit: input.pageSize,
+      offset: input.skip,
+    };
+  }
+
+  private mapCustomerFilters(input: GetCustomersInput): Record<string, unknown> {
+    return {
+      ids: input.ids,
+      emails: input.emails,
+      updated_at_min: input.updatedAtMin,
+      updated_at_max: input.updatedAtMax,
+      created_at_min: input.createdAtMin,
+      created_at_max: input.createdAtMax,
+      limit: input.pageSize,
+      offset: input.skip,
+    };
+  }
+
+  private mapFulfillmentFilters(input: GetFulfillmentsInput): Record<string, unknown> {
+    return {
+      ids: input.ids,
+      order_ids: input.orderIds,
+      updated_at_min: input.updatedAtMin,
+      updated_at_max: input.updatedAtMax,
+      created_at_min: input.createdAtMin,
+      created_at_max: input.createdAtMax,
+      limit: input.pageSize,
+      offset: input.skip,
+    };
+  }
+
+  private async fetchOrderById(orderId: string): Promise<YourFulfillmentApiResponse<YourFulfillmentOrder>> {
+    return this.client.get<YourFulfillmentOrder>(`/orders/${orderId}`);
+  }
+
+  private reverseMapStatus(status: string): string {
+    const reverse = Object.entries(STATUS_MAP).reduce<Record<string, string>>(
+      (acc, [fulfillmentStatus, normalized]) => {
+        acc[normalized] = fulfillmentStatus;
+        return acc;
+      },
+      {}
+    );
+
+    return reverse[status] ?? status;
+  }
+
+  private mapOrderStatus(status: string): string {
+    return STATUS_MAP[status] ?? status;
+  }
+
+  private composeName(firstName?: string | null, lastName?: string | null): string | undefined {
+    const parts = [firstName, lastName]
+      .filter((value): value is string => Boolean(value && value.trim()))
+      .map((value) => value.trim());
+
+    return parts.length ? parts.join(' ') : undefined;
+  }
+
+  private splitName(name?: string | null): { firstName?: string; lastName?: string } {
+    if (!name) {
+      return {};
+    }
+
+    const parts = name.trim().split(/\s+/);
+    if (!parts.length) {
+      return {};
+    }
+
+    if (parts.length === 1) {
+      return { firstName: parts[0] };
+    }
+
+    return {
+      firstName: parts.shift(),
+      lastName: parts.join(' '),
+    };
+  }
+
+  private valueOrUndefined<T>(value: T | null | undefined): T | undefined {
+    return value ?? undefined;
+  }
+
+  private getTenantId(): string {
+    return this.options.workspace ?? 'default-workspace';
+  }
+
+  private now(): string {
+    return new Date().toISOString();
   }
 }
