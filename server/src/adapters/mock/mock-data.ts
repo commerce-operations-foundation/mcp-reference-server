@@ -4,7 +4,7 @@
  */
 
 import { DateUtils } from '../../utils/index.js';
-import { Customer, Inventory, Order, Product, ProductVariant } from '../../schemas/index.js';
+import { Customer, InventoryItem, Order, Product, ProductVariant } from '../../schemas/index.js';
 
 const tenantId = 'tenant_001';
 
@@ -16,7 +16,7 @@ export class MockData {
   private productVariants: Map<string, ProductVariant> = new Map();
   private variantAliases: Map<string, string> = new Map();
   private customers: Map<string, Customer> = new Map();
-  private inventory: Map<string, Inventory> = new Map();
+  private inventory: Map<string, InventoryItem> = new Map();
 
   constructor() {
     this.generateSampleData();
@@ -336,19 +336,16 @@ export class MockData {
 
     skus.forEach((sku) => {
       warehouses.forEach((locationId) => {
-        const available = Math.floor(Math.random() * 100) + 10;
-        const reserved = Math.floor(Math.random() * 20);
+        const onHand = Math.floor(Math.random() * 100) + 10;
+        const unavailable = Math.floor(Math.random() * 20);
 
         this.inventory.set(`${sku}_${locationId}`, {
-          id: `${sku}_${locationId}`,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
           tenantId,
           sku,
-          locationId: locationId, // Use locationId as per schema
-          onHand: available + reserved,
-          available: available,
-          quantity: available + reserved,
+          locationId,
+          onHand,
+          unavailable,
+          available: onHand - unavailable,
         });
       });
     });
@@ -780,25 +777,22 @@ export class MockData {
   /**
    * Get inventory for SKU and warehouse
    */
-  getInventory(sku: string, locationId: string = 'WH001'): Inventory {
+  getInventory(sku: string, locationId: string = 'WH001'): InventoryItem {
     const key = `${sku}_${locationId}`;
     const inventory = this.inventory.get(key);
 
     if (!inventory) {
-      // Generate dynamic inventory if not found
-      const available = Math.floor(Math.random() * 100) + 10;
-      const reserved = Math.floor(Math.random() * 20);
+      const unavailable = Math.floor(Math.random() * 20);
+      const onHand = unavailable + Math.floor(Math.random() * 100) + 10;
+      const available = onHand - unavailable;
 
       return {
-        id: `${sku}_${locationId}`,
         sku,
-        locationId: locationId, // Use locationId as per schema
-        onHand: available + reserved,
-        available: available,
-        quantity: available + reserved,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        tenantId: 'tenant_001',
+        locationId,
+        onHand,
+        unavailable,
+        available,
+        tenantId,
       };
     }
 

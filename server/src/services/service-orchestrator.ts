@@ -26,7 +26,7 @@ import type {
   GetFulfillmentsInput,
 } from '../schemas/tool-inputs/index.js';
 import { AdapterConfig, HealthStatus, OrderResult, FulfillmentToolResult } from '../types/adapter.js';
-import { Customer, Fulfillment, Inventory, Order, Product, ProductVariant } from '../schemas/index.js';
+import { Customer, Fulfillment, InventoryItem, Order, Product, ProductVariant } from '../schemas/index.js';
 
 /**
  * ServiceOrchestrator provides a unified interface to all Fulfillment operations
@@ -171,7 +171,7 @@ export class ServiceOrchestrator {
   // Inventory Operations (delegated to InventoryService)
   // ==========================================
 
-  async getInventory(input: GetInventoryInput): Promise<FulfillmentToolResult<{ inventory: Inventory[] }>> {
+  async getInventory(input: GetInventoryInput): Promise<FulfillmentToolResult<{ inventory: InventoryItem[] }>> {
     this.ensureInitialized();
     const startTime = Date.now();
 

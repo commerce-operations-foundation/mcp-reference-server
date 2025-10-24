@@ -12,6 +12,10 @@
       "description": "Fields to update",
       "type": "object",
       "properties": {
+        "status": {
+          "description": "Order status",
+          "type": "string"
+        },
         "billingAddress": {
           "description": "Purchaser Address",
           "type": "object",
@@ -290,6 +294,10 @@
           "items": {
             "type": "object",
             "properties": {
+              "id": {
+                "description": "Unique identifier for this line item within the order",
+                "type": "string"
+              },
               "sku": {
                 "description": "Product Variant SKU",
                 "type": "string",
@@ -468,6 +476,14 @@
         "totalPrice": {
           "description": "Total Price",
           "type": "number"
+        },
+        "externalId": {
+          "description": "ID of the entity in the client's system. Must be unique within the tenant.",
+          "type": "string"
+        },
+        "tenantId": {
+          "description": "Unique identifier for the tenant that owns this entity (read-only)",
+          "type": "string"
         }
       },
       "additionalProperties": false

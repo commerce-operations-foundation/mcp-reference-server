@@ -1,36 +1,21 @@
 import { z } from 'zod';
-
 import { ObjectProps } from '../common.js';
+import { makeZodFieldMap } from '../utils/schema-util.js';
 
 /**
  * Inventory entity schema.
  */
-export const inventorySchema = z
+export const InventoryItemSchema = z
   .object({
-    available: z.number(),
-    availableToPromise: z.number(),
-    commitShip: z.number(),
-    commitXfer: z.number(),
-    committed: z.number(),
-    committedFuture: z.number(),
-    damaged: z.number(),
-    future: z.number(),
-    hold: z.number(),
-    incoming: z.number(),
-    inventoryNotTracked: z.boolean(),
-    label: z.string(),
     locationId: z.string(),
-    onHand: z.number(),
-    quantity: z.number(),
-    sku: z.string(),
-    unavailable: z.number(),
+    sku: z.string().describe('SKU of the inventory item. Should match product variant SKU.'),
+    onHand: z.int().describe('Quantity physically in the warehouse'),
+    unavailable: z.int().describe('Quantity unavailable to sell (e.g. damaged, committed, missing, etc)'),
+    available: z.int().describe('Quantity available to sell (onHand - unavailable)'),
   })
   .partial()
-  .required({
-    sku: true,
-    locationId: true,
-  })
-  .extend(ObjectProps.shape)
+  .required(makeZodFieldMap(['sku', 'locationId', 'available'] as const))
+  .extend(ObjectProps.pick(makeZodFieldMap(['tenantId'] as const)).shape)
   .describe('Inventory Item');
 
-export type Inventory = z.infer<typeof inventorySchema>;
+export type InventoryItem = z.infer<typeof InventoryItemSchema>;

@@ -1,8 +1,3 @@
-/**
- * Get Order Tool
- * Retrieves order information by ID or external ID
- */
-
 import { BaseTool } from '../base-tool.js';
 import { JSONSchema } from '../../types/mcp.js';
 import { toJsonSchema } from '../../schemas/utils/schema-util.js';
@@ -17,7 +12,6 @@ export class GetOrdersTool extends BaseTool {
   inputSchema: JSONSchema = toJsonSchema(GetOrdersInputSchema);
 
   async execute(input: GetOrdersInput): Promise<any> {
-    // Delegate to service layer
     return this.serviceLayer.getOrders(input);
   }
 }

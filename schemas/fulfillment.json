@@ -5,7 +5,7 @@
   "type": "object",
   "properties": {
     "shippingAddress": {
-      "description": "Destination address",
+      "description": "Shipping address",
       "type": "object",
       "properties": {
         "address1": {
@@ -86,11 +86,13 @@
       }
     },
     "expectedDeliveryDate": {
+      "description": "Expected delivery date",
       "type": "string",
       "format": "date-time",
       "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
     },
     "expectedShipDate": {
+      "description": "Expected date the order will be shipped",
       "type": "string",
       "format": "date-time",
       "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
@@ -102,6 +104,7 @@
       "type": "string"
     },
     "lineItems": {
+      "description": "Items included in this fulfillment",
       "type": "array",
       "items": {
         "type": "object",
@@ -156,7 +159,6 @@
           }
         },
         "required": [
-          "id",
           "sku",
           "quantity"
         ],
@@ -167,6 +169,7 @@
       "type": "string"
     },
     "orderId": {
+      "description": "Order ID",
       "type": "string"
     },
     "shipByDate": {
@@ -175,6 +178,7 @@
       "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
     },
     "shippingCarrier": {
+      "description": "Shipping carrier name",
       "type": "string"
     },
     "shippingClass": {
@@ -190,9 +194,11 @@
       }
     },
     "shippingNote": {
+      "description": "Additional shipping notes",
       "type": "string"
     },
     "shippingPrice": {
+      "description": "Shipping cost",
       "type": "number"
     },
     "status": {
@@ -206,6 +212,7 @@
       }
     },
     "trackingNumber": {
+      "description": "Tracking number from carrier",
       "type": "string"
     },
     "id": {
@@ -236,6 +243,7 @@
   "required": [
     "lineItems",
     "orderId",
+    "trackingNumber",
     "id",
     "createdAt",
     "updatedAt",

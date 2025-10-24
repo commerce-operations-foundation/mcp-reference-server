@@ -7,7 +7,7 @@ import {
   orderSchema,
   CustomerSchema,
   productSchema,
-  inventorySchema,
+  InventoryItemSchema,
   FulfillmentSchema,
   ProductVariantSchema,
 } from '../index.js';
@@ -56,7 +56,7 @@ const schemaDefinitions = [
   },
   {
     name: 'inventory.json',
-    schema: inventorySchema,
+    schema: InventoryItemSchema,
     title: 'Inventory',
     description: 'Inventory entity schema',
   },

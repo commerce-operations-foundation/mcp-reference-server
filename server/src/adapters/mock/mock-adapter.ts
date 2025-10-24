@@ -35,7 +35,7 @@ import {
   GetProductsInputSchema,
   GetProductVariantsInput,
   GetProductVariantsInputSchema,
-  Inventory,
+  InventoryItem,
   Order,
   OrderLineItem,
   Product,
@@ -329,7 +329,7 @@ export class MockAdapter implements IFulfillmentAdapter {
     }
 
     const {
-      data: { orderId, shippingInfo, items, shippingAddress },
+      data: { orderId, trackingNumber, lineItems, shippingAddress, shippingCarrier, expectedDeliveryDate },
     } = parseResult;
 
     const order = this.mockData.getOrder(orderId);
@@ -359,8 +359,6 @@ export class MockAdapter implements IFulfillmentAdapter {
     }
 
     const fulfillmentId = IdGenerator.fulfillmentId();
-    // Use provided tracking number or generate one
-    const trackingNumber = shippingInfo.trackingNumber || `TRACK-${fulfillmentId}`;
     const shippedAt = DateUtils.now();
     const resolvedShippingAddress = this.buildAddress(shippingAddress ?? order.shippingAddress ?? order.billingAddress);
     const baseTenantId = (order as Partial<Order>).tenantId ?? 'mock-tenant';
@@ -375,14 +373,14 @@ export class MockAdapter implements IFulfillmentAdapter {
       externalId: `FULFILL-${fulfillmentId}`,
       shippingAddress: resolvedShippingAddress!,
       trackingNumber,
-      shippingCarrier: shippingInfo.carrier,
+      shippingCarrier,
       status: 'shipped',
-      expectedDeliveryDate: shippingInfo.estimatedDelivery,
+      expectedDeliveryDate,
       orderId: internalOrderId,
       createdAt: shippedAt,
       updatedAt: shippedAt,
       tenantId: baseTenantId,
-      lineItems: order.lineItems.filter((orderLineItem) => items.some((item) => item.sku === orderLineItem.sku)),
+      lineItems: order.lineItems.filter((orderLineItem) => lineItems.some((item: { sku: string }) => item.sku === orderLineItem.sku)),
     };
 
     Logger.info('Order shipped', { orderId, fulfillmentId, trackingNumber });
@@ -466,7 +464,7 @@ export class MockAdapter implements IFulfillmentAdapter {
   async getInventory(input: GetInventoryInput): Promise<
     | {
         success: true;
-        inventory: Inventory[];
+        inventory: InventoryItem[];
       }
     | {
         success: false;
@@ -492,7 +490,7 @@ export class MockAdapter implements IFulfillmentAdapter {
     }
 
     const data = parseResult.data;
-    const results: Inventory[] = [];
+    const results: InventoryItem[] = [];
 
     for (const sku of data.skus) {
       if (data.locationIds && data.locationIds.length > 0) {
@@ -632,7 +630,7 @@ export class MockAdapter implements IFulfillmentAdapter {
       }
     };
 
-    data.variantIds?.forEach((variantId) => addVariant(variantId));
+    data.ids?.forEach((id) => addVariant(id));
     data.skus?.forEach((sku) => addVariant(sku));
 
     data.productIds?.forEach((productId) => {
@@ -641,7 +639,7 @@ export class MockAdapter implements IFulfillmentAdapter {
     });
 
     if (variants.length === 0) {
-      const identifier = (data.variantIds?.[0] && { variantId: data.variantIds[0] }) ||
+      const identifier = (data.ids?.[0] && { id: data.ids[0] }) ||
         (data.skus?.[0] && { sku: data.skus[0] }) ||
         (data.productIds?.[0] && { productId: data.productIds[0] }) || { variantId: 'unknown' };
       return {

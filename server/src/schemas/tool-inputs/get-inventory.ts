@@ -1,7 +1,5 @@
 import { z } from 'zod';
 
-import { TemporalPaginationSchema } from './shared/filters.js';
-
 export const GetInventoryInputSchema = z
   .object({
     skus: z.array(z.string()).describe('Product SKU to get inventory for (required)'),
@@ -10,7 +8,6 @@ export const GetInventoryInputSchema = z
       .optional()
       .describe('Specific warehouse/location ID (optional - if not provided, returns aggregated inventory)'),
   })
-  .extend(TemporalPaginationSchema.shape)
   .refine((data) => data.skus.length > 0, {
     message: 'At least one SKU is required',
   });
