@@ -1,8 +1,3 @@
-/**
- * Get Inventory Tool
- * Retrieves inventory information for a product SKU
- */
-
 import { BaseTool } from '../base-tool.js';
 import { JSONSchema } from '../../types/mcp.js';
 import { toJsonSchema } from '../../schemas/utils/schema-util.js';
@@ -17,7 +12,6 @@ export class GetInventoryTool extends BaseTool {
   inputSchema: JSONSchema = toJsonSchema(GetInventoryInputSchema);
 
   async execute(input: GetInventoryInput): Promise<any> {
-    // Delegate to service layer - return raw data for MCP
     return this.serviceLayer.getInventory(input);
   }
 }

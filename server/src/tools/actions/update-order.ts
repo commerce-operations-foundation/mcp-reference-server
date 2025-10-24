@@ -1,8 +1,3 @@
-/**
- * Update Order Tool
- * Updates properties of an existing order
- */
-
 import { BaseTool } from '../base-tool.js';
 import { JSONSchema } from '../../types/mcp.js';
 import { toJsonSchema } from '../../schemas/utils/schema-util.js';
@@ -17,7 +12,6 @@ export class UpdateOrderTool extends BaseTool {
   inputSchema: JSONSchema = toJsonSchema(UpdateOrderInputSchema);
 
   async execute(input: UpdateOrderInput): Promise<any> {
-    // Delegate to service layer
     return this.serviceLayer.updateOrder(input);
   }
 }

@@ -14,7 +14,7 @@ import {
   GetOrdersInput,
   GetProductsInput,
   GetProductVariantsInput,
-  Inventory,
+  InventoryItem,
   Order,
   Product,
   ProductVariant,
@@ -85,7 +85,7 @@ export interface IFulfillmentAdapter {
 
   // Query Operations
   getOrders(input: GetOrdersInput): Promise<FulfillmentToolResult<{ orders: Order[] }>>;
-  getInventory(input: GetInventoryInput): Promise<FulfillmentToolResult<{ inventory: Inventory[] }>>;
+  getInventory(input: GetInventoryInput): Promise<FulfillmentToolResult<{ inventory: InventoryItem[] }>>;
   getProducts(input: GetProductsInput): Promise<FulfillmentToolResult<{ products: Product[] }>>;
   getProductVariants(
     input: GetProductVariantsInput

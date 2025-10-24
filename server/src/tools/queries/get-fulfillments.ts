@@ -1,8 +1,3 @@
-/**
- * Get Shipment Tool
- * Retrieves shipment information by identifier
- */
-
 import { BaseTool } from '../base-tool.js';
 import { JSONSchema } from '../../types/mcp.js';
 import { GetFulfillmentsInputSchema, GetFulfillmentsInput } from '../../schemas/tool-inputs/index.js';
@@ -17,7 +12,6 @@ export class GetFulfillments extends BaseTool {
   inputSchema: JSONSchema = toJsonSchema(GetFulfillmentsInputSchema);
 
   async execute(input: GetFulfillmentsInput): Promise<any> {
-    // Delegate to service layer
     return this.serviceLayer.getFulfillments(input);
   }
 }

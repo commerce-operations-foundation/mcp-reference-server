@@ -1,8 +1,3 @@
-/**
- * Get Product Tool
- * Retrieves product information by identifier
- */
-
 import { BaseTool } from '../base-tool.js';
 import { JSONSchema } from '../../types/mcp.js';
 import { toJsonSchema } from '../../schemas/utils/schema-util.js';
@@ -17,7 +12,6 @@ export class GetProductsTool extends BaseTool {
   inputSchema: JSONSchema = toJsonSchema(GetProductsInputSchema);
 
   async execute(input: GetProductsInput): Promise<any> {
-    // Delegate to service layer
     return this.serviceLayer.getProducts(input);
   }
 }

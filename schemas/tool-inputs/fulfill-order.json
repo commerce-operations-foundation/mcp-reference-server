@@ -4,106 +4,8 @@
   "description": "Input schema for fulfilling an order",
   "type": "object",
   "properties": {
-    "orderId": {
-      "description": "Order ID to ship",
-      "type": "string"
-    },
-    "shippingInfo": {
-      "description": "Shipping details",
-      "type": "object",
-      "properties": {
-        "carrier": {
-          "description": "Shipping carrier name",
-          "type": "string"
-        },
-        "service": {
-          "description": "Shipping service level",
-          "type": "string"
-        },
-        "trackingNumber": {
-          "description": "Tracking number from carrier",
-          "type": "string"
-        },
-        "trackingUrl": {
-          "description": "URL to track shipment",
-          "type": "string"
-        },
-        "estimatedDelivery": {
-          "description": "Expected delivery date",
-          "type": "string"
-        },
-        "shippingCost": {
-          "description": "Actual shipping cost",
-          "type": "number",
-          "minimum": 0
-        },
-        "weight": {
-          "description": "Package weight in pounds",
-          "type": "number",
-          "minimum": 0
-        },
-        "dimensions": {
-          "type": "object",
-          "properties": {
-            "length": {
-              "type": "number",
-              "minimum": 0
-            },
-            "width": {
-              "type": "number",
-              "minimum": 0
-            },
-            "height": {
-              "type": "number",
-              "minimum": 0
-            },
-            "unit": {
-              "default": "in",
-              "type": "string",
-              "enum": [
-                "in",
-                "cm"
-              ]
-            }
-          },
-          "required": [
-            "unit"
-          ],
-          "additionalProperties": false
-        }
-      },
-      "additionalProperties": false
-    },
-    "items": {
-      "description": "Items included in this shipment (for partial shipments)",
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "description": "Unique identifier for this line item within the order",
-            "type": "string"
-          },
-          "sku": {
-            "description": "Product SKU",
-            "type": "string",
-            "minLength": 1
-          },
-          "quantity": {
-            "description": "Quantity being shipped",
-            "type": "number",
-            "minimum": 1
-          }
-        },
-        "required": [
-          "sku",
-          "quantity"
-        ],
-        "additionalProperties": false
-      }
-    },
     "shippingAddress": {
-      "description": "Shipping address (if different from order address)",
+      "description": "Shipping address",
       "type": "object",
       "properties": {
         "address1": {
@@ -163,20 +65,161 @@
       ],
       "additionalProperties": false
     },
-    "notifyCustomer": {
-      "description": "Whether to send shipping notification to customer",
-      "type": "boolean"
+    "customFields": {
+      "description": "Custom Fields - allows for arbitrary key-value pairs to be added to an entity. Useful for storing any custom data that is not covered by the other fields.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "value"
+        ],
+        "additionalProperties": false
+      }
     },
-    "notes": {
+    "expectedDeliveryDate": {
+      "description": "Expected delivery date",
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+    },
+    "expectedShipDate": {
+      "description": "Expected date the order will be shipped",
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+    },
+    "giftNote": {
+      "type": "string"
+    },
+    "incoterms": {
+      "type": "string"
+    },
+    "lineItems": {
+      "description": "Items included in this fulfillment",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "description": "Unique identifier for this line item within the order",
+            "type": "string"
+          },
+          "sku": {
+            "description": "Product Variant SKU",
+            "type": "string",
+            "minLength": 1
+          },
+          "quantity": {
+            "description": "Quantity ordered",
+            "type": "number",
+            "minimum": 1
+          },
+          "unitPrice": {
+            "description": "Price per unit",
+            "type": "number",
+            "minimum": 0
+          },
+          "totalPrice": {
+            "description": "Total price (calculated if not provided)",
+            "type": "number",
+            "minimum": 0
+          },
+          "name": {
+            "description": "Product name for display",
+            "type": "string"
+          },
+          "customFields": {
+            "description": "Custom Fields - allows for arbitrary key-value pairs to be added to an entity. Useful for storing any custom data that is not covered by the other fields.",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "name",
+                "value"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "sku",
+          "quantity"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "locationId": {
+      "type": "string"
+    },
+    "orderId": {
+      "description": "Order ID",
+      "type": "string"
+    },
+    "shipByDate": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+    },
+    "shippingCarrier": {
+      "description": "Shipping carrier name",
+      "type": "string"
+    },
+    "shippingClass": {
+      "type": "string"
+    },
+    "shippingCode": {
+      "type": "string"
+    },
+    "shippingLabels": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "shippingNote": {
       "description": "Additional shipping notes",
+      "type": "string"
+    },
+    "shippingPrice": {
+      "description": "Shipping cost",
+      "type": "number"
+    },
+    "status": {
+      "type": "string"
+    },
+    "tags": {
+      "description": "Tags for categorization and filtering. Useful for organizing entities with custom labels (e.g., \"priority\", \"wholesale\", \"gift\")",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "trackingNumber": {
+      "description": "Tracking number from carrier",
       "type": "string"
     }
   },
   "required": [
+    "lineItems",
     "orderId",
-    "shippingInfo",
-    "items",
-    "shippingAddress"
+    "trackingNumber"
   ],
   "additionalProperties": false
 }

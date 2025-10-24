@@ -7,6 +7,10 @@
     "order": {
       "type": "object",
       "properties": {
+        "status": {
+          "description": "Order status",
+          "type": "string"
+        },
         "billingAddress": {
           "description": "Purchaser Address",
           "type": "object",
@@ -335,7 +339,6 @@
               }
             },
             "required": [
-              "id",
               "sku",
               "quantity"
             ],

@@ -1,15 +1,7 @@
-/**
- * Get Product Variants Tool
- * Retrieves SKU-level variant details for catalog products.
- */
-
 import { BaseTool } from '../base-tool.js';
 import { JSONSchema } from '../../types/mcp.js';
 import { toJsonSchema } from '../../schemas/utils/schema-util.js';
-import {
-  GetProductVariantsInput,
-  GetProductVariantsInputSchema,
-} from '../../schemas/tool-inputs/index.js';
+import { GetProductVariantsInput, GetProductVariantsInputSchema } from '../../schemas/tool-inputs/index.js';
 
 export class GetProductVariantsTool extends BaseTool {
   name = 'get-product-variants';

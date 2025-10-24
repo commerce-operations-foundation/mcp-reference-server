@@ -1,8 +1,3 @@
-/**
- * Get Customer Tool
- * Retrieves customer information by identifier
- */
-
 import { BaseTool } from '../base-tool.js';
 import { JSONSchema } from '../../types/mcp.js';
 import { toJsonSchema } from '../../schemas/utils/schema-util.js';
@@ -16,7 +11,6 @@ export class GetCustomersTool extends BaseTool {
   inputSchema: JSONSchema = toJsonSchema(GetCustomersInputSchema);
 
   async execute(input: GetCustomersInput): Promise<any> {
-    // Delegate to service layer
     return this.serviceLayer.getCustomers(input);
   }
 }

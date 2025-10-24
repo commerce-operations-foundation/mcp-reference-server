@@ -61,7 +61,7 @@ export const OrderLineItemSchema = z
     customFields: CustomFieldsSchema,
   })
   .partial()
-  .required(makeZodFieldMap(['sku', 'quantity', 'id'] as const));
+  .required(makeZodFieldMap(['sku', 'quantity'] as const));
 export type OrderLineItem = z.infer<typeof OrderLineItemSchema>;
 
 /**

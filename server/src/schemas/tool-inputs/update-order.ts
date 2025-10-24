@@ -3,16 +3,8 @@ import { Order, orderSchema } from '../entities/order.js';
 import { makeZodFieldMap } from '../utils/schema-util.js';
 import { OrderLineItem, OrderLineItemSchema } from '../common.js';
 
-const immutableOrderFields = [
-  'id',
-  'createdAt',
-  'updatedAt',
-  'tenantId',
-  'externalId',
-  // TODO: Should status be something updated via dedicated methods e.g. cancel, fulfill, etc?
-  'status',
-] as const satisfies (keyof Order)[];
-const immutableLineItemFields = ['id'] as const satisfies (keyof OrderLineItem)[];
+const immutableOrderFields = ['id', 'createdAt', 'updatedAt'] as const satisfies (keyof Order)[];
+const immutableLineItemFields = [] as const satisfies (keyof OrderLineItem)[];
 const updateLineItemSchema = OrderLineItemSchema.omit(makeZodFieldMap(immutableLineItemFields))
   .partial()
   .required({ sku: true, quantity: true, unitPrice: true });
@@ -26,7 +18,7 @@ const orderUpdatePayloadSchema = orderSchema
   .superRefine((data, ctx) => {
     if (Object.keys(data).length === 0) {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: 'custom',
         message: 'At least one update field is required',
       });
     }

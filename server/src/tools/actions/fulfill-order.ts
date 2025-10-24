@@ -1,8 +1,3 @@
-/**
- * Ship Order Tool
- * Processes shipment of an order
- */
-
 import { BaseTool } from '../base-tool.js';
 import { JSONSchema } from '../../types/mcp.js';
 import { toJsonSchema } from '../../schemas/utils/schema-util.js';
@@ -17,7 +12,6 @@ export class FulfillOrderTool extends BaseTool {
   inputSchema: JSONSchema = toJsonSchema(FulfillOrderInputSchema);
 
   async execute(input: FulfillOrderInput): Promise<any> {
-    // Delegate to service layer
     return this.serviceLayer.fulfillOrder(input);
   }
 }

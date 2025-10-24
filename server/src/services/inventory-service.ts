@@ -8,7 +8,7 @@ import { Logger } from '../utils/logger.js';
 import { TimeoutHandler } from '../utils/timeout.js';
 import { ErrorHandler } from './error-handler.js';
 import { FulfillmentToolResult } from '../types/adapter.js';
-import { GetInventoryInput, Inventory } from '../schemas/index.js';
+import { GetInventoryInput, InventoryItem } from '../schemas/index.js';
 
 export class InventoryService {
   constructor(
@@ -21,7 +21,7 @@ export class InventoryService {
   /**
    * Get inventory for a SKU
    */
-  async getInventory(input: GetInventoryInput): Promise<FulfillmentToolResult<{ inventory: Inventory[] }>> {
+  async getInventory(input: GetInventoryInput): Promise<FulfillmentToolResult<{ inventory: InventoryItem[] }>> {
     return this.errorHandler.executeOperation('getInventory', async () => {
       const result = await TimeoutHandler.withTimeout(() => this.adapter.getInventory(input), 'adapter');
 

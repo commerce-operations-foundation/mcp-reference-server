@@ -1,8 +1,3 @@
-/**
- * Cancel Order Tool
- * Cancels an existing order in the system
- */
-
 import { BaseTool } from '../base-tool.js';
 import { JSONSchema } from '../../types/mcp.js';
 import { toJsonSchema } from '../../schemas/utils/schema-util.js';
