@@ -43,16 +43,16 @@ These codes SHOULD be reused by all tools where applicable.
 
 | Code | Name                    | Category   | Retryable | Description                               |
 |------|-------------------------|------------|-----------|-------------------------------------------|
-| 2001 | INVALID_PARAMETERS      | Validation | No        | Parameters failed schema/format checks     |
-| 2002 | MISSING_REQUIRED_FIELD  | Validation | No        | Required field missing                     |
-| 3001 | ORDER_NOT_FOUND         | Business   | No        | Order identifier does not exist            |
-| 3002 | INSUFFICIENT_INVENTORY  | Business   | No        | Not enough stock for requested operation   |
-| 3003 | PAYMENT_FAILED          | Business   | Yes       | Payment authorization/capture failed       |
-| 3004 | INVALID_ORDER_STATE     | Business   | No        | Operation not allowed in current state     |
-| 4001 | SYSTEM_UNAVAILABLE      | System     | Yes       | Transient outage/dependency unavailable    |
-| 4002 | TIMEOUT                 | System     | Yes       | Operation exceeded time limit              |
-| 5001 | ADAPTER_ERROR           | Adapter    | Yes       | Backend integration error                  |
-| 5002 | NOT_IMPLEMENTED         | Adapter    | No        | Tool unsupported by adapter                |
+| 2001 | VALIDATION_ERROR        | Validation | No        | Parameters failed schema/format checks    |
+| 2002 | MISSING_REQUIRED_FIELD  | Validation | No        | Required field missing                    |
+| 2003 | INVALID_FORMAT          | Validation | No        | Field format incorrect                     |
+| 3001 | RATE_LIMIT_EXCEEDED     | System     | Yes       | Too many requests                          |
+| 3002 | TIMEOUT                 | System     | Yes       | Operation exceeded time limit              |
+| 4001 | ADAPTER_ERROR           | Adapter    | Varies    | Backend integration error (retry per data) |
+| 4002 | BACKEND_UNAVAILABLE     | System     | Yes       | Downstream service unavailable             |
+| 5001 | NOT_IMPLEMENTED         | Adapter    | No        | Tool unsupported by adapter                |
+
+Adapters MAY introduce domain-specific identifiers (for example `ORDER_NOT_FOUND`, `INVALID_ORDER_STATE`) via `AdapterError`. These values are forwarded in the error payload under `details.originalError` alongside one of the standard numeric codes above.
 
 ## Mapping to JSON-RPC
 
@@ -66,7 +66,7 @@ Recommended pattern for tool execution:
 { "jsonrpc": "2.0", "result": { /* tool-specific result */ }, "id": 1 }
 
 // Domain failure (preferred)
-{ "jsonrpc": "2.0", "result": { "error": { code: 3001, message: "Order not found", retryable: false } }, "id": 1 }
+{ "jsonrpc": "2.0", "result": { "error": { code: 4001, message: "Adapter error", retryable: false, details: { originalError: "ORDER_NOT_FOUND" } } }, "id": 1 }
 
 // Protocol validation failure (schema/shape)
 { "jsonrpc": "2.0", "error": { "code": -32602, "message": "Invalid params", "data": { field: "order.customer.email" } }, "id": 1 }
@@ -78,8 +78,8 @@ Recommended pattern for tool execution:
 - retryable: false → Client SHOULD NOT retry without changing inputs or context.
 
 Examples:
-- 4001 SYSTEM_UNAVAILABLE, 4002 TIMEOUT, 5001 ADAPTER_ERROR → retryable: true
-- 2001 INVALID_PARAMETERS, 3001 ORDER_NOT_FOUND, 3004 INVALID_ORDER_STATE → retryable: false
+- 3001 RATE_LIMIT_EXCEEDED, 3002 TIMEOUT, 4002 BACKEND_UNAVAILABLE → retryable: true
+- 2001 VALIDATION_ERROR, 2002 MISSING_REQUIRED_FIELD, 5001 NOT_IMPLEMENTED → retryable: false
 
 ## Best Practices
 

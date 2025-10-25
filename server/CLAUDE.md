@@ -111,7 +111,7 @@ Two distinct error types:
 Error processing pipeline:
 - `ErrorHandler` (service layer): Standardizes domain errors
 - `ErrorAdapter` (protocol layer): Transforms to MCP responses
-- Adapter-specific errors: `OrderNotFoundError`, `InsufficientInventoryError`, etc.
+- Adapter-specific errors: surface via `AdapterError` codes (e.g. `ORDER_NOT_FOUND`, `INSUFFICIENT_INVENTORY`)
 
 ### Type System
 

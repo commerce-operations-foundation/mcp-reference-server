@@ -1,11 +1,8 @@
 import {
   FulfillmentError,
   FulfillmentErrorCode,
-  OrderNotFoundError,
-  InsufficientInventoryError,
   ValidationError,
   BackendUnavailableError,
-  PaymentFailedError,
   RateLimitExceededError,
   TimeoutError,
   NotImplementedError,
@@ -28,7 +25,7 @@ describe('FulfillmentError and subclasses', () => {
     });
 
     it('should default retryable to false', () => {
-      const error = new FulfillmentError(FulfillmentErrorCode.ORDER_NOT_FOUND, 'Test error');
+      const error = new FulfillmentError(FulfillmentErrorCode.ADAPTER_ERROR, 'Test error');
       expect(error.retryable).toBe(false);
     });
 
@@ -45,33 +42,12 @@ describe('FulfillmentError and subclasses', () => {
         field: 'test',
       });
     });
-  });
 
-  describe('OrderNotFoundError', () => {
-    it('should create order not found error', () => {
-      const error = new OrderNotFoundError('ORD-123');
+    it('should allow custom numeric codes', () => {
+      const error = new FulfillmentError(9999, 'Adapter provided numeric code');
 
-      expect(error.code).toBe(FulfillmentErrorCode.ORDER_NOT_FOUND);
-      expect(error.message).toBe('Order not found: ORD-123');
-      expect(error.retryable).toBe(false);
-      expect(error.data).toEqual({ orderId: 'ORD-123' });
-      expect(error instanceof OrderNotFoundError).toBe(true);
-      expect(error instanceof FulfillmentError).toBe(true);
-    });
-  });
-
-  describe('InsufficientInventoryError', () => {
-    it('should create insufficient inventory error', () => {
-      const error = new InsufficientInventoryError('SKU-123', 10, 5);
-
-      expect(error.code).toBe(FulfillmentErrorCode.INSUFFICIENT_INVENTORY);
-      expect(error.message).toBe('Insufficient inventory for SKU SKU-123: requested 10, available 5');
-      expect(error.retryable).toBe(false);
-      expect(error.data).toEqual({
-        sku: 'SKU-123',
-        requested: 10,
-        available: 5,
-      });
+      expect(error.code).toBe(9999);
+      expect(error.data).toBeUndefined();
     });
   });
 
@@ -108,30 +84,6 @@ describe('FulfillmentError and subclasses', () => {
       expect(error.message).toBe('Backend unavailable: shopify-adapter');
       expect(error.retryable).toBe(true);
       expect(error.data).toEqual({ backend: 'shopify-adapter' });
-    });
-  });
-
-  describe('PaymentFailedError', () => {
-    it('should create payment failed error with reason', () => {
-      const error = new PaymentFailedError('pay-123', 'insufficient funds');
-
-      expect(error.code).toBe(FulfillmentErrorCode.PAYMENT_FAILED);
-      expect(error.message).toBe('Payment failed: pay-123 - insufficient funds');
-      expect(error.retryable).toBe(false);
-      expect(error.data).toEqual({
-        paymentId: 'pay-123',
-        reason: 'insufficient funds',
-      });
-    });
-
-    it('should create payment failed error without reason', () => {
-      const error = new PaymentFailedError('pay-456');
-
-      expect(error.message).toBe('Payment failed: pay-456');
-      expect(error.data).toEqual({
-        paymentId: 'pay-456',
-        reason: undefined,
-      });
     });
   });
 
@@ -198,14 +150,6 @@ describe('FulfillmentError and subclasses', () => {
   });
 
   describe('Error code categories', () => {
-    it('should have correct order error codes', () => {
-      expect(FulfillmentErrorCode.ORDER_NOT_FOUND).toBe(1001);
-      expect(FulfillmentErrorCode.INSUFFICIENT_INVENTORY).toBe(1002);
-      expect(FulfillmentErrorCode.INVALID_ORDER_STATE).toBe(1003);
-      expect(FulfillmentErrorCode.PAYMENT_FAILED).toBe(1004);
-      expect(FulfillmentErrorCode.SHIPPING_UNAVAILABLE).toBe(1005);
-    });
-
     it('should have correct validation error codes', () => {
       expect(FulfillmentErrorCode.VALIDATION_ERROR).toBe(2001);
       expect(FulfillmentErrorCode.MISSING_REQUIRED_FIELD).toBe(2002);
