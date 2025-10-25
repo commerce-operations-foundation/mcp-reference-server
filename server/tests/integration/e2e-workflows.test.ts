@@ -72,7 +72,7 @@ describe('E2E Workflows', () => {
 
     const getOrderResponse = await client.sendRequest('tools/call', {
       name: 'get-orders',
-      arguments: { orderIds: [orderId], includeLineItems: true },
+      arguments: { ids: [orderId], includeLineItems: true },
     });
     expect(getOrderResponse.__jsonRpcError).toBeUndefined();
     const orderResult = JSON.parse(getOrderResponse.content[0].text);
@@ -83,20 +83,16 @@ describe('E2E Workflows', () => {
       name: 'fulfill-order',
       arguments: {
         orderId,
-        items: [
+        lineItems: [
           {
             sku: 'SKU001',
             quantity: 1,
           },
         ],
-        shippingInfo: {
-          carrier: 'FedEx',
-          service: 'express',
-          trackingNumber: `FDX${Date.now()}`,
-          estimatedDelivery: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
-          shippingCost: 18,
-          weight: 5.4,
-        },
+        shippingCarrier: 'FedEx',
+        trackingNumber: `FDX${Date.now()}`,
+        expectedDeliveryDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
+        shippingPrice: 18,
         shippingAddress: address({ address1: '400 Delivered Rd' }),
       },
     });

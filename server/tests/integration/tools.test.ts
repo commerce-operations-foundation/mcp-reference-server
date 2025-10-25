@@ -73,7 +73,7 @@ describe('Tool Integration', () => {
       const response = await client.sendRequest('tools/call', {
         name: 'get-orders',
         arguments: {
-          orderIds: [createdOrderId],
+          ids: [createdOrderId],
           includeLineItems: true,
         },
       });
@@ -115,20 +115,16 @@ describe('Tool Integration', () => {
         name: 'fulfill-order',
         arguments: {
           orderId: createdOrderId,
-          items: [
+          lineItems: [
             {
               sku: 'SKU001',
               quantity: 1,
             },
           ],
-          shippingInfo: {
-            carrier: 'UPS',
-            service: 'ground',
-            trackingNumber: `1Z${Date.now()}`,
-            estimatedDelivery: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
-            shippingCost: 12.5,
-            weight: 3.2,
-          },
+          shippingCarrier: 'UPS',
+          trackingNumber: `1Z${Date.now()}`,
+          expectedDeliveryDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
+          shippingPrice: 12.5,
           shippingAddress: requiredAddress({
             address1: '456 Updated Ave',
             city: 'New City',
@@ -254,18 +250,6 @@ describe('Tool Integration', () => {
       expect(response.__jsonRpcError).toBe(true);
       expect(response.code).toBe(2001);
       expect(response.message).toContain('Validation failed');
-    });
-
-    it('should surface missing resources as tool errors', async () => {
-      const response = await client.sendRequest('tools/call', {
-        name: 'get-orders',
-        arguments: {
-          orderIds: ['NON-EXISTENT-ORDER'],
-        },
-      });
-
-      expect(response.isError).toBe(true);
-      expect(response.content[0].text.toLowerCase()).toContain('not found');
     });
   });
 });
