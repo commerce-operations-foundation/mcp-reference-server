@@ -9,6 +9,15 @@ import * as fs from 'fs';
 import DailyRotateFile from 'winston-daily-rotate-file';
 import { LogSanitizer } from '../security/log-sanitizer.js';
 
+export interface LogContext {
+  correlationId?: string;
+  userId?: string;
+  toolName?: string;
+  operation?: string;
+  duration?: number;
+  [key: string]: any;
+}
+
 export interface LogConfig {
   level: 'error' | 'warn' | 'info' | 'debug';
   dir: string;
@@ -129,7 +138,7 @@ export class StructuredLogger {
     this.correlationId = null;
   }
 
-  error(message: string, context?: Record<string, unknown> | Error): void {
+  error(message: string, context?: LogContext | Error): void {
     const meta = this.buildMetadata(context);
 
     if (context instanceof Error) {
@@ -146,24 +155,24 @@ export class StructuredLogger {
     }
   }
 
-  warn(message: string, context?: Record<string, unknown>): void {
+  warn(message: string, context?: LogContext): void {
     this.winston.warn(message, this.buildMetadata(context));
   }
 
-  info(message: string, context?: Record<string, unknown>): void {
+  info(message: string, context?: LogContext): void {
     this.winston.info(message, this.buildMetadata(context));
   }
 
-  debug(message: string, context?: Record<string, unknown>): void {
+  debug(message: string, context?: LogContext): void {
     this.winston.debug(message, this.buildMetadata(context));
   }
 
   // Trace is mapped to debug for simplicity (Winston doesn't have trace by default)
-  trace(message: string, context?: Record<string, unknown>): void {
+  trace(message: string, context?: LogContext): void {
     this.winston.debug(`[TRACE] ${message}`, this.buildMetadata(context));
   }
 
-  private buildMetadata(context?: Record<string, unknown> | Error): any {
+  private buildMetadata(context?: LogContext | Error): any {
     if (context instanceof Error) {
       return {
         correlationId: this.correlationId,
@@ -182,7 +191,7 @@ export class StructuredLogger {
   }
 
   // Structured logging for specific events
-  logRequest(method: string, params: any, context?: Record<string, unknown>): void {
+  logRequest(method: string, params: any, context?: LogContext): void {
     this.info('Request received', {
       ...context,
       method,
@@ -190,7 +199,7 @@ export class StructuredLogger {
     });
   }
 
-  logResponse(method: string, duration: number, success: boolean, context?: Record<string, unknown>): void {
+  logResponse(method: string, duration: number, success: boolean, context?: LogContext): void {
     const level = success ? 'info' : 'warn';
     this.winston.log(level, 'Request completed', {
       ...this.buildMetadata(context),
@@ -271,4 +280,9 @@ export function getLogger(serviceName?: string, config?: LogConfig): StructuredL
     loggerInstance = new StructuredLogger(serviceName, config);
   }
   return loggerInstance;
+}
+
+// Reset logger (for testing)
+export function resetLogger(): void {
+  loggerInstance = null as any;
 }
