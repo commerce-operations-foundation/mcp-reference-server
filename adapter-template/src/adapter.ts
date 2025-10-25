@@ -32,8 +32,8 @@ import type {
   CustomerAddress,
   OrderLineItem,
   CustomField,
-} from '@cof-org/mcp/adapter-template-types';
-import { AdapterError } from '@cof-org/mcp/types/index.js';
+} from '@cof-org/mcp';
+import { AdapterError } from '@cof-org/mcp';
 import { ApiClient } from './utils/api-client.js';
 import type {
   AdapterOptions as TemplateAdapterOptions,

@@ -16,28 +16,40 @@ async function test() {
     path: './dist/index.js',
     options: {
       apiUrl: 'https://test.api.com',
-      apiKey: 'test-key'
-    }
+      apiKey: 'test-key',
+    },
   });
   console.log('✓ Instantiated with AdapterConfig structure\n');
 
   // Test 2: Can instantiate with just options (fallback)
   console.log('2. Testing instantiation with options only...');
-  const adapter2 = new YourFulfillmentAdapter({
+  new YourFulfillmentAdapter({
     apiUrl: 'https://test.api.com',
-    apiKey: 'test-key'
+    apiKey: 'test-key',
   });
   console.log('✓ Instantiated with options only\n');
 
   // Test 3: Verify required methods exist
   console.log('3. Checking required methods...');
   const requiredMethods = [
-    'connect', 'disconnect', 'healthCheck',
-    'captureOrder', 'cancelOrder', 'updateOrder', 
-    'returnOrder', 'exchangeOrder', 'shipOrder',
-    'holdOrder', 'splitOrder', 'reserveInventory',
-    'getOrder', 'getInventory', 'getProduct', 
-    'getCustomer', 'getShipment', 'getBuyer'
+    'connect',
+    'disconnect',
+    'healthCheck',
+    'captureOrder',
+    'cancelOrder',
+    'updateOrder',
+    'returnOrder',
+    'exchangeOrder',
+    'shipOrder',
+    'holdOrder',
+    'splitOrder',
+    'reserveInventory',
+    'getOrder',
+    'getInventory',
+    'getProduct',
+    'getCustomer',
+    'getShipment',
+    'getBuyer',
   ];
 
   let allMethodsPresent = true;
@@ -47,7 +59,7 @@ async function test() {
       allMethodsPresent = false;
     }
   }
-  
+
   if (allMethodsPresent) {
     console.log(`✓ All ${requiredMethods.length} required methods present\n`);
   }
@@ -56,7 +68,7 @@ async function test() {
   console.log('4. Testing default export...');
   const module = await import('./dist/index.js');
   const DefaultAdapter = module.default;
-  
+
   if (DefaultAdapter === YourFulfillmentAdapter) {
     console.log('✓ Default export matches YourFulfillmentAdapter\n');
   } else {

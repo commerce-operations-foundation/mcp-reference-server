@@ -1,16 +1,17 @@
 // ESLint 9 flat config for adapter template
 import js from '@eslint/js';
-import * as tseslint from 'typescript-eslint';
 import importPlugin from 'eslint-plugin-import';
+import * as tseslint from 'typescript-eslint';
+import globals from 'globals';
 
 export default [
   {
-    ignores: [
-      'dist/',
-      'node_modules/',
-      'coverage/',
-      '**/*.d.ts',
-    ],
+    ignores: ['dist/', 'node_modules/', 'coverage/', '**/*.d.ts'],
+  },
+  {
+    languageOptions: {
+      globals: globals.node,
+    },
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,
@@ -48,15 +49,13 @@ export default [
           ts: 'never',
           tsx: 'never',
           json: 'always',
+          ignorePackages: true,
         },
       ],
       'import/no-unresolved': [
         'error',
         {
-          ignore: [
-            '^\\./.*\\.js$',
-            '^\\.\\./.*\\.js$',
-          ],
+          ignore: ['^\\./.*\\.js$', '^\\.\\./.*\\.js$'],
         },
       ],
     },
