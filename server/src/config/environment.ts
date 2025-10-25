@@ -24,21 +24,44 @@ export class EnvironmentConfig {
         try {
           options = JSON.parse(process.env.ADAPTER_CONFIG);
         } catch (e) {
-          throw new ConfigurationError('ADAPTER_CONFIG must contain valid JSON', { 
+          throw new ConfigurationError('ADAPTER_CONFIG must contain valid JSON', {
             raw: process.env.ADAPTER_CONFIG,
             error: e instanceof Error ? e.message : String(e)
           });
         }
       }
-      
-      config.adapter = {
-        type: process.env.ADAPTER_TYPE as 'built-in' | 'npm' | 'local',
-        name: process.env.ADAPTER_NAME,
-        package: process.env.ADAPTER_PACKAGE,
-        path: process.env.ADAPTER_PATH,
-        exportName: process.env.ADAPTER_EXPORT,
-        options
-      };
+
+      const adapterType = process.env.ADAPTER_TYPE as 'built-in' | 'npm' | 'local';
+
+      // Build adapter config based on type to match discriminated union
+      if (adapterType === 'built-in') {
+        config.adapter = {
+          type: 'built-in',
+          name: process.env.ADAPTER_NAME,
+          package: process.env.ADAPTER_PACKAGE,
+          path: process.env.ADAPTER_PATH,
+          exportName: process.env.ADAPTER_EXPORT,
+          options
+        } as any;
+      } else if (adapterType === 'npm') {
+        config.adapter = {
+          type: 'npm',
+          package: process.env.ADAPTER_PACKAGE,
+          name: process.env.ADAPTER_NAME,
+          path: process.env.ADAPTER_PATH,
+          exportName: process.env.ADAPTER_EXPORT,
+          options
+        } as any;
+      } else if (adapterType === 'local') {
+        config.adapter = {
+          type: 'local',
+          path: process.env.ADAPTER_PATH,
+          name: process.env.ADAPTER_NAME,
+          package: process.env.ADAPTER_PACKAGE,
+          exportName: process.env.ADAPTER_EXPORT,
+          options
+        } as any;
+      }
     }
     
     // Logging configuration
