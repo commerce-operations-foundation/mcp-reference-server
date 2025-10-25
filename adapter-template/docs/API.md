@@ -141,8 +141,7 @@ const result = await adapter.cancelOrder('ORDER-001', 'Customer request');
 **Returns:** `Promise<CancelResult>`
 
 **Throws:**
-- `OrderNotFoundError` if order doesn't exist
-- `InvalidOrderStateError` if order cannot be cancelled
+- `AdapterError` with adapter-defined `code` values (for example `ORDER_NOT_FOUND`, `INVALID_ORDER_STATE`)
 
 ### updateOrder(orderId, updates)
 
@@ -294,7 +293,7 @@ const result = await adapter.reserveInventory(
 **Returns:** `Promise<ReservationResult>`
 
 **Throws:**
-- `InsufficientInventoryError` if not enough inventory
+- `AdapterError` with an inventory-related `code` (for example `INSUFFICIENT_INVENTORY`)
 
 ## Query Operations
 
@@ -316,7 +315,7 @@ const order = await adapter.getOrder({ orderNumber: 'ORD-2024-001' });
 **Returns:** `Promise<Order>`
 
 **Throws:**
-- `OrderNotFoundError` if order doesn't exist
+- `AdapterError` with an order lookup `code` (for example `ORDER_NOT_FOUND`)
 
 ### getInventory(sku, locationId?)
 
@@ -417,15 +416,9 @@ class AdapterError extends Error {
 }
 ```
 
-### Specific Error Types
+### Adapter Error Codes
 
-| Error Class | Code | Description |
-|------------|------|-------------|
-| `OrderNotFoundError` | `ORDER_NOT_FOUND` | Order doesn't exist |
-| `ProductNotFoundError` | `PRODUCT_NOT_FOUND` | Product doesn't exist |
-| `CustomerNotFoundError` | `CUSTOMER_NOT_FOUND` | Customer doesn't exist |
-| `InsufficientInventoryError` | `INSUFFICIENT_INVENTORY` | Not enough inventory |
-| `InvalidOrderStateError` | `INVALID_ORDER_STATE` | Operation not allowed in current state |
+Adapters should throw `AdapterError` instances with descriptive `code` values (for example `ORDER_NOT_FOUND`, `INSUFFICIENT_INVENTORY`). The framework wraps these in a `FulfillmentError` with `data.originalError` so downstream clients can branch on adapter-specific semantics.
 
 ### Error Handling Example
 
@@ -433,12 +426,17 @@ class AdapterError extends Error {
 try {
   await adapter.cancelOrder('ORDER-001');
 } catch (error) {
-  if (error instanceof OrderNotFoundError) {
-    console.error('Order not found:', error.details);
-  } else if (error instanceof InvalidOrderStateError) {
-    console.error('Cannot cancel order in current state:', error.details);
-  } else if (error instanceof AdapterError) {
-    console.error('Adapter error:', error.code, error.message);
+  if (error instanceof AdapterError) {
+    switch (error.code) {
+      case 'ORDER_NOT_FOUND':
+        console.error('Order not found:', error.details);
+        break;
+      case 'INVALID_ORDER_STATE':
+        console.error('Cannot cancel order in current state:', error.details);
+        break;
+      default:
+        console.error('Adapter error:', error.code, error.message);
+    }
   } else {
     console.error('Unexpected error:', error);
   }

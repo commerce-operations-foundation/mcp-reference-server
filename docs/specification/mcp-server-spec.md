@@ -322,11 +322,6 @@ All errors MUST follow JSON-RPC 2.0 error format:
 #### Fulfillment-Specific Error Codes
 | Code | Name                   | Description               | Retryable |
 | ---- | ---------------------- | ------------------------- | --------- |
-| 1001 | ORDER_NOT_FOUND        | Order ID doesn't exist    | No        |
-| 1002 | INSUFFICIENT_INVENTORY | Not enough stock          | No        |
-| 1003 | INVALID_ORDER_STATE    | Operation not allowed     | No        |
-| 1004 | PAYMENT_FAILED         | Payment processing error  | Yes       |
-| 1005 | SHIPPING_UNAVAILABLE   | Cannot ship to location   | No        |
 | 2001 | VALIDATION_ERROR       | Input validation failed   | No        |
 | 2002 | MISSING_REQUIRED_FIELD | Required field missing    | No        |
 | 2003 | INVALID_FORMAT         | Field format incorrect    | No        |
@@ -335,6 +330,8 @@ All errors MUST follow JSON-RPC 2.0 error format:
 | 4001 | ADAPTER_ERROR          | Backend integration error | Yes       |
 | 4002 | BACKEND_UNAVAILABLE    | Fulfillment system down   | Yes       |
 | 5001 | NOT_IMPLEMENTED        | Feature not available     | No        |
+
+Business-domain error codes (for example `ORDER_NOT_FOUND`, `INSUFFICIENT_INVENTORY`) are defined by each adapter via `AdapterError` and relayed in the `FulfillmentError` payload as `data.originalError`.
 
 ### Error Recovery Strategy
 
