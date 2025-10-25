@@ -3,7 +3,7 @@
  * Configuration for mock adapter behavior
  */
 
-export interface MockConfigOptions {
+interface MockConfigOptions {
   // Latency simulation
   minLatency?: number;
   maxLatency?: number;

@@ -15,25 +15,9 @@ import {
 } from './index.js';
 
 /**
- * Type for MCP tool response content
- */
-export type MCPContentItem = {
-  type: 'text';
-  text: string;
-};
-
-/**
- * Type for MCP tool response
- */
-export type MCPToolResponse = {
-  content: MCPContentItem[];
-  isError?: boolean;
-};
-
-/**
  * Type guard to check if error is a protocol error
  */
-export function isProtocolError(error: Error): boolean {
+function isProtocolError(error: Error): boolean {
   // Check if error has explicit isProtocolError property
   if ('isProtocolError' in error) {
     const isProtocolErrorValue = (error as any).isProtocolError;
@@ -61,7 +45,7 @@ export function isProtocolError(error: Error): boolean {
 /**
  * Type guard to check if error should be retried
  */
-export function isRetryableError(error: Error): boolean {
+function isRetryableError(error: Error): boolean {
   // Check if error has explicit retryable property
   if ('retryable' in error) {
     const retryableValue = (error as any).retryable;
@@ -86,7 +70,7 @@ export function isRetryableError(error: Error): boolean {
 /**
  * Map internal error to MCP protocol error
  */
-export function mapToMcpError(error: Error): McpError {
+function mapToMcpError(error: Error): McpError {
   // Handle FulfillmentError with toJSONRPCError method
   if (error instanceof FulfillmentError && typeof error.toJSONRPCError === 'function') {
     return error.toJSONRPCError();
@@ -157,7 +141,7 @@ export function mapToMcpError(error: Error): McpError {
 /**
  * Create MCP tool response for errors
  */
-export function createErrorResponse(error: Error) {
+function createErrorResponse(error: Error) {
   const errorMessage = error instanceof Error ? error.message : 'Unknown error';
 
   return {
