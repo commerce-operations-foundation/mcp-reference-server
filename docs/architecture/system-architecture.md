@@ -88,11 +88,12 @@ The Commerce Operations Foundation MCP Server provides a standardized interface 
 
 The service layer provides business logic abstraction:
 
-- **Order Service**: Order lifecycle operations
-- **Inventory Service**: Stock management
-- **Query Service**: Data retrieval operations
-- **Validator**: Input/output validation
-- **Transformer**: Data transformation between formats
+- **Service Orchestrator**: Central entry point that handles order, inventory, and query workflows using the active adapter, unified logging, timeout, and retry policies.
+- **Adapter Manager**: Adapter lifecycle management (initialization, cleanup, health checks).
+- **Health Monitor**: Metrics tracking and health reporting.
+- **Error Handler**: Consistent error processing and retry orchestration.
+- **Validator**: Input/output validation.
+- **Transformer**: Data transformation between formats.
 
 See [`server/src/services/`](../../server/src/services/) for implementations.
 
