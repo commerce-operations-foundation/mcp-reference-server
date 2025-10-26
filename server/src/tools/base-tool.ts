@@ -21,7 +21,6 @@ export abstract class BaseTool<TInput = any, TOutput = any> {
   }
 
   async validateInput(input: unknown): Promise<TInput> {
-    // Use local validator instance
     return this.validator.validate(input, this.inputSchema);
   }
 
@@ -41,5 +40,4 @@ export abstract class BaseTool<TInput = any, TOutput = any> {
       inputSchema: this.inputSchema,
     };
   }
-
 }
