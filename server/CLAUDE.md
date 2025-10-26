@@ -53,9 +53,6 @@ npx vitest tests/unit --grep "AdapterFactory"
 
 2. **Service Layer** (`src/services/`)
    - `ServiceOrchestrator`: Main facade coordinating all operations
-   - `OrderService`: Order lifecycle operations
-   - `InventoryService`: Inventory management
-   - `QueryService`: Data retrieval operations
    - `AdapterManager`: Adapter lifecycle management
    - `HealthMonitor`: System health and metrics
    - `ErrorHandler`: Error processing and standardization
