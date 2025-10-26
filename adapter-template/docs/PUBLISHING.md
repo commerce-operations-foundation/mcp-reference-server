@@ -207,7 +207,7 @@ If you're a retailer creating a custom adapter for internal use, follow these gu
    ```bash
    # In .env
    ADAPTER_TYPE=local
-   ADAPTER_PATH=../yourfulfillment-adapter/dist
+  ADAPTER_PATH=../yourfulfillment-adapter/dist/index.js
    ```
 
 ### CI/CD Pipeline
@@ -319,7 +319,7 @@ Test with actual MCP server:
 
 ```javascript
 // test/integration.test.js
-const { YourFulfillmentAdapter } = require('../dist');
+const { YourFulfillmentAdapter } = require('../dist/index.js');
 
 describe('Integration Tests', () => {
   it('should work with MCP server', async () => {

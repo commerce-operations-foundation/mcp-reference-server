@@ -11,7 +11,7 @@ The Universal Order Interchange Standard creates value for every participant in 
 #### Immediate Capabilities
 - **Instant Commerce Features**: Enable shopping without building commerce infrastructure
 - **Universal Compatibility**: One integration works with all compliant Fulfillment systems
-- **Rich Functionality**: 15+ operations covering the entire order lifecycle
+- **Rich Functionality**: 10 core operations covering order capture, fulfillment, and analytics
 - **No Maintenance Burden**: Fulfillment vendors maintain their implementations
 
 #### Competitive Advantages
@@ -57,7 +57,7 @@ Stage 1: Basic Compliance (1-2 weeks)
 └── Marketing announcement
 
 Stage 2: Full Integration (1-2 months)
-├── Complete tool set
+├── Complete core tool set
 ├── Production deployment
 └── Customer rollout
 
@@ -234,7 +234,7 @@ Opportunity Cost Analysis:
 
 #### For AI Platforms
 ✓ Enable commerce in < 1 week
-✓ Support 15+ order operations
+✓ Support the standard 10 operations
 ✓ Zero custom Fulfillment code
 ✓ 99.9% reliability
 

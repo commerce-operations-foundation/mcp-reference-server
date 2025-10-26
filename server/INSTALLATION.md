@@ -30,7 +30,7 @@ Add the following to the configuration:
     "cof-mcp": {
       "command": "node",
       "args": [
-        "$commerce-operations-foundation-mcp/server/run-mcp.js"
+        "/absolute/path/to/commerce-operations-foundation-mcp/server/dist/index.js"
       ],
       "env": {
         "ADAPTER_TYPE": "built-in",
@@ -62,8 +62,7 @@ You can customize the behavior by modifying the `env` section:
 - `ADAPTER_TYPE`: Choose adapter type (`built-in`, `npm`, `local`)
 - `ADAPTER_NAME`: Choose specific adapter name (e.g., `mock` for built-in adapters)
 - `LOG_LEVEL`: Set logging level (`debug`, `info`, `warn`, `error`)
-- `MOCK_DELAY_MS`: Add simulated latency (milliseconds)
-- `MOCK_ERROR_RATE`: Simulate errors (0.0 to 1.0)
+- `ADAPTER_CONFIG`: JSON string with adapter-specific options (for the mock adapter, latency/error tuning lives here)
 
 ## Troubleshooting
 
@@ -86,11 +85,12 @@ For development with hot reload:
 {
   "mcpServers": {
     "cof-mcp-dev": {
-      "command": "npx",
+      "command": "npm",
       "args": [
-        "tsx",
-        "$commerce-operations-foundation-mcp/server/src/index.ts"
+        "run",
+        "dev"
       ],
+      "cwd": "/absolute/path/to/commerce-operations-foundation-mcp/server",
       "env": {
         "ADAPTER_TYPE": "built-in",
         "ADAPTER_NAME": "mock",

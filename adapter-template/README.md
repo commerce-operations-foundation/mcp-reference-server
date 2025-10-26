@@ -77,33 +77,26 @@ adapter-template/
 
 ### Required Methods Checklist
 
-Your adapter must implement these 18 methods from the `IFulfillmentAdapter` interface:
+Your adapter must implement these methods from the `IFulfillmentAdapter` interface:
 
 #### Lifecycle (3 methods)
 - [ ] `connect()` - Establish connection to your fulfillment system
 - [ ] `disconnect()` - Clean up resources
 - [ ] `healthCheck()` - Return system health status
 
-#### Order Actions (6 methods)
-- [ ] `captureOrder()` - Create new order
-- [ ] `cancelOrder()` - Cancel existing order
+#### Action Operations (4 methods)
+- [ ] `createSalesOrder()` - Create new orders
+- [ ] `cancelOrder()` - Cancel existing orders
 - [ ] `updateOrder()` - Update order details
-- [ ] `returnOrder()` - Process return
-- [ ] `exchangeOrder()` - Process exchange
-- [ ] `shipOrder()` - Mark order as shipped
+- [ ] `fulfillOrder()` - Mark orders as fulfilled / shipped
 
-#### Management (3 methods)
-- [ ] `holdOrder()` - Place order on hold
-- [ ] `splitOrder()` - Split order into multiple shipments
-- [ ] `reserveInventory()` - Reserve inventory
-
-#### Queries (6 methods)
-- [ ] `getOrder()` - Retrieve order details
+#### Query Operations (6 methods)
+- [ ] `getOrders()` - Retrieve order details
+- [ ] `getCustomers()` - Get customer details
+- [ ] `getProducts()` - Fetch product information
+- [ ] `getProductVariants()` - Retrieve product variants
 - [ ] `getInventory()` - Check inventory levels
-- [ ] `getProduct()` - Get product information
-- [ ] `getCustomer()` - Get customer details
-- [ ] `getShipment()` - Get shipment tracking
-- [ ] `getBuyer()` - Get buyer information
+- [ ] `getFulfillments()` - Fetch fulfillment records
 
 ### Implementation Steps
 
@@ -111,18 +104,13 @@ Your adapter must implement these 18 methods from the `IFulfillmentAdapter` inte
 ```typescript
 // src/adapter.ts
 export class YourFulfillmentAdapter implements IFulfillmentAdapter {
-  async captureOrder(params: OrderParams): Promise<OrderResult> {
+  async createSalesOrder(input: CreateSalesOrderInput): Promise<OrderResult> {
     // TODO: Replace with your API call
-    const response = await this.apiClient.post('/your-endpoint', {
-      // Map params to your API format
-    });
-    
-    // Return standardized response
-    return {
-      success: true,
-      orderId: response.id,
-      // ... other fields
-    };
+    const response = await this.apiClient.post('/orders', transform(input));
+
+    return response.success
+      ? this.success({ order: mapOrder(response.data) })
+      : this.failure('Failed to create order', response.error);
   }
 }
 ```
@@ -185,8 +173,8 @@ describe('YourFulfillmentAdapter', () => {
     await expect(adapter.connect()).resolves.not.toThrow();
   });
   
-  test('should capture order', async () => {
-    const result = await adapter.captureOrder({
+  test('should create sales order', async () => {
+    const result = await adapter.createSalesOrder({
       // ... test data
     });
     expect(result.success).toBe(true);

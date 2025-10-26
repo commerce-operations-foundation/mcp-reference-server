@@ -10,7 +10,7 @@ Think of MCP as "USB-C for AI"—a single connector that works everywhere.
 
 MCP enables AI systems to:
 - **Discover Available Operations**: AI agents automatically learn what tools are available
-- **Execute Tools**: Perform both actions (capture-order) and queries (get-order)
+- **Execute Tools**: Perform both actions (`create-sales-order`) and queries (`get-orders`)
 - **Handle Structured Data**: Work with complex order, customer, and inventory data
 - **Maintain Context**: Preserve conversation state across multiple operations
 
@@ -95,7 +95,7 @@ This means zero configuration for AI platforms—they just connect and start wor
 MCP supports multiple transport mechanisms:
 ```typescript
 // Standard I/O (local)
-stdio: 'npx @cof-org/mcp'
+stdio: 'node /absolute/path/to/mcp-reference-server/server/dist/index.js'
 
 // HTTP (remote) - Future
 https: 'https://api.todo-domain.example/mcp'
@@ -115,14 +115,16 @@ Tools can be:
 The Universal Order Interchange Standard uses a tool-based approach for all operations, including data retrieval:
 ```typescript
 // Action Tools: Operations that change state
-tool: "capture-order"
+tool: "create-sales-order"
 tool: "cancel-order"
-tool: "ship-order"
+tool: "update-order"
+tool: "fulfill-order"
 
 // Query Tools: Operations that retrieve data
-tool: "get-order"      // Instead of resource: "order/12345"
-tool: "get-inventory"  // Instead of resource: "inventory"
-tool: "get-customer"   // Instead of resource: "customer"
+tool: "get-orders"         // Instead of resource: "order/12345"
+tool: "get-inventory"      // Instead of resource: "inventory"
+tool: "get-customers"      // Instead of resource: "customer"
+tool: "get-fulfillments"   // Instead of resource: "shipments"
 ```
 
 This approach provides consistency and flexibility—every interaction follows the same pattern, whether reading or writing data.
@@ -144,8 +146,8 @@ With MCP, you write your fulfillment logic once and it works with any AI platfor
 ```javascript
 // Single implementation for all AI platforms
 class MCPServer {
-  @tool("capture-order")
-  async captureOrder(order) {
+  @tool("create-sales-order")
+  async createSalesOrder(order) {
     return await fulfillment.createOrder(order);
   }
 }
@@ -165,7 +167,7 @@ This single implementation automatically works with Claude, ChatGPT, Gemini, and
 ### Perfect Fit for Order Operations
 
 Fulfillment operations map naturally to MCP's tool model:
-- **Discrete Actions**: Each order operation (capture, cancel, ship) is a distinct tool
+- **Discrete Actions**: Each order operation (`create-sales-order`, `cancel-order`, `fulfill-order`, `update-order`) is a distinct tool
 - **Structured Data**: Orders have well-defined schemas that MCP handles elegantly
 - **Stateful Operations**: MCP maintains context across multi-step workflows
 - **Error Handling**: Built-in patterns for payment failures, inventory issues, etc.

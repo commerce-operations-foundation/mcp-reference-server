@@ -1,301 +1,139 @@
 # Installation Guide
 
-This guide covers all installation methods for the Commerce Operations Foundation MCP Server.
+This guide explains how to run the Commerce Operations Foundation MCP Server from source and how to integrate it with Claude Desktop.
 
 ## Prerequisites
 
-- Node.js 18+ and npm installed
-- Git (for source installation)
-- Docker (optional, for containerized deployment)
+- Node.js 18 or later (Node 22 is recommended)
+- npm 9+
+- Git
 
-## Installation Methods
-
-### Method 1: NPM Package (Recommended)
-
-Install the server globally via npm:
+## Method 1: Run from Source
 
 ```bash
-# Install globally
-npm install -g @cof-org/mcp
-
-# Or install locally in your project
-npm install @cof-org/mcp
-```
-
-#### Running with NPM
-
-```bash
-# If installed globally
-cof-mcp
-
-# If installed locally
-npx @cof-org/mcp
-```
-
-### Method 2: Docker
-
-Pull and run the official Docker image:
-
-```bash
-# Pull the latest image
-docker pull ghcr.io/TODO-ORG/TODO-REPO:latest
-
-# Run the container
-docker run -d \
-  --name cof-mcp \
-  -e ADAPTER_TYPE=built-in \
-  -e ADAPTER_NAME=mock \
-  ghcr.io/TODO-ORG/TODO-REPO:latest
-```
-
-#### Docker Compose
-
-Create a `docker-compose.yml`:
-
-```yaml
-version: '3.8'
-services:
-  cof-mcp:
-    image: ghcr.io/TODO-ORG/TODO-REPO:latest
-    environment:
-      - ADAPTER_TYPE=built-in
-      - ADAPTER_NAME=mock
-      - LOG_LEVEL=info
-    restart: unless-stopped
-```
-
-Run with:
-```bash
-docker-compose up -d
-```
-
-### Method 3: From Source
-
-Clone and build from the source repository:
-
-```bash
-# Clone the repository
-git clone https://github.com/TODO-ORG/TODO-REPO.git
-cd TODO-REPO/server
-
-# Install dependencies
+git clone https://github.com/cof-org/mcp-reference-server.git
+cd mcp-reference-server/server
 npm install
-
-# Build the project
-npm run build
-
-# Run the server
-npm start
 ```
 
-#### Development Mode
-
-For development with hot-reload:
+### Development Mode
 
 ```bash
 npm run dev
 ```
 
-## Configuration
+This uses vite-node to transpile TypeScript on the fly and reload code during changes.
 
-### Environment Variables
-
-Create a `.env` file in your working directory:
+### Production Mode
 
 ```bash
-# Server Configuration
-LOG_LEVEL=info              # Logging level: debug, info, warn, error
-LOG_DIR=./logs              # Directory for log files
-
-# Adapter Configuration
-ADAPTER_TYPE=built-in       # Adapter type: built-in, npm, or local
-ADAPTER_NAME=mock          # Adapter name or path
-ADAPTER_CONFIG={}          # JSON configuration for the adapter
-
-# Performance Settings
-TIMEOUT_DEFAULT=30000      # Default timeout in milliseconds
-RETRY_MAX_ATTEMPTS=3       # Maximum retry attempts
-RETRY_BASE_DELAY=1000      # Base delay for retries in milliseconds
+npm run build
+npm start
 ```
 
-### Configuration File
+The build step emits compiled JavaScript into `dist/`, and `npm start` runs `node dist/index.js`.
 
-Alternatively, use a JSON configuration file:
+## Method 2: Build a Local Docker Image
 
-```json
-{
-  "server": {
-    "name": "cof-mcp-server",
-    "version": "1.0.0"
-  },
-  "logging": {
-    "level": "info",
-    "dir": "./logs"
-  },
-  "adapter": {
-    "type": "built-in",
-    "name": "mock",
-    "config": {}
-  }
-}
-```
+The repository includes a Dockerfile under `server/`.
 
-Load with:
 ```bash
-cof-mcp --config ./config.json
+cd mcp-reference-server/server
+docker build -t cof-mcp-local .
+docker run --rm \
+  -e ADAPTER_TYPE=built-in \
+  -e ADAPTER_NAME=mock \
+  cof-mcp-local
 ```
+
+Mount configuration files or additional adapters as needed using `-v`.
+
+## Environment Configuration
+
+Copy `.env.example` in the `server/` directory to `.env`:
+
+```bash
+cp .env.example .env
+```
+
+Supported environment variables (parsed in `EnvironmentConfig`):
+
+| Variable | Description |
+| --- | --- |
+| `NODE_ENV` | Runtime environment (`development`, `staging`, `production`). |
+| `SERVER_PORT` | Override the stdio server port when using network transports. |
+| `LOG_LEVEL` | Logging verbosity (`debug`, `info`, `warn`, `error`). |
+| `ADAPTER_TYPE` | `built-in`, `npm`, or `local`. |
+| `ADAPTER_NAME` | Built-in adapter name or friendly name. |
+| `ADAPTER_PACKAGE` | Package name when `ADAPTER_TYPE=npm`. |
+| `ADAPTER_PATH` | Absolute path when `ADAPTER_TYPE=local` (should point to a built file such as `dist/index.js`). |
+| `ADAPTER_EXPORT` | Optional export name (defaults to `default`). |
+| `ADAPTER_CONFIG` | JSON string passed to the adapter constructor (`{"apiUrl":"https://..."}`). |
+| `FEATURE_*` | Feature flags (e.g., `FEATURE_SANDBOX=true`). |
+
+Other environment variables mentioned in older docs (e.g., `MOCK_DELAY_MS`, `TIMEOUT_DEFAULT`) are not consumed by the current codebase—prefer `ADAPTER_CONFIG` for adapter tuning.
 
 ## Claude Desktop Integration
 
-To use with Claude Desktop, add to your Claude configuration:
-
-### macOS
-Edit `~/Library/Application Support/Claude/claude_desktop_config.json`:
+Add an entry to your Claude configuration file (paths vary by OS):
 
 ```json
 {
   "mcpServers": {
-    "cof-fulfillment": {
-      "command": "cof-mcp",
+    "cof-mcp": {
+      "command": "node",
+      "args": ["/absolute/path/to/mcp-reference-server/server/dist/index.js"],
       "env": {
         "ADAPTER_TYPE": "built-in",
-        "ADAPTER_NAME": "mock"
+        "ADAPTER_NAME": "mock",
+        "LOG_LEVEL": "info"
       }
     }
   }
 }
 ```
 
-### Windows
-Edit `%APPDATA%\Claude\claude_desktop_config.json`:
+For development workflows you can run the dev script instead:
 
 ```json
 {
   "mcpServers": {
-    "cof-fulfillment": {
-      "command": "cof-mcp.cmd",
+    "cof-mcp-dev": {
+      "command": "npm",
+      "args": ["run", "dev"],
+      "cwd": "/absolute/path/to/mcp-reference-server/server",
       "env": {
         "ADAPTER_TYPE": "built-in",
-        "ADAPTER_NAME": "mock"
+        "ADAPTER_NAME": "mock",
+        "LOG_LEVEL": "debug"
       }
     }
   }
 }
 ```
 
-### Using with Custom Adapters
+Restart Claude Desktop after updating the configuration.
 
-For NPM-based adapters:
+## Verifying the Installation
 
-```json
-{
-  "mcpServers": {
-    "cof-fulfillment": {
-      "command": "cof-mcp",
-      "env": {
-        "ADAPTER_TYPE": "npm",
-        "ADAPTER_NAME": "@yourcompany/cof-adapter-yourfulfillment",
-        "ADAPTER_CONFIG": "{\"apiKey\":\"your-api-key\"}"
-      }
-    }
-  }
-}
-```
-
-## Verification
-
-### Test the Installation
-
-Check that the server is working:
+Run the test suite from the `server/` directory:
 
 ```bash
-# Version check
-cof-mcp --version
-
-# Run with debug output
-LOG_LEVEL=debug cof-mcp
-
-# Test with a simple tool call
-echo '{"jsonrpc":"2.0","method":"tools/list","id":1}' | cof-mcp
+npm test
 ```
 
-### Health Check
-
-The server provides a health check endpoint:
+You can also send a quick `tools/list` request using stdio:
 
 ```bash
-# Send a ping request
-echo '{"jsonrpc":"2.0","method":"ping","id":1}' | cof-mcp
+echo '{"jsonrpc":"2.0","method":"tools/list","id":1}' | node dist/index.js
 ```
 
-Expected response:
-```json
-{"jsonrpc":"2.0","result":{},"id":1}
-```
+The response should contain the ten tools described in the Tools Reference.
 
 ## Troubleshooting
 
-### Common Issues
+- **Missing adapter dependencies** – confirm `ADAPTER_PACKAGE` or `ADAPTER_PATH` is correct and built.
+- **Invalid `ADAPTER_CONFIG` JSON** – the server will throw a configuration error; validate the JSON string separately.
+- **Claude Desktop cannot start the server** – use absolute paths in `args`/`cwd` and verify permissions.
 
-#### Node Version Error
-```
-Error: Unsupported Node.js version
-```
-**Solution**: Upgrade to Node.js 18 or higher:
-```bash
-node --version  # Check current version
-nvm use 18      # Use nvm to switch versions
-```
-
-#### Permission Denied
-```
-Error: EACCES: permission denied
-```
-**Solution**: Use npx or fix npm permissions:
-```bash
-npx @cof-org/mcp     # Run without global install
-# OR
-sudo npm install -g @cof-org/mcp  # Install with sudo (not recommended)
-```
-
-#### Adapter Not Found
-```
-Error: Adapter '@company/adapter' not found
-```
-**Solution**: Install the adapter package:
-```bash
-npm install @company/adapter
-```
-
-#### Claude Desktop Not Detecting Server
-**Solution**: Verify the configuration file location and restart Claude:
-1. Check the config file path is correct
-2. Ensure the command path is absolute or in PATH
-3. Restart Claude Desktop application
-
-### Debug Mode
-
-Enable debug logging for troubleshooting:
-
-```bash
-# Via environment variable
-LOG_LEVEL=debug cof-mcp
-
-# Or in .env file
-LOG_LEVEL=debug
-```
-
-## Next Steps
-
-- [Configuration Guide](configuration.md) - Detailed configuration options
-- [Adapter Development](../getting-started/for-fulfillment-vendors.md) - Create custom adapters
-- [Tools Reference](../standard/tools-reference.md) - Available operations
-- [Testing Guide](../testing/README.md) - Testing your setup
-
-## Support
-
-If you encounter issues:
-1. Check the [FAQ](../resources/faq.md)
-2. Review debug logs
-3. Search [GitHub Issues](https://github.com/TODO-ORG/TODO-REPO/issues)
-4. Ask in [Discussions](https://github.com/TODO-ORG/TODO-REPO/discussions)
+If issues persist, enable verbose logging with `LOG_LEVEL=debug` and review the console output.

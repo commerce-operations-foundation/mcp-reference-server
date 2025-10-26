@@ -10,17 +10,19 @@ For installation instructions, see the [Installation Guide](../guides/installati
 
 ### Docker Deployment
 
-For containerized deployment:
+Build the local Docker image provided in `server/Dockerfile`:
 
 ```bash
-# Using Docker Compose (recommended for production)
-docker-compose up -d
-
-# Check status
-docker-compose ps
+cd mcp-reference-server/server
+docker build -t cof-mcp-local .
+docker run -d \
+  --name cof-mcp \
+  -e ADAPTER_TYPE=built-in \
+  -e ADAPTER_NAME=mock \
+  cof-mcp-local
 ```
 
-See the [Installation Guide](../guides/installation.md#method-2-docker) for detailed Docker setup.
+Map volumes or override environment variables to inject adapter packages.
 
 ## Environment Configuration
 
@@ -40,7 +42,7 @@ The server provides health check capabilities for production monitoring:
 
 ```bash
 # Send a ping request to verify server health
-echo '{"jsonrpc":"2.0","method":"ping","id":1}' | cof-mcp
+echo '{"jsonrpc":"2.0","method":"ping","id":1}' | node dist/index.js
 ```
 
 ## Support

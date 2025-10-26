@@ -63,7 +63,7 @@ The protocol supports multiple transport mechanisms:
    Server: Lists all implemented tools
 
 2. Invocation
-   Client: "Call capture-order with {...}"
+   Client: "Call create-sales-order with {...}"
    Server: Processes and returns result
 
 3. Response
@@ -97,10 +97,10 @@ Your business logic for each operation:
 ```typescript
 class OrderTools {
   @tool({
-    name: "capture-order",
+    name: "create-sales-order",
     description: "Create a new order"
   })
-  async captureOrder(params: OrderInput): Promise<OrderOutput> {
+  async createSalesOrder(params: OrderInput): Promise<OrderOutput> {
     // Your implementation
     return await this.fulfillment.createOrder(params);
   }
@@ -114,14 +114,14 @@ Connects to your actual backend systems:
 ```typescript
 interface FulfillmentAdapter {
   // Abstract interface
-  captureOrder(order: Order): Promise<Result>
+  createSalesOrder(order: Order): Promise<Result>
   cancelOrder(orderId: string): Promise<Result>
   // ... other methods
 }
 
 class YourFulfillmentAdapter implements FulfillmentAdapter {
   // Your specific implementation
-  async captureOrder(order: Order) {
+  async createSalesOrder(order: Order) {
     return await yourAPI.post('/orders', order);
   }
 }
@@ -136,7 +136,7 @@ Most tools follow a request-response pattern:
 ```
 AI Agent                MCP Server              Fulfillment Backend
     │                        │                        │
-    ├──── capture-order ────▶│                        │
+    ├──── create-sales-order▶│                        │
     │                        ├──── validateOrder ────▶│
     │                        │◀──── validation OK ────┤
     │                        ├──── createOrder ──────▶│
@@ -151,11 +151,11 @@ Long-running operations can return immediately:
 ```
 AI Agent                MCP Server              Fulfillment Backend
     │                        │                        │
-    ├──── ship-order ───────▶│                        │
+    ├──── fulfill-order ────▶│                        │
     │◀──── accepted ─────────┤                        │
-    │                        ├──── processShipment ──▶│
+    │                        ├──── processFulfillment▶│
     │                        │         (async)        │
-    ├──── get-shipment ─────▶│                        │
+    ├──── get-fulfillments ─▶│                        │
     │◀──── status: shipped ──┤◀──── completed ───────┤
 ```
 
@@ -229,7 +229,7 @@ Add domain-specific operations:
 
 ```typescript
 // Standard tools
-tool: "capture-order"
+tool: "create-sales-order"
 tool: "cancel-order"
 
 // Your custom tools
@@ -284,7 +284,9 @@ interface Version {
 
 ### Local Development
 ```bash
-npx @cof-org/mcp
+cd mcp-reference-server/server
+npm install
+npm run dev
 ```
 
 ### Production Deployment
@@ -325,7 +327,7 @@ export default {
 
 ```typescript
 logger.info('Tool invoked', {
-  tool: 'capture-order',
+  tool: 'create-sales-order',
   duration: 234,
   success: true
 });

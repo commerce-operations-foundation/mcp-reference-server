@@ -35,21 +35,16 @@ async function test() {
     'connect',
     'disconnect',
     'healthCheck',
-    'captureOrder',
+    'createSalesOrder',
     'cancelOrder',
     'updateOrder',
-    'returnOrder',
-    'exchangeOrder',
-    'shipOrder',
-    'holdOrder',
-    'splitOrder',
-    'reserveInventory',
-    'getOrder',
+    'fulfillOrder',
+    'getOrders',
+    'getCustomers',
+    'getProducts',
+    'getProductVariants',
     'getInventory',
-    'getProduct',
-    'getCustomer',
-    'getShipment',
-    'getBuyer',
+    'getFulfillments',
   ];
 
   let allMethodsPresent = true;
@@ -96,7 +91,7 @@ async function test() {
   console.log('Integration test complete!');
   console.log('\nYour adapter is compatible with the MCP server adapter factory.');
   console.log('You can now use it with:');
-  console.log('  ADAPTER_TYPE=local ADAPTER_PATH=../adapter-template/dist/index.js npm start');
+  console.log('  ADAPTER_TYPE=local ADAPTER_PATH=../adapter-template/dist/index.js node dist/index.js');
 }
 
 test().catch(console.error);

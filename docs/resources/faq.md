@@ -26,8 +26,8 @@ Model Context Protocol (MCP) is an open protocol developed by Anthropic that sta
 ### Do I need to use a specific programming language?
 No, the standard is language-agnostic. While the reference implementation is in TypeScript/JavaScript, you can implement the standard in any language that supports JSON and your chosen transport mechanism (stdio, HTTP, WebSocket).
 
-### Can I add custom tools beyond the standard 15?
-Yes! The standard defines a core set of tools, but you can add custom tools specific to your business needs. Just prefix them appropriately (e.g., `x-yourcompany-tool`) to avoid conflicts with future standard tools.
+### Can I add custom tools beyond the shipped set?
+Yes! The standard defines a core set of tools, but you can add custom operations specific to your business needs. Just prefix them appropriately (e.g., `x-yourcompany-tool`) to avoid conflicts with future standard tools.
 
 ### How do I handle authentication and authorization?
 Phase 1 focuses on local stdio transport without authentication. Future phases will support OAuth2, API keys, and JWT tokens. For now, implement your own authentication layer if needed for production use.
@@ -39,22 +39,24 @@ The current specification focuses on request-response patterns. Real-time events
 
 ### How long does implementation take?
 - **Basic implementation**: 1-2 weeks for core tools
-- **Full implementation**: 1-2 months for all 15 tools
+- **Full implementation**: 1-2 months for all 10 shipped tools
 - **Production-ready**: 2-3 months with testing and optimization
 
-### Do I need to implement all 15 tools?
+### Do I need to implement every tool?
 No, you can start with a subset. We recommend beginning with:
-1. Query tools (get-order, get-inventory)
-2. Basic actions (capture-order, cancel-order)
+1. Query tools (`get-orders`, `get-inventory`)
+2. Basic actions (`create-sales-order`, `cancel-order`)
 3. Additional tools as needed
 
 ### Can I use my existing APIs?
 Yes! The MCP server acts as an adapter layer. You don't need to change your existing APIs—just map them to the standard tool interfaces.
 
 ### How do I test my implementation?
-Use the reference implementation's mock mode:
+Use the reference implementation's mock configuration:
 ```bash
-npx @cof-org/mcp --mock
+cd mcp-reference-server/server
+npm run build
+ADAPTER_TYPE=built-in ADAPTER_NAME=mock LOG_LEVEL=debug node dist/index.js
 ```
 This provides test data and validates your tool calls.
 

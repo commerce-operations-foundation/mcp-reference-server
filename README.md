@@ -17,10 +17,10 @@ This project enables AI assistants like Claude to seamlessly interact with any f
 
 ### [/server](./server/README.md)
 The core Fulfillment MCP Reference server implementation that:
-- Handles MCP protocol communication (stdio today, streamable http soon)
+- Handles MCP protocol communication (stdio transport)
 - Routes requests to appropriate adapters
-- Provides 15 standard Fulfillment operations as published tools
-- Includes built-in mock adapter for testing
+- Provides 10 standardized fulfillment operations (4 action + 6 query tools)
+- Includes a built-in mock adapter for testing
 
 ### [/adapter-template](./adapter-template/README.md)
 Template for creating custom Fulfillment adapters to allow the MCP Reference server to connect to your Fulfillment system:
@@ -49,14 +49,14 @@ JSON Schema definitions for:
 Integrate order management capabilities into your AI applications:
 
 ```bash
-# Install the MCP server globally
-npm install -g @cof-org/mcp
-
-# Run with mock adapter for testing
-cof-mcp
+git clone https://github.com/cof-org/mcp-reference-server.git
+cd mcp-reference-server/server
+npm install
+npm run build
+node dist/index.js
 ```
 
-Configure your AI platform (like Claude Desktop) to connect to the MCP server via stdio transport. See the [Installation Guide](./docs/guides/installation.md) for platform-specific setup.
+The server uses the mock adapter by default (`ADAPTER_TYPE=built-in`, `ADAPTER_NAME=mock`). Configure your AI platform (like Claude Desktop) to execute `node /absolute/path/to/server/dist/index.js`. See the [Installation Guide](./docs/guides/installation.md) for platform-specific setup.
 
 ### For Fulfillment Vendors
 Create an adapter for your fulfillment system:
@@ -75,16 +75,12 @@ npm run dev
 Deploy the server with your chosen adapter:
 
 ```bash
-# Clone the repository
-git clone https://github.com/cof-org/mcp.git
-cd mcp/server
-
-# Configure your adapter
-echo "ADAPTER_TYPE=npm" >> .env
-echo "ADAPTER_NAME=@yourvendor/fulfillment-adapter" >> .env
-
-# Install and run
+git clone https://github.com/cof-org/mcp-reference-server.git
+cd mcp-reference-server/server
 npm install
+cp .env.example .env
+# edit .env and set ADAPTER_TYPE/ADAPTER_PACKAGE/ADAPTER_PATH as needed
+npm run build
 npm start
 ```
 
@@ -92,26 +88,19 @@ npm start
 
 The server provides 15 essential fulfillment operations:
 
-**Order Lifecycle**
-- `capture-order` - Create new orders from any channel
+**Action Tools**
+- `create-sales-order` - Create new orders from any channel
 - `update-order` - Modify order details and line items
 - `cancel-order` - Cancel orders with reason tracking
-- `ship-order` - Mark orders as shipped with tracking
+- `fulfill-order` - Mark orders as fulfilled and return shipment details
 
-**Order Management**
-- `hold-order` - Place orders on hold
-- `split-order` - Split into multiple shipments
-- `return-order` - Process returns with reasons
-- `exchange-order` - Handle product exchanges
-- `reserve-inventory` - Reserve inventory for orders
-
-**Queries**
-- `get-order` - Retrieve order information
-- `get-customer` - Get customer details
-- `get-product` - Get product information
+**Query Tools**
+- `get-orders` - Retrieve order information
+- `get-customers` - Get customer details
+- `get-products` - Get product information
+- `get-product-variants` - Retrieve variant-level data
 - `get-inventory` - Check inventory levels
-- `get-shipment` - Track shipment status
-- `get-buyer` - Get buyer information
+- `get-fulfillments` - Track fulfillment status
 
 ## 🏗 Architecture Overview
 
@@ -140,7 +129,6 @@ npm test
 # Run specific test suites
 npm run test:unit        # Unit tests
 npm run test:integration # Integration tests
-npm run test:e2e        # End-to-end workflows
 
 # Test with coverage
 npm run test:coverage
