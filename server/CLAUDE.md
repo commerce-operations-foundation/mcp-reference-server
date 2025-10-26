@@ -70,17 +70,16 @@ npx vitest tests/unit --grep "AdapterFactory"
 
 ### Tool System
 
-Tools are defined in `src/tools/` and automatically registered:
-- **Actions**: `capture-order`, `cancel-order`, `update-order`, `return-order`, `exchange-order`, `ship-order`
-- **Management**: `hold-order`, `split-order`, `reserve-inventory`
-- **Queries**: `get-order`, `get-inventory`, `get-product`, `get-customer`, `get-shipment`, `get-buyer`
+Tools are defined in `src/tools/` and registered through the explicit list in `registerTools`:
+- **Actions**: `create-sales-order`, `cancel-order`, `update-order`, `fulfill-order`
+- **Queries**: `get-orders`, `get-customers`, `get-products`, `get-product-variants`, `get-inventory`, `get-fulfillments`
 
 All tools extend `BaseTool` which provides:
 - JSON Schema validation via `inputSchema`
 - `execute()` method for implementation
 - Access to `ServiceOrchestrator` via `serviceLayer`
 
-Tool registration is automatic via `ToolRegistry.initialize()` which discovers all tool files.
+`ToolRegistry.initialize()` calls `registerTools`, so add new tools by updating that function.
 
 ### Configuration System
 
@@ -126,8 +125,7 @@ All source uses ES modules with `.js` extensions in imports (required for ES mod
 ## Creating Custom Adapters
 
 1. Implement `IFulfillmentAdapter` interface from `src/types/adapter.ts`
-2. All 15 core methods are required (lifecycle + operations + queries)
-3. Optional methods: `getBuyer`, `releaseReservation`, `adjustInventory`, `transferInventory`
+2. Support the lifecycle hooks plus the ten shipped operations (`createSalesOrder`, `cancelOrder`, `updateOrder`, `fulfillOrder`, `getOrders`, `getCustomers`, `getProducts`, `getProductVariants`, `getInventory`, `getFulfillments`)
 
 For built-in adapters:
 1. Create adapter in `src/adapters/your-adapter/`

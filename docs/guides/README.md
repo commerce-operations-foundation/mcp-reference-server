@@ -15,20 +15,21 @@ This directory contains user guides for the Commerce Operations Foundation MCP S
 See the [Installation Guide](installation.md) for detailed instructions.
 
 ```bash
-# Quick install via npm
-npm install -g @cof-org/mcp
-cof-mcp
+git clone https://github.com/cof-org/mcp-reference-server.git
+cd mcp-reference-server/server
+npm install
+npm run build
+node dist/index.js
 ```
 
 ### Configuration
 See the [Configuration Guide](configuration.md) for all options.
 
 ```bash
-# Basic configuration via environment variables
 export ADAPTER_TYPE=built-in
 export ADAPTER_NAME=mock
-export LOG_LEVEL=info
-cof-mcp
+npm run build
+node dist/index.js
 ```
 
 ### Claude Desktop Integration
@@ -36,7 +37,7 @@ See the [Installation Guide](installation.md#claude-desktop-integration) for pla
 
 ## Available Tools
 
-See the [Tools Reference](../standard/tools-reference.md) for complete documentation of all 15 standard operations.
+See the [Tools Reference](../standard/tools-reference.md) for documentation of the 10 standard operations.
 
 ## Adapters
 

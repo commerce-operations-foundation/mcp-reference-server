@@ -28,29 +28,22 @@ The Universal Order Interchange Standard (UOIS) is an open specification built o
 
 ## 🎯 Key Features
 
-### 15 Core Operations
-The standard defines essential fulfillment operations:
+### Core Operations
+The reference implementation ships with the following fulfillment operations:
 
-**Order Actions**
-- `capture-order` - Create new orders
+**Action Tools**
+- `create-sales-order` - Create new orders
 - `cancel-order` - Cancel existing orders
 - `update-order` - Modify order details
-- `return-order` - Process returns
-- `exchange-order` - Handle exchanges
-- `ship-order` - Mark orders as shipped
+- `fulfill-order` - Mark orders as fulfilled
 
-**Management Tools**
-- `hold-order` - Place orders on hold
-- `split-order` - Split into multiple shipments
-- `reserve-inventory` - Reserve stock
-
-**Data Queries**
-- `get-order` - Retrieve order details
-- `get-inventory` - Check stock levels
-- `get-product` - Product information
-- `get-customer` - Customer details
-- `get-shipment` - Tracking info
-- `get-buyer` - Buyer information
+**Query Tools**
+- `get-orders` - Retrieve order details
+- `get-customers` - Customer information
+- `get-products` - Product catalog entries
+- `get-product-variants` - Product variant details
+- `get-inventory` - Stock levels
+- `get-fulfillments` - Fulfillment records
 
 ## 🌐 The Commerce Operations Foundation
 
@@ -86,11 +79,11 @@ The standard is governed by a vendor-neutral foundation ensuring:
 
 ### For Developers
 ```bash
-# Install the reference implementation
-npm install -g @cof-org/mcp
-
-# Run the server
-npx @cof-org/mcp
+git clone https://github.com/cof-org/mcp-reference-server.git
+cd mcp-reference-server/server
+npm install
+npm run build
+node dist/index.js
 ```
 
 ## 📖 Resources

@@ -98,17 +98,13 @@ See [`server/src/services/`](../../server/src/services/) for implementations.
 
 ### Tool Categories
 
-Tools are organized into three categories:
+Tools are organized into two categories:
 
-1. **Action Tools** (`capture`, `cancel`, `update`, `return`, `exchange`, `ship`)
+1. **Action Tools** (`create-sales-order`, `cancel-order`, `update-order`, `fulfill-order`)
    - Located in [`server/src/tools/actions/`](../../server/src/tools/actions/)
    - Modify system state
-   
-2. **Management Tools** (`hold`, `split`, `reserve`)
-   - Located in [`server/src/tools/management/`](../../server/src/tools/management/)
-   - Complex operations involving multiple entities
 
-3. **Query Tools** (`get-order`, `get-inventory`, `get-product`, etc.)
+2. **Query Tools** (`get-orders`, `get-customers`, `get-products`, `get-product-variants`, `get-inventory`, `get-fulfillments`)
    - Located in [`server/src/tools/queries/`](../../server/src/tools/queries/)
    - Read-only operations
 

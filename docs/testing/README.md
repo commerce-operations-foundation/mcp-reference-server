@@ -67,12 +67,12 @@ Tests are configured with Vitest and include:
 ### Unit Test Example
 ```typescript
 import { describe, it, expect, beforeEach } from 'vitest';
-import { CaptureOrderTool } from '../../../src/tools/actions/capture-order';
+import { CreateSalesOrderTool } from '../../../src/tools/actions/create-sales-order';
 import { TEST_ORDER_PARAMS } from '../../fixtures/test-data';
 
-describe('CaptureOrderTool', () => {
+describe('CreateSalesOrderTool', () => {
   it('should validate input parameters', async () => {
-    const tool = new CaptureOrderTool(mockServiceLayer);
+    const tool = new CreateSalesOrderTool(mockServiceLayer);
     const result = await tool.validateInput(TEST_ORDER_PARAMS);
     expect(result).toBeDefined();
   });
@@ -85,10 +85,10 @@ import { describe, it, expect } from 'vitest';
 import { MockMCPClient } from '../../fixtures/mcp-test-client';
 import { TEST_ORDER_PARAMS } from '../../fixtures/test-data';
 
-describe('Order Capture Integration', () => {
-  it('should capture order via MCP protocol', async () => {
+describe('Create Sales Order Integration', () => {
+  it('should create order via MCP protocol', async () => {
     const client = new MockMCPClient();
-    const response = await client.captureOrder(TEST_ORDER_PARAMS);
+    const response = await client.callTool('create-sales-order', TEST_ORDER_PARAMS);
     expect(response).toBeValidMCPResponse();
   });
 });

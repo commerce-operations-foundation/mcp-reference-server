@@ -63,7 +63,7 @@ All messages MUST conform to the JSON-RPC 2.0 specification:
   "jsonrpc": "2.0",
   "method": "tools/call",
   "params": {
-    "name": "capture-order",
+    "name": "create-sales-order",
     "arguments": {
       "order": {
         "extOrderId": "ORD-2024-001",
@@ -135,7 +135,7 @@ interface StdioTransport {
 
 ```bash
 # Server launch
-$ cof-mcp
+$ node dist/index.js
 
 # Client sends (stdin):
 {"jsonrpc":"2.0","method":"initialize","params":{"clientInfo":{"name":"claude"}},"id":1}
@@ -220,28 +220,21 @@ interface ToolRegistry {
 
 ### Standard Tool Set
 
-The server MUST implement these 15 standard tools:
+The reference server implements these ten tools:
 
-#### Order Actions (6 tools)
-1. **capture-order** - Create new orders
+#### Action Tools (4 tools)
+1. **create-sales-order** - Create new orders
 2. **cancel-order** - Cancel existing orders
 3. **update-order** - Modify order details
-4. **return-order** - Process returns
-5. **exchange-order** - Handle exchanges
-6. **ship-order** - Mark orders as shipped
-
-#### Management Tools (3 tools)
-7. **hold-order** - Place orders on hold
-8. **split-order** - Split into multiple shipments
-9. **reserve-inventory** - Reserve stock
+4. **fulfill-order** - Mark orders as fulfilled
 
 #### Query Tools (6 tools)
-10. **get-order** - Retrieve order details
-11. **get-inventory** - Check stock levels
-12. **get-product** - Get product information
-13. **get-customer** - Retrieve customer data
-14. **get-shipment** - Track shipments
-15. **get-buyer** - Get B2B buyer information
+5. **get-orders** - Retrieve order details
+6. **get-customers** - Retrieve customer data
+7. **get-products** - Get product information
+8. **get-product-variants** - Retrieve variant data
+9. **get-inventory** - Check stock levels
+10. **get-fulfillments** - Track fulfillments
 
 ### Tool Definition Structure
 
@@ -273,7 +266,7 @@ sequenceDiagram
     participant Adapter as Fulfillment Adapter
     participant Backend as Fulfillment Backend
 
-    Client->>Server: tools/call (capture-order)
+    Client->>Server: tools/call (create-sales-order)
     Server->>Server: Validate parameters
     Server->>Adapter: Execute operation
     Adapter->>Backend: Fulfillment API call
@@ -560,7 +553,7 @@ ADAPTER_OPTIONS_API_URL=https://api.example.com
 
 ### Custom Tool Registration
 
-Implementations MAY add custom tools beyond the standard 15:
+Implementations MAY add custom tools beyond the standard 10:
 
 ```typescript
 interface CustomTool extends Tool {
@@ -582,18 +575,24 @@ Enable integration with different Fulfillment backends:
 
 ```typescript
 interface FulfillmentAdapter {
-  // Standard operations
-  captureOrder(params: OrderParams): Promise<OrderResult>;
-  cancelOrder(orderId: string): Promise<CancelResult>;
-  // ... other standard methods
-
-  // Custom operations
-  executeCustom?(operation: string, params: any): Promise<any>;
-
   // Lifecycle
   connect(): Promise<void>;
   disconnect(): Promise<void>;
   healthCheck(): Promise<HealthStatus>;
+
+  // Action operations
+  createSalesOrder(params: CreateSalesOrderInput): Promise<OrderResult>;
+  cancelOrder(params: CancelOrderInput): Promise<OrderResult>;
+  updateOrder(params: UpdateOrderInput): Promise<OrderResult>;
+  fulfillOrder(params: FulfillOrderInput): Promise<FulfillmentToolResult<{ fulfillment: Fulfillment }>>;
+
+  // Query operations
+  getOrders(params: GetOrdersInput): Promise<FulfillmentToolResult<{ orders: Order[] }>>;
+  getCustomers(params: GetCustomersInput): Promise<FulfillmentToolResult<{ customers: Customer[] }>>;
+  getProducts(params: GetProductsInput): Promise<FulfillmentToolResult<{ products: Product[] }>>;
+  getProductVariants(params: GetProductVariantsInput): Promise<FulfillmentToolResult<{ productVariants: ProductVariant[] }>>;
+  getInventory(params: GetInventoryInput): Promise<FulfillmentToolResult<{ inventory: InventoryItem[] }>>;
+  getFulfillments(params: GetFulfillmentsInput): Promise<FulfillmentToolResult<{ fulfillments: Fulfillment[] }>>;
 }
 ```
 
@@ -697,7 +696,7 @@ Compliant implementations MUST pass:
    - Message size limits
 
 2. **Tool Tests**
-   - All 15 standard tools functional
+   - All 10 standard tools functional
    - Parameter validation
    - Error handling
 
@@ -735,7 +734,7 @@ See [examples/](../../examples/) directory for client integration samples.
 
 ### Version 1.0.0 (August 2025)
 - Initial specification release
-- Defined 15 standard tools
+- Defined 10 standard tools
 - Established protocol requirements
 - Set performance targets
 

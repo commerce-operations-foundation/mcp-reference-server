@@ -19,8 +19,12 @@ import { MCPClient } from '@modelcontextprotocol/sdk';
 
 const client = new MCPClient();
 await client.connect({
-  command: 'npx',
-  args: ['@cof-org/mcp']
+  command: 'node',
+  args: ['/absolute/path/to/mcp-reference-server/server/dist/index.js'],
+  env: {
+    ADAPTER_TYPE: 'built-in',
+    ADAPTER_NAME: 'mock'
+  }
 });
 ```
 
@@ -29,7 +33,7 @@ await client.connect({
 ```typescript
 const tools = await client.listTools();
 console.log(tools);
-// Output: ['capture-order', 'cancel-order', 'get-order', ...]
+// Output: ['create-sales-order', 'cancel-order', 'get-orders', ...]
 ```
 
 ### Step 3: Enable in Your AI
@@ -38,9 +42,9 @@ console.log(tools);
 # For OpenAI-style function calling
 functions = [
   {
-    "name": "capture-order",
+    "name": "create-sales-order",
     "description": "Create a new order",
-    "parameters": tools['capture-order'].schema
+    "parameters": tools['create-sales-order'].schema
   }
 ]
 
@@ -61,10 +65,10 @@ actions:
   - type: mcp
     server: universal-fulfillment
     tools:
-      - capture-order
-      - get-order
+      - create-sales-order
+      - get-orders
       - cancel-order
-      - return-order
+      - fulfill-order
 ```
 
 ### Claude Project
@@ -74,9 +78,10 @@ actions:
   "name": "E-commerce Agent",
   "mcp_servers": [{
     "command": "npx",
-    "args": ["@cof-org/mcp"],
+    "args": ["/absolute/path/to/mcp-reference-server/server/dist/index.js"],
     "env": {
-      "Fulfillment_ENDPOINT": "https://api.todo-domain.example"
+      "ADAPTER_TYPE": "built-in",
+      "ADAPTER_NAME": "mock"
     }
   }]
 }
@@ -96,13 +101,13 @@ class CommerceAgent {
     const inventory = await this.mcp.call('get-inventory', {
       sku: order.items[0].sku
     });
-    
+
     if (inventory.available >= order.quantity) {
       // Create order
-      const result = await this.mcp.call('capture-order', {
+      const result = await this.mcp.call('create-sales-order', {
         order: order
       });
-      
+
       return `Order ${result.orderNumber} created!`;
     } else {
       return "Sorry, that item is out of stock.";
@@ -127,22 +132,26 @@ async function placeOrder(customerData, items) {
     }
   }
   
-  // 2. Reserve inventory
-  const reservation = await mcp.call('reserve-inventory', {
-    items: items,
-    duration: 30 // 30 minutes
-  });
-  
-  // 3. Create order
-  const order = await mcp.call('capture-order', {
+  // 2. Create order
+  const order = await mcp.call('create-sales-order', {
     order: {
       customer: customerData,
       items: items,
       shipping: customerData.address
     }
   });
-  
-  return order;
+
+  // 3. Trigger fulfillment when ready
+  const fulfillment = await mcp.call('fulfill-order', {
+    orderId: order.order.id,
+    tracking: {
+      carrier: 'UPS',
+      service: 'Ground',
+      trackingNumber: '1Z999AA10123456784'
+    }
+  });
+
+  return { order, fulfillment };
 }
 ```
 
@@ -153,11 +162,11 @@ async function checkOrderStatus(query) {
   // Natural language to order lookup
   const orderId = await extractOrderId(query);
   
-  const order = await mcp.call('get-order', {
-    orderId: orderId,
-    includeItems: true,
-    includeHistory: true
+  const orders = await mcp.call('get-orders', {
+    orderIds: [orderId],
+    includeItems: true
   });
+  const order = orders.orders?.[0];
   
   return formatOrderStatus(order);
 }
@@ -166,19 +175,11 @@ async function checkOrderStatus(query) {
 ### 3. Return Processing
 
 ```typescript
-async function processReturn(orderId, reason) {
-  // Get original order
-  const order = await mcp.call('get-order', { orderId });
-  
-  // Initiate return
-  const returnResult = await mcp.call('return-order', {
-    orderId: orderId,
-    items: order.items,
-    reason: reason,
-    refundMethod: 'original'
+async function fetchFulfillmentSummary(orderId) {
+  const fulfillments = await mcp.call('get-fulfillments', {
+    orderIds: [orderId]
   });
-  
-  return `Return approved. RMA: ${returnResult.rmaNumber}`;
+  return fulfillments.fulfillments;
 }
 ```
 
@@ -188,21 +189,21 @@ async function processReturn(orderId, reason) {
 
 | User Says | Tool to Call | Parameters |
 |-----------|--------------|------------|
-| "Order 2 blue widgets" | capture-order | Extract quantity, SKU |
+| "Order 2 blue widgets" | create-sales-order | Extract quantity, SKU |
 | "Cancel my order" | cancel-order | Find order ID from context |
-| "Where's my package?" | get-shipment | Extract tracking or order |
-| "I want to return this" | return-order | Identify items and reason |
-| "Change shipping address" | update-order | Parse new address |
+| "Where's my package?" | get-fulfillments | Order ID or tracking |
+| "Update the address" | update-order | Parse new address |
+| "Show my recent orders" | get-orders | Customer identifier |
 
 ### Response Generation
 
 ```typescript
 function generateResponse(tool, result) {
   const templates = {
-    'capture-order': `Great! I've placed your order #${result.orderNumber}`,
+    'create-sales-order': `Great! I've placed your order #${result.orderNumber}`,
     'cancel-order': `Your order has been cancelled. Refund will process in 3-5 days.`,
-    'get-shipment': `Your order is ${result.status}. Tracking: ${result.trackingNumber}`,
-    'return-order': `Return approved! RMA #${result.rmaNumber}. Please ship items back.`
+    'get-fulfillments': `Your order is ${result.fulfillments[0]?.status}. Tracking: ${result.fulfillments[0]?.trackingNumber}`,
+    'update-order': `All set—I've applied the updates to your order.`
   };
   
   return templates[tool] || 'Operation completed successfully';
@@ -215,7 +216,7 @@ function generateResponse(tool, result) {
 
 ```typescript
 try {
-  const result = await mcp.call('capture-order', params);
+  const result = await mcp.call('create-sales-order', params);
   return success(result);
 } catch (error) {
   switch(error.code) {
@@ -237,7 +238,9 @@ try {
 
 ```bash
 # Start mock server with test data
-npx @cof-org/mcp --mock
+cd /absolute/path/to/mcp-reference-server/server
+npm run build
+ADAPTER_TYPE=built-in ADAPTER_NAME=mock node dist/index.js
 ```
 
 ### 2. Test Scenarios
@@ -268,7 +271,7 @@ const testCases = [
 // Concurrent operations test
 const promises = [];
 for (let i = 0; i < 100; i++) {
-  promises.push(mcp.call('get-order', { orderId: `TEST-${i}` }));
+  promises.push(mcp.call('get-orders', { orderIds: [`TEST-${i}`] }));
 }
 const results = await Promise.all(promises);
 ```
@@ -308,7 +311,7 @@ async function secureOrderFlow(userInput) {
   };
   
   // 5. Process order
-  return await mcp.call('capture-order', sanitized);
+  return await mcp.call('create-sales-order', { order: sanitized });
 }
 ```
 
@@ -333,29 +336,24 @@ async function getCachedInventory(sku) {
 const items = await Promise.all(
   skus.map(sku => mcp.call('get-inventory', { sku }))
 );
-
-// Use single call when possible
-const reservation = await mcp.call('reserve-inventory', {
-  items: skus.map(sku => ({ sku, quantity: 1 }))
-});
 ```
 
 ### 3. Progressive Disclosure
 ```typescript
 // Start with minimal data
-const summary = await mcp.call('get-order', {
-  orderId: id,
-  includeItems: false,
-  includeHistory: false
+const summaryResult = await mcp.call('get-orders', {
+  orderIds: [id],
+  includeItems: false
 });
+const summary = summaryResult.orders?.[0];
 
 // Load details only if needed
 if (userWantsDetails) {
-  const full = await mcp.call('get-order', {
-    orderId: id,
-    includeItems: true,
-    includeHistory: true
+  const fullResult = await mcp.call('get-orders', {
+    orderIds: [id],
+    includeItems: true
   });
+  const full = fullResult.orders?.[0];
 }
 ```
 
