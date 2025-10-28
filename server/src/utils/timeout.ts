@@ -6,14 +6,14 @@ import { ServerConfig } from '../types/config.js';
 
 export class TimeoutHandler {
   private static config: ServerConfig['performance']['timeout'] | null = null;
-  
+
   /**
    * Set the timeout configuration from server config
    */
   static setConfig(timeoutConfig: ServerConfig['performance']['timeout']): void {
     this.config = timeoutConfig;
   }
-  
+
   /**
    * Wrap an operation with a timeout based on configuration
    * @param operation - The async operation to execute
@@ -26,26 +26,26 @@ export class TimeoutHandler {
     timeoutType: 'request' | 'adapter',
     customTimeout?: number
   ): Promise<T> {
-    const timeout = customTimeout || 
-      (this.config ? this.config[timeoutType] : (timeoutType === 'request' ? 30000 : 5000));
-    
+    const timeout =
+      customTimeout || (this.config ? this.config[timeoutType] : timeoutType === 'request' ? 30000 : 5000);
+
     return new Promise<T>((resolve, reject) => {
       const timeoutId = setTimeout(() => {
         reject(new Error(`Operation timed out after ${timeout}ms`));
       }, timeout);
-      
+
       operation()
-        .then(result => {
+        .then((result) => {
           clearTimeout(timeoutId);
           resolve(result);
         })
-        .catch(error => {
+        .catch((error) => {
           clearTimeout(timeoutId);
           reject(error);
         });
     });
   }
-  
+
   /**
    * Create a timeout promise that rejects after the specified time
    * @param ms - Milliseconds to wait before rejecting
@@ -56,7 +56,7 @@ export class TimeoutHandler {
       setTimeout(() => reject(new Error(message)), ms);
     });
   }
-  
+
   /**
    * Get configured timeout for a specific type
    * @param timeoutType - Type of timeout to get
