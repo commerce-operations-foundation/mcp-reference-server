@@ -64,14 +64,6 @@
                 "type": "string"
               }
             },
-            "required": [
-              "address1",
-              "city",
-              "company",
-              "country",
-              "email",
-              "firstName"
-            ],
             "additionalProperties": false
           }
         },

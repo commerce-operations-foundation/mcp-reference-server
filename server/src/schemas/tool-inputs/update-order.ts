@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { Order, orderSchema } from '../entities/order.js';
+import { Order, OrderSchema } from '../entities/order.js';
 import { makeZodFieldMap } from '../utils/schema-util.js';
 import { OrderLineItem, OrderLineItemSchema } from '../common.js';
 
@@ -9,8 +9,7 @@ const updateLineItemSchema = OrderLineItemSchema.omit(makeZodFieldMap(immutableL
   .partial()
   .required({ sku: true, quantity: true, unitPrice: true });
 
-const orderUpdatePayloadSchema = orderSchema
-  .omit(makeZodFieldMap(immutableOrderFields))
+const orderUpdatePayloadSchema = OrderSchema.omit(makeZodFieldMap(immutableOrderFields))
   .extend({
     lineItems: z.array(updateLineItemSchema).optional(),
   })

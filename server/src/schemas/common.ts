@@ -56,7 +56,11 @@ export const OrderLineItemSchema = z
     sku: z.string().min(1).describe('Product Variant SKU'),
     quantity: z.number().min(1).describe('Quantity ordered'),
     unitPrice: z.number().min(0).describe('Price per unit'),
-    totalPrice: z.number().min(0).describe('Total price (calculated if not provided)'),
+    unitDiscount: z.number().min(0).describe('Discount per unit'),
+    totalPrice: z
+      .number()
+      .min(0)
+      .describe('Total price for the line item. Calculated as (unitPrice - unitDiscount) * quantity'),
     name: z.string().describe('Product name for display'),
     customFields: CustomFieldsSchema,
   })
@@ -90,3 +94,20 @@ export const TagsSchema = z
   .describe(
     'Tags for categorization and filtering. Useful for organizing entities with custom labels (e.g., "priority", "wholesale", "gift")'
   );
+
+/**
+ * Shipping information schema used across order and fulfillment entities.
+ */
+export const ShippingInfoSchema = z
+  .object({
+    shippingAddress: AddressSchema.describe('Shipping address'),
+    shippingCarrier: z.string().describe('Shipping carrier name eg. UPS, FedEx, USPS'),
+    shippingClass: z.string().describe('Service level e.g. Next Day, Express, Ground'),
+    shippingCode: z.string(),
+    shippingNote: z.string().describe('Additional shipping notes'),
+    shippingPrice: z.number().describe('Shipping cost'),
+    giftNote: z.string(),
+    incoterms: z.string(),
+  })
+  .partial();
+export type ShippingInfo = z.infer<typeof ShippingInfoSchema>;

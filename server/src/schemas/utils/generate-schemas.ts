@@ -4,7 +4,7 @@ import { fileURLToPath } from 'url';
 import { z } from 'zod';
 
 import {
-  orderSchema,
+  OrderSchema,
   CustomerSchema,
   productSchema,
   InventoryItemSchema,
@@ -32,7 +32,7 @@ const SCHEMAS_DIR = join(__dirname, '../../../../schemas');
 const schemaDefinitions = [
   {
     name: 'order.json',
-    schema: orderSchema,
+    schema: OrderSchema,
     title: 'Order',
     description: 'Order entity schema',
   },
