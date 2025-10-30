@@ -43,7 +43,9 @@ export const ProductVariantSchema = z
       height: z.number(),
       unit: z.enum(['cm', 'in', 'ft']),
     }),
-    imageURLs: z.array(z.string()),
+    imageURLs: z
+      .array(z.url())
+      .describe('Publicly accessible HTTP URLs for images of the variant. First image should be the primary image.'),
     taxable: z.boolean(),
     tags: TagsSchema,
     customFields: CustomFieldsSchema,

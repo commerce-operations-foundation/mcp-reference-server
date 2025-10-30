@@ -26,17 +26,23 @@
       "items": {
         "type": "object",
         "properties": {
-          "id": {
-            "description": "Unique identifier for this line item within the order",
-            "type": "string"
+          "sku": {
+            "description": "Product Variant SKU",
+            "type": "string",
+            "minLength": 1
           },
           "quantity": {
             "description": "Quantity ordered",
             "type": "number",
             "minimum": 1
+          },
+          "id": {
+            "description": "Unique identifier for this line item within the order",
+            "type": "string"
           }
         },
         "required": [
+          "sku",
           "quantity"
         ],
         "additionalProperties": false

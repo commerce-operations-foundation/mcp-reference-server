@@ -8,10 +8,10 @@ export const GetOrdersInputSchema = z
     externalIds: z.array(z.string()).describe('External order ID from source system, could be a comma separated list'),
     statuses: z.array(z.string()).describe('Order status'),
     names: z.array(z.string()).describe('Friendly Order identifier'),
-    includeLineItems: z.boolean().default(true).describe('Whether to include detailed line item information'),
-    includeShipments: z.boolean().default(true).describe('Whether to include shipment information'),
-    includePayments: z.boolean().default(false).describe('Whether to include payment information'),
-    includeHistory: z.boolean().default(false).describe('Whether to include order status history'),
+    includeLineItems: z
+      .boolean()
+      .default(true)
+      .describe('Whether to include detailed line item information in the returned orders'),
   })
   .partial()
   .extend(TemporalPaginationSchema.shape);

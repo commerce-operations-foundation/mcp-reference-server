@@ -2,10 +2,9 @@ import { z } from 'zod';
 import { OrderLineItemSchema } from '../common.js';
 import { makeZodFieldMap } from '../utils/schema-util.js';
 
-const cancelLineItemSchema = z.object({
-  id: OrderLineItemSchema.shape.id,
-  quantity: OrderLineItemSchema.shape.quantity,
-});
+const cancelLineItemSchema = OrderLineItemSchema.pick({ sku: true, quantity: true, id: true })
+  .partial()
+  .required(makeZodFieldMap(['sku', 'quantity'] as const));
 
 export const CancelOrderInputSchema = z
   .object({

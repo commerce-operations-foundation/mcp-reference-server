@@ -126,9 +126,11 @@
       "additionalProperties": false
     },
     "imageURLs": {
+      "description": "Publicly accessible HTTP URLs for images of the variant. First image should be the primary image.",
       "type": "array",
       "items": {
-        "type": "string"
+        "type": "string",
+        "format": "uri"
       }
     },
     "taxable": {
