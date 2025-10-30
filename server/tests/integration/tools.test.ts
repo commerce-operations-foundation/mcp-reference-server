@@ -122,7 +122,7 @@ describe('Tool Integration', () => {
             },
           ],
           shippingCarrier: 'UPS',
-          trackingNumber: `1Z${Date.now()}`,
+          trackingNumbers: [`1Z${Date.now()}`],
           expectedDeliveryDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
           shippingPrice: 12.5,
           shippingAddress: requiredAddress({

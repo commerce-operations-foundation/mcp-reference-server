@@ -329,7 +329,7 @@ export class MockAdapter implements IFulfillmentAdapter {
     }
 
     const {
-      data: { orderId, trackingNumber, lineItems, shippingAddress, shippingCarrier, expectedDeliveryDate },
+      data: { orderId, trackingNumbers, lineItems, shippingAddress, shippingCarrier, expectedDeliveryDate },
     } = parseResult;
 
     const order = this.mockData.orders.get(orderId);
@@ -373,7 +373,7 @@ export class MockAdapter implements IFulfillmentAdapter {
       id: fulfillmentId,
       externalId: `FULFILL-${fulfillmentId}`,
       shippingAddress: resolvedShippingAddress!,
-      trackingNumber,
+      trackingNumbers,
       shippingCarrier,
       status: 'shipped',
       expectedDeliveryDate,
@@ -386,7 +386,7 @@ export class MockAdapter implements IFulfillmentAdapter {
       ),
     };
 
-    Logger.info('Order shipped', { orderId, fulfillmentId, trackingNumber });
+    Logger.info('Order shipped', { orderId, fulfillmentId, trackingNumbers });
 
     return {
       success: true,
@@ -727,7 +727,7 @@ export class MockAdapter implements IFulfillmentAdapter {
         shippingAddress: address,
         lineItems: order?.lineItems ?? [],
         orderId: resolvedOrderId,
-        trackingNumber: `TRACK-${fulfillmentId}`,
+        trackingNumbers: [`TRACK-${fulfillmentId}`],
         shippingCarrier: 'USPS',
         status: 'shipped',
         createdAt: now,

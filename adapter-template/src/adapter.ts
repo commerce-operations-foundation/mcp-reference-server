@@ -495,7 +495,7 @@ export class YourFulfillmentAdapter implements IFulfillmentAdapter {
 
   private transformFulfillOrderInput(input: FulfillOrderInput): Record<string, unknown> {
     return {
-      tracking_number: input.trackingNumber ?? undefined,
+      tracking_number: input.trackingNumbers?.[0] ?? undefined,
       carrier: input.shippingCarrier,
       service: input.shippingClass,
       location_id: input.locationId,
@@ -642,7 +642,7 @@ export class YourFulfillmentAdapter implements IFulfillmentAdapter {
       id: shipment.id,
       externalId: shipment.tracking_number,
       orderId: shipment.order_id,
-      trackingNumber: shipment.tracking_number,
+      trackingNumbers: shipment.tracking_number ? [shipment.tracking_number] : [],
       shippingCarrier: shipment.carrier,
       shippingClass: shipment.service,
       status: shipment.status,
@@ -657,7 +657,6 @@ export class YourFulfillmentAdapter implements IFulfillmentAdapter {
       tenantId: this.getTenantId(),
       expectedDeliveryDate: shipment.delivered_at,
       expectedShipDate: shipment.shipped_at,
-      shippingLabels: shipment.tracking_url ? [shipment.tracking_url] : undefined,
       shippingNote: shipment.tracking_url,
     };
   }

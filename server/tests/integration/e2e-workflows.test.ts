@@ -90,7 +90,7 @@ describe('E2E Workflows', () => {
           },
         ],
         shippingCarrier: 'FedEx',
-        trackingNumber: `FDX${Date.now()}`,
+        trackingNumbers: [`FDX${Date.now()}`],
         expectedDeliveryDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
         shippingPrice: 18,
         shippingAddress: address({ address1: '400 Delivered Rd' }),

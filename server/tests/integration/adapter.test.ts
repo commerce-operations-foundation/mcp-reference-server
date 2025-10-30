@@ -123,7 +123,7 @@ describe('Adapter Integration', () => {
           orderId: createResult.order.id,
           lineItems: [{ sku: 'SKU001', quantity: 1 }],
           shippingCarrier: 'UPS',
-          trackingNumber: `UPS${Date.now()}`,
+          trackingNumbers: [`UPS${Date.now()}`],
           expectedDeliveryDate: new Date(Date.now() + 4 * 24 * 60 * 60 * 1000).toISOString(),
           shippingPrice: 10.5,
           shippingAddress: baseAddress({ address1: '555 Fulfillment Ln' }),
