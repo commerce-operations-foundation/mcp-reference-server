@@ -16,7 +16,7 @@ export type VariantSelection = z.infer<typeof variantSelectionSchema>;
  * Product variant. Any field that overlaps with Product and is present
  * here overrides the product-level default for this specific variant.
  */
-export const ProductVariantSchema = z
+const ProductVariantCoreSchema = z
   .object({
     productId: z.string().describe('ID of the parent product'),
     externalProductId: z
@@ -54,5 +54,7 @@ export const ProductVariantSchema = z
   .required(makeZodFieldMap(['productId', 'sku'] as const))
   .extend(ObjectProps.shape)
   .describe('Product variant');
+
+export const ProductVariantSchema = ObjectProps.extend(ProductVariantCoreSchema.shape).describe('Product variant');
 
 export type ProductVariant = z.infer<typeof ProductVariantSchema>;

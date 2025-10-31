@@ -3,8 +3,8 @@
  */
 import { z } from 'zod';
 
-import { FulfillmentBaseSchema } from '../entities/fulfillment.js';
+import { FulfillmentSchema } from '../entities/fulfillment.js';
 
-export const FulfillOrderInputSchema = FulfillmentBaseSchema;
+export const FulfillOrderInputSchema = FulfillmentSchema;
 
 export type FulfillOrderInput = z.infer<typeof FulfillOrderInputSchema>;

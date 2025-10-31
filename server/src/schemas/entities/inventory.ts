@@ -3,9 +3,9 @@ import { ObjectProps } from '../common.js';
 import { makeZodFieldMap } from '../utils/schema-util.js';
 
 /**
- * Inventory entity schema.
+ * Inventory entity core schema
  */
-export const InventoryItemSchema = z
+const InventoryItemCoreSchema = z
   .object({
     locationId: z.string(),
     sku: z.string().describe('SKU of the inventory item. Should match product variant SKU.'),
@@ -15,7 +15,10 @@ export const InventoryItemSchema = z
   })
   .partial()
   .required(makeZodFieldMap(['sku', 'locationId', 'available'] as const))
-  .extend(ObjectProps.pick(makeZodFieldMap(['tenantId'] as const)).shape)
+  .describe('Inventory Item');
+
+export const InventoryItemSchema = ObjectProps.pick(makeZodFieldMap(['tenantId'] as const))
+  .extend(InventoryItemCoreSchema.shape)
   .describe('Inventory Item');
 
 export type InventoryItem = z.infer<typeof InventoryItemSchema>;
