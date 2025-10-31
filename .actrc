@@ -1,0 +1,3 @@
+--container-architecture linux/amd64
+--env ACT=true
+-P ubuntu-latest=catthehacker/ubuntu:act-latest
