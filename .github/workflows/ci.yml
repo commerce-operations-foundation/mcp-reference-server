@@ -28,7 +28,7 @@ jobs:
 
       - name: Install dependencies
         working-directory: server
-        run: npm install
+        run: npm ci
 
       - name: Type checking
         working-directory: server
@@ -48,7 +48,7 @@ jobs:
         if: matrix.test-type == 'unit'
         uses: codecov/codecov-action@v5
         with:
-          file: server/coverage/lcov.info
+          files: server/coverage/lcov.info
 
   build:
     name: Build
@@ -66,7 +66,7 @@ jobs:
 
       - name: Install dependencies
         working-directory: server
-        run: npm install
+        run: npm ci
 
       - name: Build application
         working-directory: server

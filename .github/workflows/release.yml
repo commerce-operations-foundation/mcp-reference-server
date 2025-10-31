@@ -24,7 +24,7 @@ jobs:
 
     - name: Install dependencies
       working-directory: server
-      run: npm install
+      run: npm ci
 
     - name: Run full test suite
       working-directory: server
@@ -53,7 +53,7 @@ jobs:
 
     - name: Install dependencies
       working-directory: server
-      run: npm install
+      run: npm ci
 
     - name: Build application
       working-directory: server
@@ -116,7 +116,7 @@ jobs:
           
           ### Installation
           ```bash
-          npm install @onx/mcp-server@${{ steps.version.outputs.VERSION }}
+          npm ci @onx/mcp-server@${{ steps.version.outputs.VERSION }}
           ```
           
           ### Docker

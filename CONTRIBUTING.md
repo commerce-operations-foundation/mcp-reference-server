@@ -12,9 +12,17 @@ Please review our [Code of Conduct](CODE_OF_CONDUCT.md) before contributing. We'
 
 ### 1. Fork and Clone
 
+First, fork the repository on GitHub by clicking the "Fork" button at the top of the [repository page](https://github.com/commerce-operations-foundation/mcp-reference-server).
+
+Then clone your fork:
+
 ```bash
-git clone https://github.com/<your-username>/mcp-reference-server.git
+# Clone your fork (replace YOUR-USERNAME with your GitHub username)
+git clone https://github.com/YOUR-USERNAME/mcp-reference-server.git
 cd mcp-reference-server
+
+# Add the upstream remote to sync with the main repository
+git remote add upstream https://github.com/commerce-operations-foundation/mcp-reference-server.git
 ```
 
 ### 2. Set Up the Environment
@@ -86,7 +94,11 @@ Before opening a PR, ensure:
 
 ### 4. Submit a Pull Request
 
-- Push your branch and open a PR against `develop`
+- Push your branch to your fork:
+  ```bash
+  git push origin feat/short-description
+  ```
+- Open a PR from your fork against the `develop` branch of the main repository
 - Link related issues in the PR description (Fixes #123)
 - Include a brief summary of what, why, and how you changed it
 - Keep PRs focused and small where possible
