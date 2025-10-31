@@ -350,7 +350,7 @@ interface HealthCheck {
 
 ## Conclusion
 
-The Universal Order Interchange Standard architecture provides:
+The Order Network eXchange Standard architecture provides:
 
 - **Separation of Concerns**: Clean layers with defined responsibilities
 - **Flexibility**: Multiple implementation options

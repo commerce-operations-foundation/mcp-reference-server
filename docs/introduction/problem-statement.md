@@ -130,7 +130,7 @@ A world where:
 
 ## Conclusion
 
-The fragmentation in fulfillment presents challenges for the commerce ecosystem. As AI transforms how consumers shop and businesses operate, the lack of standardization creates unnecessary friction. The Universal Order Interchange Standard addresses these challenges by providing a common language for AI-enabled commerce.
+The fragmentation in fulfillment presents challenges for the commerce ecosystem. As AI transforms how consumers shop and businesses operate, the lack of standardization creates unnecessary friction. The Order Network eXchange Standard addresses these challenges by providing a common language for AI-enabled commerce.
 
 Organizations now have the opportunity to participate in shaping this emerging standard.
 

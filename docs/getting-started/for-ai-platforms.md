@@ -2,7 +2,7 @@
 
 ## Enable Commerce in Your AI Agent in Minutes
 
-This guide shows AI platform developers how to integrate fulfillment capabilities using the Universal Order Interchange Standard.
+This guide shows AI platform developers how to integrate fulfillment capabilities using the Order Network eXchange Standard.
 
 ## Prerequisites
 

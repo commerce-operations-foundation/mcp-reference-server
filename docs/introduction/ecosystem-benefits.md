@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Universal Order Interchange Standard creates value for every participant in the commerce ecosystem. Unlike zero-sum solutions that benefit one party at the expense of others, this standard generates mutual value through network effects and reduced friction.
+The Order Network eXchange Standard creates value for every participant in the commerce ecosystem. Unlike zero-sum solutions that benefit one party at the expense of others, this standard generates mutual value through network effects and reduced friction.
 
 ## Benefits by Stakeholder
 
@@ -22,13 +22,13 @@ The Universal Order Interchange Standard creates value for every participant in 
 
 #### Technical Benefits
 ```yaml
-Before UOIS:
+Before onX:
   - Custom integration per Fulfillment: 3-6 months each
   - Ongoing maintenance: 20% of dev resources
   - Limited functionality: Basic operations only
   - Support burden: Complex troubleshooting
 
-With UOIS:
+With onX:
   - Single integration: 1 week
   - Zero maintenance: Standard-based
   - Full functionality: Complete order lifecycle
@@ -70,7 +70,7 @@ Stage 3: Differentiation (Ongoing)
 ### 🛍️ Commerce Platforms
 
 #### Integration Efficiency
-| Metric | Traditional | With UOIS | Improvement |
+| Metric | Traditional | With onX | Improvement |
 |--------|------------|-----------|-------------|
 | **Integration Time** | 3-6 months | 1-2 weeks | 85% reduction |
 | **Development Cost** | $50-100k | $5-10k | 90% reduction |
@@ -148,7 +148,7 @@ Each new participant increases value for all:
 100 Fulfillment + 100 AI = 10,000 connections
 
 Traditional cost: O(n²) - Exponential complexity
-With UOIS: O(n) - Linear implementation
+With onX: O(n) - Linear implementation
 ```
 
 ### Adoption Dynamics
@@ -199,7 +199,7 @@ Traditional Approach (Per Fulfillment):
 - Maintenance: $15,000/year
 - Time: 4 months
 
-UOIS Approach (All Fulfillment):
+onX Approach (All Fulfillment):
 - Integration: $10,000
 - Maintenance: $2,000/year
 - Time: 2 weeks
@@ -212,7 +212,7 @@ Savings per integration: $65,000 + 3.5 months
 ```
 Opportunity Cost Analysis:
 - Traditional: 6 months to launch AI commerce
-- With UOIS: 2 weeks to launch AI commerce
+- With onX: 2 weeks to launch AI commerce
 - Lost revenue (5.5 months): $2.75M
 - Implementation savings: $100,000
 - Total benefit: $2.85M
@@ -258,7 +258,7 @@ Opportunity Cost Analysis:
 
 ## Conclusion
 
-The Universal Order Interchange Standard isn't just a technical specification—it's an economic catalyst that creates value throughout the commerce ecosystem. By eliminating friction and enabling innovation, it allows every participant to focus on their core competencies while benefiting from network effects.
+The Order Network eXchange Standard isn't just a technical specification—it's an economic catalyst that creates value throughout the commerce ecosystem. By eliminating friction and enabling innovation, it allows every participant to focus on their core competencies while benefiting from network effects.
 
 The winners will be those who adopt early and help shape the standard's evolution.
 

@@ -1,42 +1,150 @@
 # Contributing
 
-Thanks for your interest in improving Commerce Operations Foundation MCP!
+Welcome! Thank you for your interest in contributing to the Commerce Operations Foundation MCP Server.
+
+This project is open-source because we believe collaboration drives better software. We welcome contributions of all types — code, documentation, testing, and feedback.
+
+## Code of Conduct
+
+Please review our [Code of Conduct](CODE_OF_CONDUCT.md) before contributing. We're committed to a respectful, inclusive community.
 
 ## Getting Started
 
-- Fork this repository and create a feature branch from `main`.
-- Ensure you have Node.js 18+ installed.
-- Work primarily inside the `server/` folder for server changes.
+### 1. Fork and Clone
 
-## Development Workflow
+```bash
+git clone https://github.com/<your-username>/mcp-reference-server.git
+cd mcp-reference-server
+```
 
-- Install deps: `cd server && npm ci`
-- Run unit tests: `npm run test:unit`
-- Run integration tests: `npm run test:integration` (requires a local build)
-- Lint: `npm run lint`
-- Type-check: `npm run typecheck`
+### 2. Set Up the Environment
 
-Before opening a PR:
-- Ensure `npm run typecheck` passes
-- Ensure `npm run lint` passes
-- Ensure `npm test` passes locally
+Ensure you have Node.js 18+ installed.
+
+Install dependencies:
+
+```bash
+cd server
+npm install
+```
+
+Run tests to verify setup:
+
+```bash
+npm test
+```
+
+### 3. Pick an Issue
+
+Check [open issues](https://github.com/cof-org/mcp-reference-server/issues) and look for labels like:
+- `good first issue`
+- `help wanted`
+
+Or open a new issue if you've found a bug or have a feature idea.
+
+## Contributing Code
+
+### 1. Create a Branch
+
+```bash
+git checkout -b feat/short-description
+```
+
+Use branch prefixes:
+- `feat/` for new features
+- `fix/` for bug fixes
+- `docs/` for documentation
+- `refactor/` for code improvements
+
+### 2. Follow Code Standards
+
+- TypeScript strict mode is enabled
+- ESLint and Prettier are configured; run `npm run lint` and `npm run format`
+- Write tests for new functionality
+- Keep commits atomic and messages descriptive:
+
+```
+feat: add order sync API
+fix: correct webhook payload parsing
+docs: clarify configuration options
+```
+
+### 3. Run Tests
+
+```bash
+npm test                 # Run all tests
+npm run test:unit        # Unit tests only
+npm run test:integration # Integration tests (requires build)
+npm run typecheck        # Type checking
+npm run lint             # Linting
+```
+
+Before opening a PR, ensure:
+- `npm run typecheck` passes
+- `npm run lint` passes
+- `npm test` passes locally
+
+### 4. Submit a Pull Request
+
+- Push your branch and open a PR against `develop`
+- Link related issues in the PR description (Fixes #123)
+- Include a brief summary of what, why, and how you changed it
+- Keep PRs focused and small where possible
+
+## Code Review Process
+
+- All PRs require at least one reviewer approval
+- Automated checks (CI, tests, lint) must pass before merge
+- Be responsive to feedback — it's a collaboration, not a gatekeeping step
+
+## Documentation
+
+- Update relevant markdown files or API references
+- If you add a major feature, include an example or tutorial section
+- Documentation lives in the `/docs` directory
+
+## Testing Guidelines
+
+- Follow the project's testing framework (Jest)
+- Include both unit and integration tests where appropriate
+- Keep test coverage high for core modules
+- Work primarily inside the `server/` folder for server changes
+
+## Project Structure
+
+```
+/server            # Core MCP server implementation
+/adapter-template  # Template for creating custom adapters
+/docs              # Documentation
+/schemas           # JSON Schema definitions
+```
 
 ## Commit Messages
 
-Follow conventional commits where possible (e.g., `feat:`, `fix:`, `docs:`, `refactor:`).
+Follow conventional commits:
+- `feat:` for new features
+- `fix:` for bug fixes
+- `docs:` for documentation
+- `refactor:` for code improvements
+- `test:` for test changes
+- `chore:` for maintenance tasks
 
-## Pull Requests
+## Release Workflow
 
-- Keep PRs focused and small where possible.
-- Include tests for new functionality or bug fixes.
-- Update documentation when behavior or public APIs change.
+- Merges to `develop` trigger automated builds
+- Releases are tagged and versioned following semantic versioning
+- Changelogs are generated from commit messages
 
-## Code Style
+## Communication
 
-- TypeScript strict mode is enabled.
-- ESLint and Prettier are configured; run `npm run lint` and `npm run format`.
+- For bug reports and feature requests, use [GitHub Issues](https://github.com/cof-org/mcp-reference-server/issues)
+- For design proposals and discussions, use [GitHub Discussions](https://github.com/cof-org/mcp-reference-server/discussions)
 
 ## Licensing
 
 By contributing, you agree that your contributions will be licensed under the MIT License.
+
+## Acknowledgments
+
+Thanks to all contributors — your work makes this project better for everyone.
 

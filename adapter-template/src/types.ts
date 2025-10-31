@@ -1,6 +1,6 @@
 /**
  * Custom types for YourFulfillment adapter
- * Define any Fulfillment-specific types that are not part of the standard UOIS types
+ * Define any Fulfillment-specific types that are not part of the standard onX types
  */
 
 // Configuration options for the adapter
