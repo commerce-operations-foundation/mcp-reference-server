@@ -16,7 +16,7 @@ export type ProductOption = z.infer<typeof ProductOptionSchema>;
  * Catalog-level product data. Fields shared with ProductVariant act as defaults.
  * When a variant also supplies those fields, the variant values take precedence for that variant.
  */
-export const productSchema = z
+const ProductCoreSchema = z
   .object({
     externalProductId: z.string(),
     name: z.string().describe('Product display name'),
@@ -35,4 +35,6 @@ export const productSchema = z
   .extend(ObjectProps.shape)
   .describe('Product');
 
-export type Product = z.infer<typeof productSchema>;
+export const ProductSchema = ObjectProps.extend(ProductCoreSchema.shape).describe('Product');
+
+export type Product = z.infer<typeof ProductSchema>;

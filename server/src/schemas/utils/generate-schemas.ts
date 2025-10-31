@@ -6,7 +6,7 @@ import { z } from 'zod';
 import {
   OrderSchema,
   CustomerSchema,
-  productSchema,
+  ProductSchema,
   InventoryItemSchema,
   FulfillmentSchema,
   ProductVariantSchema,
@@ -22,6 +22,7 @@ import {
   GetInventoryInputSchema,
   GetFulfillmentsInputSchema,
 } from '../tool-inputs/index.js';
+import { ReturnSchema } from '../entities/return.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -37,6 +38,12 @@ const schemaDefinitions = [
     description: 'Order entity schema',
   },
   {
+    name: 'return.json',
+    schema: ReturnSchema,
+    title: 'Return',
+    description: 'Return entity schema',
+  },
+  {
     name: 'customer.json',
     schema: CustomerSchema,
     title: 'Customer',
@@ -44,7 +51,7 @@ const schemaDefinitions = [
   },
   {
     name: 'product.json',
-    schema: productSchema,
+    schema: ProductSchema,
     title: 'Product',
     description: 'Product entity schema',
   },

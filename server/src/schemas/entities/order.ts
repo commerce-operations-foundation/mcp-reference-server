@@ -12,9 +12,9 @@ import { makeZodFieldMap } from '../utils/schema-util.js';
 import { CustomerSchema } from './customer.js';
 
 /**
- * Order entity schema definition.
+ * Order entity core schema
  */
-export const OrderSchema = z
+const OrderCoreSchema = z
   .object({
     name: z.string().describe('Order name'),
     status: z.string().describe('Order status'),
@@ -40,5 +40,7 @@ export const OrderSchema = z
   .required(makeZodFieldMap(['lineItems'] as const))
   .extend(ObjectProps.shape)
   .describe('Sales Order');
+
+export const OrderSchema = ObjectProps.extend(OrderCoreSchema.shape).describe('Sales Order');
 
 export type Order = z.infer<typeof OrderSchema>;

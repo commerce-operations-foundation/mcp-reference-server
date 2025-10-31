@@ -4,6 +4,10 @@
   "description": "Inventory Item",
   "type": "object",
   "properties": {
+    "tenantId": {
+      "description": "Unique identifier for the tenant that owns this entity (read-only)",
+      "type": "string"
+    },
     "locationId": {
       "type": "string"
     },
@@ -28,17 +32,13 @@
       "type": "integer",
       "minimum": -9007199254740991,
       "maximum": 9007199254740991
-    },
-    "tenantId": {
-      "description": "Unique identifier for the tenant that owns this entity (read-only)",
-      "type": "string"
     }
   },
   "required": [
+    "tenantId",
     "locationId",
     "sku",
-    "available",
-    "tenantId"
+    "available"
   ],
   "additionalProperties": false
 }

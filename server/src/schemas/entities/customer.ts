@@ -2,7 +2,10 @@ import { z } from 'zod';
 
 import { CustomerAddressSchema, TagsSchema, ObjectProps, CustomFieldsSchema } from '../common.js';
 
-export const CustomerSchema = z
+/**
+ * Customer entity core schema
+ */
+const CustomerCoreSchema = z
   .object({
     addresses: z
       .array(CustomerAddressSchema)
@@ -23,5 +26,7 @@ export const CustomerSchema = z
   .required({})
   .extend(ObjectProps.shape)
   .describe('Customer');
+
+export const CustomerSchema = ObjectProps.extend(CustomerCoreSchema.shape).describe('Customer');
 
 export type Customer = z.infer<typeof CustomerSchema>;
