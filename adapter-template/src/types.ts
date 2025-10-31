@@ -121,7 +121,7 @@ export interface YourFulfillmentCustomer {
 export interface YourFulfillmentShipment {
   id: string;
   order_id: string;
-  tracking_number?: string;
+  tracking_number: string;
   carrier: string;
   service: string;
   status: string;
@@ -138,15 +138,15 @@ export interface YourFulfillmentShipment {
 
 // Status mapping configuration
 export const STATUS_MAP: Record<string, string> = {
-  'new': 'pending',
-  'processing': 'processing',
-  'shipped': 'shipped',
-  'delivered': 'delivered',
-  'cancelled': 'cancelled',
-  'on_hold': 'on_hold',
-  'refunded': 'refunded',
-  'partially_shipped': 'partially_shipped',
-  'partially_delivered': 'partially_delivered'
+  new: 'pending',
+  processing: 'processing',
+  shipped: 'shipped',
+  delivered: 'delivered',
+  cancelled: 'cancelled',
+  on_hold: 'on_hold',
+  refunded: 'refunded',
+  partially_shipped: 'partially_shipped',
+  partially_delivered: 'partially_delivered',
 };
 
 // Error codes for consistent error handling
@@ -161,5 +161,5 @@ export enum ErrorCode {
   INVALID_ORDER_STATE = 'INVALID_ORDER_STATE',
   API_ERROR = 'API_ERROR',
   TIMEOUT = 'TIMEOUT',
-  UNKNOWN_ERROR = 'UNKNOWN_ERROR'
+  UNKNOWN_ERROR = 'UNKNOWN_ERROR',
 }

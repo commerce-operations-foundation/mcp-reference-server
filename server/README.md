@@ -4,7 +4,7 @@ A Model Context Protocol (MCP) server that provides standardized access to comme
 
 ## Features
 
-- 15 standard fulfillment tools covering the complete order lifecycle
+- 10 standardized fulfillment tools covering core order capture, fulfillment, and data queries
 - Plug-and-play adapter system for different fulfillment backends
 - Mock adapter for testing and development
 - Full TypeScript implementation with strict type safety
@@ -16,13 +16,15 @@ A Model Context Protocol (MCP) server that provides standardized access to comme
 ### Installation
 
 ```bash
-npm install @cof-org/mcp
+# From the repository root
+cd server
+npm install
 ```
 
 ### Running the Server
 
 ```bash
-# Development mode with TypeScript
+# Development mode with TypeScript via vite-node
 npm run dev
 
 # Production mode
@@ -41,6 +43,9 @@ ADAPTER_NAME=mock
 
 # Set log level
 LOG_LEVEL=info
+
+# Optional: pass adapter options as JSON
+ADAPTER_CONFIG='{"fixedLatency":150}'
 ```
 
 ## Architecture
@@ -53,26 +58,19 @@ The server follows a three-layer architecture:
 
 ## Available Tools
 
-### Order Actions
-- `capture-order` - Create new orders
-- `cancel-order` - Cancel existing orders
-- `update-order` - Modify order details
-- `return-order` - Process returns
-- `exchange-order` - Handle exchanges
-- `ship-order` - Mark orders as shipped
-
-### Management Tools
-- `hold-order` - Place orders on hold
-- `split-order` - Split into multiple shipments
-- `reserve-inventory` - Reserve stock
+### Action Tools
+- `create-sales-order` - Create new orders from external systems or checkouts
+- `cancel-order` - Cancel existing orders with optional reasons
+- `update-order` - Modify order details and metadata
+- `fulfill-order` - Mark orders as fulfilled and return fulfillment data
 
 ### Query Tools
-- `get-order` - Retrieve order details
-- `get-inventory` - Check stock levels
-- `get-product` - Get product information
-- `get-customer` - Retrieve customer data
-- `get-shipment` - Track shipments
-- `get-buyer` - Get B2B buyer information
+- `get-orders` - Retrieve orders with rich filtering
+- `get-customers` - Fetch customer records
+- `get-products` - Get product catalog entries
+- `get-product-variants` - Retrieve variant data
+- `get-inventory` - Check stock levels across locations
+- `get-fulfillments` - List fulfillment records and statuses
 
 ## Claude Desktop Integration
 
@@ -82,8 +80,8 @@ Add to your Claude Desktop configuration:
 {
   "mcpServers": {
     "cof-mcp": {
-      "command": "npx",
-      "args": ["@cof-org/mcp"],
+      "command": "node",
+      "args": ["/absolute/path/to/server/dist/index.js"],
       "env": {
         "ADAPTER_TYPE": "built-in",
         "ADAPTER_NAME": "mock"
@@ -167,7 +165,6 @@ npm test
 # Run specific test suites
 npm run test:unit
 npm run test:integration
-npm run test:e2e
 ```
 
 ## Documentation

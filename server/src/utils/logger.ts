@@ -6,7 +6,7 @@
 
 import { getLogger, StructuredLogger, LogConfig } from '../logging/structured-logger.js';
 
-export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
+type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
 export class Logger {
   private static level: LogLevel = 'info';

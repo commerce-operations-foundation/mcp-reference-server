@@ -4,6 +4,8 @@
  * This file runs before all tests to set up the test environment.
  */
 
+import { jest } from '@jest/globals';
+
 // Set test environment variables
 process.env.NODE_ENV = 'test';
 process.env.API_URL = 'https://api.test.yourfulfillment.com';
@@ -56,6 +58,7 @@ declare global {
 // Clean up after each test
 afterEach(() => {
   jest.clearAllMocks();
+  jest.restoreAllMocks();
 });
 
 export {};

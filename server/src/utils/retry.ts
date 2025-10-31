@@ -5,7 +5,7 @@ import { ServerConfig } from '../types/config.js';
 /**
  * Configuration options for retry behavior
  */
-export interface RetryOptions {
+interface RetryOptions {
   /** Maximum number of retry attempts */
   maxRetries: number;
   /** Initial delay in milliseconds before first retry */

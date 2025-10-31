@@ -5,8 +5,10 @@
  * Entry point using MCP SDK components
  */
 
-import { MCPServerSDK } from './server.js';
+import { fileURLToPath } from 'url';
+
 import { ConfigManager } from './config/config-manager.js';
+import { MCPServerSDK } from './server.js';
 import { Logger } from './utils/logger.js';
 import { RetryHandler } from './utils/retry.js';
 import { Sanitizer } from './utils/sanitizer.js';
@@ -58,8 +60,6 @@ async function main() {
 
 // Run if this is the main module
 // ES modules use import.meta.url
-import { fileURLToPath } from 'url';
-
 const __filename = fileURLToPath(import.meta.url);
 
 // Check if this file was run directly
@@ -69,3 +69,5 @@ if (process.argv[1] === __filename) {
 
 export { MCPServerSDK } from './server.js';
 export { ConfigManager } from './config/config-manager.js';
+export * from './types/index.js';
+export * from './schemas/index.js';

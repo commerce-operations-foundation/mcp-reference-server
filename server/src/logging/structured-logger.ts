@@ -9,13 +9,6 @@ import * as fs from 'fs';
 import DailyRotateFile from 'winston-daily-rotate-file';
 import { LogSanitizer } from '../security/log-sanitizer.js';
 
-export enum LogLevel {
-  ERROR = 'error',
-  WARN = 'warn',
-  INFO = 'info',
-  DEBUG = 'debug'
-}
-
 export interface LogContext {
   correlationId?: string;
   userId?: string;

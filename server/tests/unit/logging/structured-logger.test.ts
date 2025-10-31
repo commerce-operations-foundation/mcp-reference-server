@@ -2,7 +2,7 @@
  * Structured Logger Unit Tests
  */
 
-import { vi, describe, it, expect, beforeEach, afterEach, beforeAll, afterAll } from 'vitest';
+import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { StructuredLogger, getLogger, resetLogger, LogContext } from '../../../src/logging/structured-logger';
 import * as winston from 'winston';
 
@@ -16,11 +16,11 @@ vi.mock('winston', () => ({
     json: vi.fn(() => ({ transform: vi.fn() })),
     colorize: vi.fn(() => ({ transform: vi.fn() })),
     printf: vi.fn(() => ({ transform: vi.fn() })),
-    simple: vi.fn(() => ({ transform: vi.fn() }))
+    simple: vi.fn(() => ({ transform: vi.fn() })),
   },
   transports: {
     Console: vi.fn(),
-    File: vi.fn()
+    File: vi.fn(),
   },
   createLogger: vi.fn(() => ({
     error: vi.fn(),
@@ -28,14 +28,14 @@ vi.mock('winston', () => ({
     info: vi.fn(),
     debug: vi.fn(),
     log: vi.fn(),
-    add: vi.fn()
-  }))
+    add: vi.fn(),
+  })),
 }));
 
 // Mock fs
 vi.mock('fs', () => ({
   existsSync: vi.fn(() => true),
-  mkdirSync: vi.fn()
+  mkdirSync: vi.fn(),
 }));
 
 describe('StructuredLogger', () => {
@@ -53,9 +53,9 @@ describe('StructuredLogger', () => {
       info: vi.fn(),
       debug: vi.fn(),
       log: vi.fn(),
-      add: vi.fn()
+      add: vi.fn(),
     };
-    (winston.createLogger as vi.Mock).mockReturnValue(mockWinstonLogger);
+    (winston.createLogger as any).mockReturnValue(mockWinstonLogger);
 
     logger = new StructuredLogger('test-service');
   });
@@ -70,7 +70,7 @@ describe('StructuredLogger', () => {
       expect(winston.createLogger).toHaveBeenCalledWith(
         expect.objectContaining({
           level: 'info',
-          defaultMeta: { service: 'test-service' }
+          defaultMeta: { service: 'test-service' },
         })
       );
     });
@@ -79,7 +79,7 @@ describe('StructuredLogger', () => {
       new StructuredLogger();
       expect(winston.createLogger).toHaveBeenCalledWith(
         expect.objectContaining({
-          defaultMeta: { service: 'cof-mcp' }
+          defaultMeta: { service: 'cof-mcp' },
         })
       );
     });
@@ -95,7 +95,7 @@ describe('StructuredLogger', () => {
       expect(mockWinstonLogger.info).toHaveBeenCalledWith(
         'test message',
         expect.objectContaining({
-          correlationId
+          correlationId,
         })
       );
 
@@ -105,7 +105,7 @@ describe('StructuredLogger', () => {
       expect(mockWinstonLogger.info).toHaveBeenCalledWith(
         'test message 2',
         expect.objectContaining({
-          correlationId: null
+          correlationId: null,
         })
       );
     });
@@ -120,7 +120,7 @@ describe('StructuredLogger', () => {
         'test error',
         expect.objectContaining({
           toolName: 'test-tool',
-          timestamp: expect.any(String)
+          timestamp: expect.any(String),
         })
       );
     });
@@ -135,8 +135,8 @@ describe('StructuredLogger', () => {
           error: {
             message: 'test error',
             stack: expect.any(String),
-            name: 'Error'
-          }
+            name: 'Error',
+          },
         })
       );
     });
@@ -147,7 +147,7 @@ describe('StructuredLogger', () => {
       expect(mockWinstonLogger.warn).toHaveBeenCalledWith(
         'test warning',
         expect.objectContaining({
-          operation: 'test-op'
+          operation: 'test-op',
         })
       );
     });
@@ -159,7 +159,7 @@ describe('StructuredLogger', () => {
         'test info',
         expect.objectContaining({
           correlationId: null,
-          timestamp: expect.any(String)
+          timestamp: expect.any(String),
         })
       );
     });
@@ -170,7 +170,7 @@ describe('StructuredLogger', () => {
       expect(mockWinstonLogger.debug).toHaveBeenCalledWith(
         'test debug',
         expect.objectContaining({
-          userId: 'user123'
+          userId: 'user123',
         })
       );
     });
@@ -181,7 +181,7 @@ describe('StructuredLogger', () => {
       expect(mockWinstonLogger.debug).toHaveBeenCalledWith(
         '[TRACE] test trace',
         expect.objectContaining({
-          timestamp: expect.any(String)
+          timestamp: expect.any(String),
         })
       );
     });
@@ -197,7 +197,7 @@ describe('StructuredLogger', () => {
         expect.objectContaining({
           method: 'test-method',
           params: { password: '[REDACTED]', normalField: 'value' },
-          correlationId: '123'
+          correlationId: '123',
         })
       );
     });
@@ -212,7 +212,7 @@ describe('StructuredLogger', () => {
           method: 'test-method',
           duration: 150,
           success: true,
-          correlationId: '123'
+          correlationId: '123',
         })
       );
     });
@@ -230,7 +230,7 @@ describe('StructuredLogger', () => {
           params,
           success: true,
           duration: 100,
-          resultSize: expect.any(Number)
+          resultSize: expect.any(Number),
         })
       );
     });
@@ -243,7 +243,7 @@ describe('StructuredLogger', () => {
         expect.objectContaining({
           operation: 'get-order',
           duration: 200,
-          success: true
+          success: true,
         })
       );
     });
@@ -258,7 +258,7 @@ describe('StructuredLogger', () => {
           action: 'order-capture',
           details,
           source: 'audit',
-          timestamp: expect.any(String)
+          timestamp: expect.any(String),
         })
       );
     });
@@ -276,7 +276,7 @@ describe('StructuredLogger', () => {
       expect(mockWinstonLogger.debug).toHaveBeenCalledWith(
         'test-operation completed',
         expect.objectContaining({
-          duration: 100
+          duration: 100,
         })
       );
 
@@ -289,7 +289,7 @@ describe('StructuredLogger', () => {
       const sensitiveContext = {
         password: 'secret123',
         apiKey: 'key123',
-        normalField: 'safe'
+        normalField: 'safe',
       };
 
       logger.info('test message', sensitiveContext);
@@ -299,7 +299,7 @@ describe('StructuredLogger', () => {
         expect.objectContaining({
           password: '[REDACTED]',
           apiKey: '[REDACTED]',
-          normalField: 'safe'
+          normalField: 'safe',
         })
       );
     });
@@ -323,7 +323,7 @@ describe('getLogger singleton', () => {
 
     expect(winston.createLogger).toHaveBeenCalledWith(
       expect.objectContaining({
-        defaultMeta: { service: 'custom-service' }
+        defaultMeta: { service: 'custom-service' },
       })
     );
   });

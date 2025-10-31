@@ -3,68 +3,44 @@
  * Main facade that coordinates all service components and maintains backward compatibility
  */
 
-import { 
-  AdapterConfig,
-  OrderRequest,
-  OrderResult,
-  CancelResult,
-  UpdateResult,
-  ReturnResult,
-  ExchangeResult,
-  HoldResult,
-  SplitResult,
-  ReturnItem,
-  ExchangeParams,
-  OrderUpdates,
-  ShippingInfo,
-  HoldParams,
-  SplitParams,
-  ReservationRequest,
-  ReservationResult,
-  Inventory,
-  Order,
-  OrderIdentifier,
-  Product,
-  ProductIdentifier,
-  Customer,
-  CustomerIdentifier,
-  Shipment,
-  ShipmentIdentifier,
-  Buyer,
-  HealthStatus
-} from '../types/index.js';
-
 import { Logger } from '../utils/logger.js';
-import { Transformer } from './transformer.js';
 
 // Import all service components
-import { OrderService } from './order-service.js';
-import { InventoryService } from './inventory-service.js';
-import { QueryService } from './query-service.js';
 import { AdapterManager } from './adapter-manager.js';
 import { HealthMonitor } from './health-monitor.js';
 import { ErrorHandler } from './error-handler.js';
+import { TimeoutHandler } from '../utils/timeout.js';
+
+import type {
+  CreateSalesOrderInput,
+  CancelOrderInput,
+  UpdateOrderInput,
+  FulfillOrderInput,
+  GetOrdersInput,
+  GetCustomersInput,
+  GetProductsInput,
+  GetProductVariantsInput,
+  GetInventoryInput,
+  GetFulfillmentsInput,
+} from '../schemas/tool-inputs/index.js';
+import { AdapterConfig, HealthStatus, OrderResult, FulfillmentToolResult } from '../types/adapter.js';
+import { Customer, Fulfillment, InventoryItem, Order, Product, ProductVariant } from '../schemas/index.js';
 
 /**
  * ServiceOrchestrator provides a unified interface to all Fulfillment operations
  */
 export class ServiceOrchestrator {
   // Service components
-  private orderService: OrderService | null = null;
-  private inventoryService: InventoryService | null = null;
-  private queryService: QueryService | null = null;
   private adapterManager: AdapterManager;
   private healthMonitor: HealthMonitor;
   private errorHandler: ErrorHandler;
-  private transformer: Transformer;
 
   constructor() {
     // Initialize infrastructure components
     this.adapterManager = new AdapterManager();
     this.healthMonitor = new HealthMonitor();
     this.errorHandler = new ErrorHandler();
-    this.transformer = new Transformer();
-    
+
     Logger.info('ServiceOrchestrator initialized');
   }
 
@@ -73,43 +49,26 @@ export class ServiceOrchestrator {
    */
   async initialize(config: AdapterConfig): Promise<void> {
     const startTime = Date.now();
-    
+
     try {
       Logger.info('Initializing ServiceOrchestrator', { adapterType: config.type });
-      
+
       // Initialize adapter
       await this.adapterManager.initialize(config);
-      const adapter = this.adapterManager.getAdapter();
-      
-      // Initialize domain services with adapter
-      this.orderService = new OrderService(
-        adapter,
-        this.transformer,
-        this.errorHandler
-      );
-      
-      this.inventoryService = new InventoryService(
-        adapter,
-        this.errorHandler
-      );
-      
-      this.queryService = new QueryService(
-        adapter,
-        this.errorHandler
-      );
-      
+      this.adapterManager.getAdapter();
+
       // Record initialization metrics
       const duration = Date.now() - startTime;
       this.healthMonitor.recordOperation('ServiceOrchestrator', 'initialize', duration, true);
-      
-      Logger.info('ServiceOrchestrator initialized successfully', { 
+
+      Logger.info('ServiceOrchestrator initialized successfully', {
         duration,
-        adapterType: config.type 
+        adapterType: config.type,
       });
     } catch (error) {
       const duration = Date.now() - startTime;
       this.healthMonitor.recordOperation('ServiceOrchestrator', 'initialize', duration, false);
-      
+
       Logger.error('Failed to initialize ServiceOrchestrator', { error });
       throw error;
     }
@@ -119,10 +78,7 @@ export class ServiceOrchestrator {
    * Check if service is initialized
    */
   isInitialized(): boolean {
-    return this.adapterManager.isReady() && 
-           this.orderService !== null && 
-           this.inventoryService !== null && 
-           this.queryService !== null;
+    return this.adapterManager.isReady();
   }
 
   /**
@@ -133,31 +89,60 @@ export class ServiceOrchestrator {
   }
 
   // ==========================================
-  // Order Operations (delegated to OrderService)
+  // Order Operations (adapter-backed)
   // ==========================================
 
-  async captureOrder(params: OrderRequest): Promise<OrderResult> {
+  async createSalesOrder(input: CreateSalesOrderInput): Promise<OrderResult> {
     this.ensureInitialized();
     const startTime = Date.now();
-    
+
     try {
-      const { orderService } = this.getServices();
-      const result = await orderService.captureOrder(params);
-      this.recordSuccess('captureOrder', startTime);
+      const adapter = this.adapterManager.getAdapter();
+      const result = await this.errorHandler.executeOperation('captureOrder', async () => {
+        Logger.info('Capturing order', { externalId: input.order.externalId });
+
+        const outcome = await TimeoutHandler.withTimeout(() => adapter.createSalesOrder(input), 'adapter');
+
+        if (outcome.success) {
+          Logger.info('Order captured successfully', {
+            orderId: outcome.order.id,
+            status: outcome.order.status,
+          });
+        } else {
+          Logger.error('Order capture failed', { error: outcome.error });
+        }
+
+        return outcome;
+      });
+      this.recordSuccess('createSalesOrder', startTime);
       return result;
     } catch (error) {
-      this.recordFailure('captureOrder', startTime);
+      this.recordFailure('createSalesOrder', startTime);
       throw error;
     }
   }
 
-  async cancelOrder(orderId: string, reason?: string): Promise<CancelResult> {
+  async cancelOrder(input: CancelOrderInput): Promise<OrderResult> {
     this.ensureInitialized();
     const startTime = Date.now();
-    
+
     try {
-      const { orderService } = this.getServices();
-      const result = await orderService.cancelOrder(orderId, reason);
+      const adapter = this.adapterManager.getAdapter();
+      const result = await this.errorHandler.executeOperation('cancelOrder', async () => {
+        Logger.info('Cancelling order', { orderId: input.orderId });
+
+        const outcome = await TimeoutHandler.withTimeout(() => adapter.cancelOrder(input), 'adapter');
+
+        if (outcome.success) {
+          Logger.info('Order cancelled successfully', {
+            orderId: outcome.order.id,
+          });
+        } else {
+          Logger.error('Order cancellation failed', { error: outcome.error });
+        }
+
+        return outcome;
+      });
       this.recordSuccess('cancelOrder', startTime);
       return result;
     } catch (error) {
@@ -166,13 +151,27 @@ export class ServiceOrchestrator {
     }
   }
 
-  async updateOrder(orderId: string, updates: OrderUpdates): Promise<UpdateResult> {
+  async updateOrder(input: UpdateOrderInput): Promise<OrderResult> {
     this.ensureInitialized();
     const startTime = Date.now();
-    
+
     try {
-      const { orderService } = this.getServices();
-      const result = await orderService.updateOrder(orderId, updates);
+      const adapter = this.adapterManager.getAdapter();
+      const result = await this.errorHandler.executeOperation('updateOrder', async () => {
+        Logger.info('Updating order', { orderId: input.id });
+
+        const outcome = await TimeoutHandler.withTimeout(() => adapter.updateOrder(input), 'adapter');
+
+        if (outcome.success) {
+          Logger.info('Order updated successfully', {
+            orderId: outcome.order.id,
+          });
+        } else {
+          Logger.error('Order update failed', { error: outcome.error });
+        }
+
+        return outcome;
+      });
       this.recordSuccess('updateOrder', startTime);
       return result;
     } catch (error) {
@@ -181,96 +180,60 @@ export class ServiceOrchestrator {
     }
   }
 
-  async returnOrder(orderId: string, items: ReturnItem[]): Promise<ReturnResult> {
+  async fulfillOrder(input: FulfillOrderInput): Promise<FulfillmentToolResult<{ fulfillment: Fulfillment }>> {
     this.ensureInitialized();
     const startTime = Date.now();
-    
+
     try {
-      const { orderService } = this.getServices();
-      const result = await orderService.returnOrder(orderId, items);
-      this.recordSuccess('returnOrder', startTime);
+      const adapter = this.adapterManager.getAdapter();
+      const result = await this.errorHandler.executeOperation('fulfillOrder', async () => {
+        const { orderId } = input;
+        Logger.info('Shipping order', { orderId });
+
+        const outcome = await TimeoutHandler.withTimeout(() => adapter.fulfillOrder(input), 'adapter');
+
+        if (outcome.success) {
+          Logger.info('Order fulfilled successfully', {
+            orderId,
+            fulfillmentId: outcome.fulfillment.id,
+          });
+        } else {
+          Logger.error('Order fulfillment failed', { error: outcome.error });
+        }
+
+        return outcome;
+      });
+      this.recordSuccess('fulfillOrder', startTime);
       return result;
     } catch (error) {
-      this.recordFailure('returnOrder', startTime);
-      throw error;
-    }
-  }
-
-  async exchangeOrder(params: ExchangeParams): Promise<ExchangeResult> {
-    this.ensureInitialized();
-    const startTime = Date.now();
-    
-    try {
-      const { orderService } = this.getServices();
-      const result = await orderService.exchangeOrder(params);
-      this.recordSuccess('exchangeOrder', startTime);
-      return result;
-    } catch (error) {
-      this.recordFailure('exchangeOrder', startTime);
-      throw error;
-    }
-  }
-
-  async shipOrder(orderId: string, shipping: ShippingInfo): Promise<any> {
-    this.ensureInitialized();
-    const startTime = Date.now();
-    
-    try {
-      const { orderService } = this.getServices();
-      const result = await orderService.shipOrder(orderId, shipping);
-      this.recordSuccess('shipOrder', startTime);
-      // Add orderId to the result for MCP tool compatibility
-      return {
-        ...result,
-        orderId
-      };
-    } catch (error) {
-      this.recordFailure('shipOrder', startTime);
-      throw error;
-    }
-  }
-
-  async holdOrder(orderId: string, holdParams: HoldParams): Promise<HoldResult> {
-    this.ensureInitialized();
-    const startTime = Date.now();
-    
-    try {
-      const { orderService } = this.getServices();
-      const result = await orderService.holdOrder(orderId, holdParams);
-      this.recordSuccess('holdOrder', startTime);
-      return result;
-    } catch (error) {
-      this.recordFailure('holdOrder', startTime);
-      throw error;
-    }
-  }
-
-  async splitOrder(orderId: string, splits: SplitParams[]): Promise<SplitResult> {
-    this.ensureInitialized();
-    const startTime = Date.now();
-    
-    try {
-      const { orderService } = this.getServices();
-      const result = await orderService.splitOrder(orderId, splits);
-      this.recordSuccess('splitOrder', startTime);
-      return result;
-    } catch (error) {
-      this.recordFailure('splitOrder', startTime);
+      this.recordFailure('fulfillOrder', startTime);
       throw error;
     }
   }
 
   // ==========================================
-  // Inventory Operations (delegated to InventoryService)
+  // Inventory Operations (adapter-backed)
   // ==========================================
 
-  async getInventory(sku: string, locationId?: string): Promise<Inventory> {
+  async getInventory(input: GetInventoryInput): Promise<FulfillmentToolResult<{ inventory: InventoryItem[] }>> {
     this.ensureInitialized();
     const startTime = Date.now();
-    
+
     try {
-      const { inventoryService } = this.getServices();
-      const result = await inventoryService.getInventory(sku, locationId);
+      const adapter = this.adapterManager.getAdapter();
+      const result = await this.errorHandler.executeOperation('getInventory', async () => {
+        Logger.debug('Fetching inventory', { filters: input });
+
+        const outcome = await TimeoutHandler.withTimeout(() => adapter.getInventory(input), 'adapter');
+
+        if (outcome.success) {
+          Logger.debug('Inventory retrieved successfully', { count: outcome.inventory.length });
+          return outcome;
+        } else {
+          Logger.error('Failed to retrieve inventory', { error: outcome.error });
+          throw outcome.error;
+        }
+      });
       this.recordSuccess('getInventory', startTime);
       return result;
     } catch (error) {
@@ -279,100 +242,135 @@ export class ServiceOrchestrator {
     }
   }
 
-  async reserveInventory(reservation: ReservationRequest): Promise<ReservationResult> {
-    this.ensureInitialized();
-    const startTime = Date.now();
-    
-    try {
-      const { inventoryService } = this.getServices();
-      const result = await inventoryService.reserveInventory(reservation);
-      this.recordSuccess('reserveInventory', startTime);
-      return result;
-    } catch (error) {
-      this.recordFailure('reserveInventory', startTime);
-      throw error;
-    }
-  }
-
   // ==========================================
-  // Query Operations (delegated to QueryService)
+  // Query Operations (adapter-backed)
   // ==========================================
 
-  async getOrder(identifier: OrderIdentifier): Promise<Order> {
+  async getOrders(input: GetOrdersInput): Promise<FulfillmentToolResult<{ orders: Order[] }>> {
     this.ensureInitialized();
     const startTime = Date.now();
-    
-    try {
-      const { queryService } = this.getServices();
-      const result = await queryService.getOrder(identifier);
-      this.recordSuccess('getOrder', startTime);
-      return result;
-    } catch (error) {
-      this.recordFailure('getOrder', startTime);
-      throw error;
-    }
-  }
 
-  async getProduct(identifier: ProductIdentifier): Promise<Product> {
-    this.ensureInitialized();
-    const startTime = Date.now();
-    
     try {
-      const { queryService } = this.getServices();
-      const result = await queryService.getProduct(identifier);
-      this.recordSuccess('getProduct', startTime);
-      return result;
-    } catch (error) {
-      this.recordFailure('getProduct', startTime);
-      throw error;
-    }
-  }
-
-  async getCustomer(identifier: CustomerIdentifier): Promise<Customer> {
-    this.ensureInitialized();
-    const startTime = Date.now();
-    
-    try {
-      const { queryService } = this.getServices();
-      const result = await queryService.getCustomer(identifier);
-      this.recordSuccess('getCustomer', startTime);
-      return result;
-    } catch (error) {
-      this.recordFailure('getCustomer', startTime);
-      throw error;
-    }
-  }
-
-  async getShipment(identifier: ShipmentIdentifier): Promise<Shipment> {
-    this.ensureInitialized();
-    const startTime = Date.now();
-    
-    try {
-      const { queryService } = this.getServices();
-      const result = await queryService.getShipment(identifier);
-      this.recordSuccess('getShipment', startTime);
-      return result;
-    } catch (error) {
-      this.recordFailure('getShipment', startTime);
-      throw error;
-    }
-  }
-
-  async getBuyer(buyerId: string): Promise<Buyer> {
-    this.ensureInitialized();
-    const startTime = Date.now();
-    
-    try {
-      // Directly call adapter since QueryService doesn't have getBuyer
       const adapter = this.adapterManager.getAdapter();
-      if (!adapter.getBuyer) {
-        throw new Error('getBuyer not supported by current adapter');
-      }
-      const result = await adapter.getBuyer(buyerId);
-      this.recordSuccess('getBuyer', startTime);
+      const result = await this.errorHandler.executeOperation('getOrders', async () => {
+        Logger.debug('Fetching orders', { filters: input });
+
+        const outcome = await TimeoutHandler.withTimeout(() => adapter.getOrders(input), 'adapter');
+
+        if (outcome.success) {
+          Logger.debug('Orders retrieved', { count: outcome.orders.length });
+          return outcome;
+        } else {
+          Logger.error('Failed to retrieve orders', { error: outcome.error });
+          throw outcome.error;
+        }
+      });
+      this.recordSuccess('getOrders', startTime);
       return result;
     } catch (error) {
-      this.recordFailure('getBuyer', startTime);
+      this.recordFailure('getOrders', startTime);
+      throw error;
+    }
+  }
+
+  async getProducts(input: GetProductsInput): Promise<FulfillmentToolResult<{ products: Product[] }>> {
+    this.ensureInitialized();
+    const startTime = Date.now();
+
+    try {
+      const adapter = this.adapterManager.getAdapter();
+      const result = await this.errorHandler.executeOperation('getProducts', async () => {
+        const outcome = await TimeoutHandler.withTimeout(() => adapter.getProducts(input), 'adapter');
+
+        if (outcome.success) {
+          Logger.debug('Products retrieved', { count: outcome.products.length });
+          return outcome;
+        } else {
+          Logger.error('Failed to retrieve products', { error: outcome.error });
+          throw outcome.error;
+        }
+      });
+      this.recordSuccess('getProducts', startTime);
+      return result;
+    } catch (error) {
+      this.recordFailure('getProducts', startTime);
+      throw error;
+    }
+  }
+
+  async getProductVariants(
+    input: GetProductVariantsInput
+  ): Promise<FulfillmentToolResult<{ productVariants: ProductVariant[] }>> {
+    this.ensureInitialized();
+    const startTime = Date.now();
+
+    try {
+      const adapter = this.adapterManager.getAdapter();
+      const result = await this.errorHandler.executeOperation('getProductVariants', async () => {
+        const outcome = await TimeoutHandler.withTimeout(() => adapter.getProductVariants(input), 'adapter');
+
+        if (outcome.success) {
+          Logger.debug('Product variants retrieved', { count: outcome.productVariants.length });
+          return outcome;
+        } else {
+          Logger.error('Failed to retrieve product variants', { error: outcome.error });
+          throw outcome.error;
+        }
+      });
+      this.recordSuccess('getProductVariants', startTime);
+      return result;
+    } catch (error) {
+      this.recordFailure('getProductVariants', startTime);
+      throw error;
+    }
+  }
+
+  async getCustomers(input: GetCustomersInput): Promise<FulfillmentToolResult<{ customers: Customer[] }>> {
+    this.ensureInitialized();
+    const startTime = Date.now();
+
+    try {
+      const adapter = this.adapterManager.getAdapter();
+      const result = await this.errorHandler.executeOperation('getCustomers', async () => {
+        const outcome = await TimeoutHandler.withTimeout(() => adapter.getCustomers(input), 'adapter');
+
+        if (outcome.success) {
+          Logger.debug('Customers retrieved', { count: outcome.customers.length });
+          return outcome;
+        } else {
+          Logger.error('Failed to retrieve customers', { error: outcome.error });
+          throw outcome.error;
+        }
+      });
+      this.recordSuccess('getCustomers', startTime);
+      return result;
+    } catch (error) {
+      this.recordFailure('getCustomers', startTime);
+      throw error;
+    }
+  }
+
+  async getFulfillments(input: GetFulfillmentsInput): Promise<FulfillmentToolResult<{ fulfillments: Fulfillment[] }>> {
+    this.ensureInitialized();
+    const startTime = Date.now();
+
+    try {
+      const adapter = this.adapterManager.getAdapter();
+      const result = await this.errorHandler.executeOperation('getFulfillments', async () => {
+        const outcome = await TimeoutHandler.withTimeout(() => adapter.getFulfillments(input), 'adapter');
+
+        if (outcome.success) {
+          Logger.debug('Fulfillments retrieved', { count: outcome.fulfillments.length });
+          return outcome;
+        } else {
+          Logger.error('Failed to retrieve fulfillments', { error: outcome.error });
+          throw outcome.error;
+        }
+      });
+      this.recordSuccess('getFulfillments', startTime);
+      return result;
+    } catch (error) {
+      this.recordFailure('getFulfillments', startTime);
       throw error;
     }
   }
@@ -385,7 +383,7 @@ export class ServiceOrchestrator {
     // Check adapter health
     const adapterHealth = await this.adapterManager.checkHealth();
     this.healthMonitor.recordHealthCheck('adapter', adapterHealth);
-    
+
     // Get overall system health
     return this.healthMonitor.getSystemHealth();
   }
@@ -404,24 +402,6 @@ export class ServiceOrchestrator {
     }
   }
 
-  /**
-   * Safely retrieve initialized services with non-null types
-   */
-  private getServices(): {
-    orderService: OrderService;
-    inventoryService: InventoryService;
-    queryService: QueryService;
-  } {
-    if (!this.orderService || !this.inventoryService || !this.queryService) {
-      throw new Error('ServiceOrchestrator not initialized. Call initialize() first.');
-    }
-    return {
-      orderService: this.orderService,
-      inventoryService: this.inventoryService,
-      queryService: this.queryService,
-    };
-  }
-
   private recordSuccess(operation: string, startTime: number): void {
     const duration = Date.now() - startTime;
     this.healthMonitor.recordOperation('ServiceOrchestrator', operation, duration, true);
@@ -437,20 +417,16 @@ export class ServiceOrchestrator {
    */
   async cleanup(): Promise<void> {
     Logger.info('Cleaning up ServiceOrchestrator');
-    
+
     try {
       await this.adapterManager.cleanup();
     } catch (error) {
       Logger.error('Error during ServiceOrchestrator cleanup', { error });
     }
-    
+
     // Stop health monitor to prevent timer leaks
     this.healthMonitor.stop();
-    
-    this.orderService = null;
-    this.inventoryService = null;
-    this.queryService = null;
-    
+
     Logger.info('ServiceOrchestrator cleanup completed');
   }
 }

@@ -1,16 +1,10 @@
 import { MCPError as ProtocolMCPError } from '../errors/index.js';
 
 /**
- * Fulfillment-specific error codes organized by category
+ * Fulfillment error codes focused on generic categories. Adapter-specific
+ * domains should be surfaced through AdapterError instances.
  */
 export enum FulfillmentErrorCode {
-  // Order errors (1xxx)
-  ORDER_NOT_FOUND = 1001,
-  INSUFFICIENT_INVENTORY = 1002,
-  INVALID_ORDER_STATE = 1003,
-  PAYMENT_FAILED = 1004,
-  SHIPPING_UNAVAILABLE = 1005,
-  
   // Validation errors (2xxx)
   VALIDATION_ERROR = 2001,
   MISSING_REQUIRED_FIELD = 2002,
@@ -29,13 +23,14 @@ export enum FulfillmentErrorCode {
 }
 
 /**
- * Base Fulfillment error class with support for retryable operations and JSON-RPC conversion
+ * Base Fulfillment error class with support for retryable operations and JSON-RPC conversion.
+ * `code` should remain generic so adapter-specific identifiers are carried via data payloads.
  */
 export class FulfillmentError extends Error {
   public readonly isProtocolError: boolean = false;
   
   constructor(
-    public code: FulfillmentErrorCode,
+    public code: FulfillmentErrorCode | number,
     message: string,
     public retryable: boolean = false,
     public data?: any
@@ -109,79 +104,6 @@ export class ValidationError extends FulfillmentError {
 }
 
 /**
- * Order not found error - Fulfillment version for complex cases
- */
-export class OrderNotFoundError extends FulfillmentError {
-  constructor(orderId: string) {
-    super(
-      FulfillmentErrorCode.ORDER_NOT_FOUND,
-      `Order not found: ${orderId}`,
-      false,
-      { orderId }
-    );
-    Object.setPrototypeOf(this, OrderNotFoundError.prototype);
-  }
-}
-
-/**
- * Insufficient inventory error
- */
-export class InsufficientInventoryError extends FulfillmentError {
-  constructor(sku: string, requested: number, available: number) {
-    super(
-      FulfillmentErrorCode.INSUFFICIENT_INVENTORY,
-      `Insufficient inventory for SKU ${sku}: requested ${requested}, available ${available}`,
-      false,
-      { sku, requested, available }
-    );
-    Object.setPrototypeOf(this, InsufficientInventoryError.prototype);
-  }
-}
-
-/**
- * Product not found error - Simple MCP version
- */
-export class ProductNotFoundError extends MCPError {
-  constructor(identifier: any) {
-    super(
-      `Product not found: ${JSON.stringify(identifier)}`,
-      'PRODUCT_NOT_FOUND',
-      404,
-      { identifier }
-    );
-  }
-}
-
-/**
- * Customer not found error
- */
-export class CustomerNotFoundError extends MCPError {
-  constructor(identifier: any) {
-    super(
-      `Customer not found: ${JSON.stringify(identifier)}`,
-      'CUSTOMER_NOT_FOUND',
-      404,
-      { identifier }
-    );
-  }
-}
-
-/**
- * Inventory not found error
- */
-export class InventoryNotFoundError extends MCPError {
-  constructor(sku: string, locationId?: string) {
-    const location = locationId ? ` in location ${locationId}` : '';
-    super(
-      `Inventory not found for SKU ${sku}${location}`,
-      'INVENTORY_NOT_FOUND',
-      404,
-      { sku, locationId }
-    );
-  }
-}
-
-/**
  * Backend unavailable error (retryable)
  */
 export class BackendUnavailableError extends FulfillmentError {
@@ -205,22 +127,6 @@ export class AdapterNotInitializedError extends FulfillmentError {
     Object.setPrototypeOf(this, AdapterNotInitializedError.prototype);
   }
 }
-
-/**
- * Payment failed error
- */
-export class PaymentFailedError extends FulfillmentError {
-  constructor(paymentId: string, reason?: string) {
-    super(
-      FulfillmentErrorCode.PAYMENT_FAILED,
-      `Payment failed: ${paymentId}${reason ? ` - ${reason}` : ''}`,
-      false,
-      { paymentId, reason }
-    );
-    Object.setPrototypeOf(this, PaymentFailedError.prototype);
-  }
-}
-
 
 /**
  * Rate limit exceeded error (retryable)

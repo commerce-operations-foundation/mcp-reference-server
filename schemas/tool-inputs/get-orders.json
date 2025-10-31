@@ -1,0 +1,80 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "get-orders",
+  "description": "Input schema for querying orders",
+  "type": "object",
+  "properties": {
+    "ids": {
+      "description": "Internal order ID, could be a comma separated list",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "externalIds": {
+      "description": "External order ID from source system, could be a comma separated list",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "statuses": {
+      "description": "Order status",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "names": {
+      "description": "Friendly Order identifier",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "includeLineItems": {
+      "description": "Whether to include detailed line item information in the returned orders",
+      "default": true,
+      "type": "boolean"
+    },
+    "updatedAtMin": {
+      "description": "Minimum updated at date (inclusive)",
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+    },
+    "updatedAtMax": {
+      "description": "Maximum updated at date (inclusive)",
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+    },
+    "createdAtMin": {
+      "description": "Minimum created at date (inclusive)",
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+    },
+    "createdAtMax": {
+      "description": "Maximum created at date (inclusive)",
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+    },
+    "pageSize": {
+      "description": "Number of results to return per page. Use with skip to paginate through results.",
+      "default": 10,
+      "type": "integer",
+      "exclusiveMinimum": 0,
+      "maximum": 9007199254740991
+    },
+    "skip": {
+      "description": "Number of results to skip. To navigate to the next page, increment skip by pageSize (e.g., skip=0 for first page, skip=100 for second page when pageSize=100).",
+      "default": 0,
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991
+    }
+  },
+  "additionalProperties": false
+}

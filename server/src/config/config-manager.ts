@@ -1,9 +1,8 @@
 import { EventEmitter } from 'events';
 import { Logger } from '../utils/logger.js';
 import { ConfigLoader } from './config-loader.js';
-import { ConfigValidator } from './config-validator.js';
 import { EnvironmentConfig } from './environment.js';
-import { ServerConfig } from '../types/config.js';
+import { ServerConfig, serverConfigSchema } from '../types/config.js';
 
 // Re-export for backward compatibility
 export { ServerConfig };
@@ -12,12 +11,10 @@ export class ConfigManager extends EventEmitter {
   private static instance: ConfigManager;
   private config: ServerConfig;
   private loader: ConfigLoader;
-  private validator: ConfigValidator;
-  
+
   private constructor() {
     super();
     this.loader = new ConfigLoader();
-    this.validator = new ConfigValidator();
     this.config = this.loadConfiguration();
   }
   
@@ -40,12 +37,12 @@ export class ConfigManager extends EventEmitter {
       
       // Merge configurations (env > file > defaults)
       const merged = this.mergeConfigs(defaultConfig, fileConfig, envConfig);
-      
-      // Validate configuration
-      this.validator.validate(merged);
-      
+
+      // Validate configuration using Zod schema
+      const validated = serverConfigSchema.parse(merged);
+
       // Apply security transformations
-      const secured = this.applySecurityPolicies(merged);
+      const secured = this.applySecurityPolicies(validated);
       
       Logger.info('Configuration loaded successfully', {
         environment: secured.server.environment,

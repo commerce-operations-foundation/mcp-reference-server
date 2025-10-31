@@ -16,7 +16,7 @@ const originalClearInterval = global.clearInterval;
 describe('HealthMonitor Timer Management', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    
+
     // Mock timer functions
     global.setInterval = mockSetInterval.mockReturnValue('mock-interval-id');
     global.clearInterval = mockClearInterval;
@@ -31,12 +31,9 @@ describe('HealthMonitor Timer Management', () => {
   describe('Constructor', () => {
     it('should start uptime interval on construction', () => {
       new HealthMonitor();
-      
+
       expect(mockSetInterval).toHaveBeenCalledTimes(1);
-      expect(mockSetInterval).toHaveBeenCalledWith(
-        expect.any(Function),
-        60000
-      );
+      expect(mockSetInterval).toHaveBeenCalledWith(expect.any(Function), 60000);
     });
   });
 
@@ -50,27 +47,24 @@ describe('HealthMonitor Timer Management', () => {
 
     it('should stop interval when stop() is called', () => {
       healthMonitor.stop();
-      
+
       expect(mockClearInterval).toHaveBeenCalledTimes(1);
       expect(mockClearInterval).toHaveBeenCalledWith('mock-interval-id');
     });
 
     it('should restart interval when restart() is called', () => {
       healthMonitor.restart();
-      
+
       // Should clear old interval and create new one
       expect(mockClearInterval).toHaveBeenCalledTimes(1);
       expect(mockSetInterval).toHaveBeenCalledTimes(1);
-      expect(mockSetInterval).toHaveBeenCalledWith(
-        expect.any(Function),
-        60000
-      );
+      expect(mockSetInterval).toHaveBeenCalledWith(expect.any(Function), 60000);
     });
 
     it('should handle multiple stop calls gracefully', () => {
       healthMonitor.stop();
       healthMonitor.stop(); // Second call should be safe
-      
+
       expect(mockClearInterval).toHaveBeenCalledTimes(1);
     });
 
@@ -78,7 +72,7 @@ describe('HealthMonitor Timer Management', () => {
       // Stop the monitor
       healthMonitor.stop();
       expect(mockClearInterval).toHaveBeenCalledTimes(1);
-      
+
       // Restart should create new interval
       vi.clearAllMocks();
       healthMonitor.restart();
@@ -100,31 +94,31 @@ describe('HealthMonitor Timer Management', () => {
 
     it('should update uptime when interval fires', () => {
       const healthMonitor = new HealthMonitor();
-      
+
       // Get initial uptime
       const initialMetrics = healthMonitor.getMetrics();
       expect(initialMetrics.uptime).toBe(0);
-      
+
       // Advance time by 60 seconds and trigger interval
       vi.advanceTimersByTime(60000);
-      
+
       // Check that uptime was updated
       const updatedMetrics = healthMonitor.getMetrics();
       expect(updatedMetrics.uptime).toBeGreaterThan(0);
-      
+
       // Clean up
       healthMonitor.stop();
     });
 
     it('should not update uptime after stop() is called', () => {
       const healthMonitor = new HealthMonitor();
-      
+
       // Stop the monitor
       healthMonitor.stop();
-      
+
       // Advance time - uptime should not be updated automatically
       vi.advanceTimersByTime(60000);
-      
+
       const metrics = healthMonitor.getMetrics();
       // Uptime should only update when getMetrics() is called, not from interval
       expect(metrics.uptime).toBeGreaterThan(0); // getMetrics() calls updateUptime()

@@ -1,298 +1,165 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Customer",
+  "description": "Customer",
   "type": "object",
-  "description": "Customer entity schema",
   "properties": {
-    "customerId": {
-      "type": "string",
-      "description": "Customer ID"
-    },
     "addresses": {
+      "description": "List of addresses associated with the customer (e.g., shipping, billing, home, work)",
       "type": "array",
       "items": {
         "type": "object",
         "properties": {
-          "address1": {
-            "type": "string",
-            "description": "Address"
+          "name": {
+            "description": "Description of the address e.g. home, work, billing, shipping, etc",
+            "type": "string"
           },
-          "address2": {
-            "type": "string",
-            "description": "Address Line 2"
-          },
-          "city": {
-            "type": "string",
-            "description": "City"
-          },
-          "country": {
-            "type": "string",
-            "description": "Country"
-          },
-          "email": {
-            "type": "string",
-            "description": "Email"
-          },
-          "phone": {
-            "type": "string",
-            "description": "Phone"
-          },
-          "stateOrProvince": {
-            "type": "string",
-            "description": "State or Province"
-          },
-          "zipCodeOrPostalCode": {
-            "type": "string",
-            "description": "Zipcode or postal code"
-          },
-          "type": {
-            "type": "string",
-            "enum": ["billing", "shipping", "other"],
-            "description": "Customer address type"
+          "address": {
+            "type": "object",
+            "properties": {
+              "address1": {
+                "description": "Primary street address (e.g., \"123 Main Street\")",
+                "type": "string"
+              },
+              "address2": {
+                "description": "Secondary address information such as apartment, suite, or unit number (e.g., \"Apt 4B\")",
+                "type": "string"
+              },
+              "city": {
+                "description": "City or town name",
+                "type": "string"
+              },
+              "company": {
+                "description": "Company or organization name associated with this address",
+                "type": "string"
+              },
+              "country": {
+                "description": "Country code in ISO 3166-1 alpha-2 format (2 letters, e.g., \"US\", \"CA\", \"GB\")",
+                "type": "string"
+              },
+              "email": {
+                "description": "Email address for contact at this location",
+                "type": "string",
+                "format": "email",
+                "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+              },
+              "firstName": {
+                "description": "First name of the person at this address",
+                "type": "string"
+              },
+              "lastName": {
+                "description": "Last name of the person at this address",
+                "type": "string"
+              },
+              "phone": {
+                "description": "Phone number including country code if applicable (e.g., \"+1-555-123-4567\")",
+                "type": "string"
+              },
+              "stateOrProvince": {
+                "description": "State or province. For US addresses, use 2-letter state code (e.g., \"CA\", \"NY\"). For other countries, use full province name or local standard.",
+                "type": "string"
+              },
+              "zipCodeOrPostalCode": {
+                "description": "ZIP code (US) or postal code (international) for the address",
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
           }
-        }
+        },
+        "required": [
+          "address"
+        ],
+        "additionalProperties": false
       }
     },
-    "billingAddress": {
-      "type": "object",
-      "properties": {
-        "address1": {
-          "type": "string",
-          "description": "Address"
-        },
-        "address2": {
-          "type": "string",
-          "description": "Address Line 2"
-        },
-        "city": {
-          "type": "string",
-          "description": "City"
-        },
-        "country": {
-          "type": "string",
-          "description": "Country"
-        },
-        "email": {
-          "type": "string",
-          "description": "Email"
-        },
-        "phone": {
-          "type": "string",
-          "description": "Phone"
-        },
-        "stateOrProvince": {
-          "type": "string",
-          "description": "State or Province"
-        },
-        "zipCodeOrPostalCode": {
-          "type": "string",
-          "description": "Zipcode or postal code"
-        }
-      }
-    },
-    "catalogIds": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      }
-    },
-    "checkoutSettings": {
-      "type": "object",
-      "description": "Customer checkout settings",
-      "properties": {
-        "checkoutToDraft": {
-          "type": "boolean"
-        },
-        "editableShippingAddress": {
-          "type": "boolean"
-        },
-        "payNowOnly": {
-          "type": "boolean"
-        }
-      }
-    },
-    "company": {
+    "email": {
+      "description": "Primary email address for the customer",
       "type": "string",
-      "description": "Customer company name"
+      "format": "email",
+      "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+    },
+    "firstName": {
+      "description": "Customer's first name",
+      "type": "string"
+    },
+    "lastName": {
+      "description": "Customer's last name",
+      "type": "string"
+    },
+    "notes": {
+      "description": "Internal notes about the customer for reference (not visible to the customer)",
+      "type": "string"
+    },
+    "phone": {
+      "description": "Primary phone number including country code if applicable (e.g., \"+1-555-123-4567\")",
+      "type": "string"
+    },
+    "status": {
+      "description": "Customer account status (e.g., \"active\", \"inactive\", \"suspended\")",
+      "type": "string"
+    },
+    "type": {
+      "description": "Customer type (e.g., \"individual\" for personal customers or \"company\" for business customers)",
+      "type": "string"
     },
     "customFields": {
+      "description": "Custom Fields - allows for arbitrary key-value pairs to be added to an entity. Useful for storing any custom data that is not covered by the other fields.",
       "type": "array",
       "items": {
         "type": "object",
         "properties": {
-          "compliance": {
-            "type": "string",
-            "enum": ["none", "pii", "pci", "hippa"]
-          },
           "name": {
             "type": "string"
           },
           "value": {
             "type": "string"
           }
-        }
+        },
+        "required": [
+          "name",
+          "value"
+        ],
+        "additionalProperties": false
       }
-    },
-    "displayName": {
-      "type": "string",
-      "description": "Customer display name"
-    },
-    "email": {
-      "type": "string",
-      "description": "Customer email"
-    },
-    "exceptionCategories": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      },
-      "description": "References to categories of exceptions related to the customer"
-    },
-    "exceptions": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      },
-      "description": "Types of exceptions related to the customer"
-    },
-    "extCustomerId": {
-      "type": "string",
-      "description": "Customer external ID"
-    },
-    "firstName": {
-      "type": "string",
-      "description": "Customer first name"
-    },
-    "internal": {
-      "type": "object",
-      "description": "Internal information"
-    },
-    "lastName": {
-      "type": "string",
-      "description": "Customer last name"
-    },
-    "linkedCustomers": {
-      "type": "array",
-      "description": "References to parent customer objects(s) and assigned role(s) of individual in parent customer",
-      "items": {
-        "type": "object",
-        "required": ["customerId", "roles"],
-        "properties": {
-          "customerId": {
-            "type": "string",
-            "description": "reference to customerId e.g. company or company_location"
-          },
-          "roles": {
-            "type": "array",
-            "description": "roles of current customer within linked customer",
-            "items": {
-              "type": "string",
-              "enum": ["main_contact", "allow_ordering", "admin", "assigned"]
-            }
-          }
-        }
-      }
-    },
-    "notes": {
-      "type": "string"
-    },
-    "paymentTerms": {
-      "type": "object",
-      "description": "Customer payment terms",
-      "required": ["term"],
-      "properties": {
-        "term": {
-          "type": "string",
-          "enum": ["net", "fixed", "fulfillment", "receipt", "unknown", "other"],
-          "description": "Customer payment term"
-        },
-        "depositPercentage": {
-          "type": "number"
-        },
-        "dueInDays": {
-          "type": "number"
-        },
-        "note": {
-          "type": "string"
-        }
-      }
-    },
-    "phone": {
-      "type": "string",
-      "description": "Customer phone"
-    },
-    "shippingAddress": {
-      "type": "object",
-      "properties": {
-        "address1": {
-          "type": "string",
-          "description": "Address"
-        },
-        "address2": {
-          "type": "string",
-          "description": "Address Line 2"
-        },
-        "city": {
-          "type": "string",
-          "description": "City"
-        },
-        "country": {
-          "type": "string",
-          "description": "Country"
-        },
-        "email": {
-          "type": "string",
-          "description": "Email"
-        },
-        "phone": {
-          "type": "string",
-          "description": "Phone"
-        },
-        "stateOrProvince": {
-          "type": "string",
-          "description": "State or Province"
-        },
-        "zipCodeOrPostalCode": {
-          "type": "string",
-          "description": "Zipcode or postal code"
-        }
-      }
-    },
-    "sourceDoc": {
-      "type": "object"
-    },
-    "status": {
-      "type": "string",
-      "enum": ["active", "inactive", "deleted"],
-      "description": "Customer status"
     },
     "tags": {
-      "type": "object"
+      "description": "Tags for categorization and filtering. Useful for organizing entities with custom labels (e.g., \"priority\", \"wholesale\", \"gift\")",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
     },
-    "taxOptions": {
-      "type": "object",
-      "description": "Customer tax options"
+    "id": {
+      "description": "Unique system-generated identifier for this entity (read-only)",
+      "type": "string"
     },
-    "type": {
-      "type": "string",
-      "description": "Customer type"
+    "externalId": {
+      "description": "ID of the entity in the client's system. Must be unique within the tenant.",
+      "type": "string"
     },
     "createdAt": {
+      "description": "ISO 8601 timestamp when the entity was created (read-only)",
       "type": "string",
       "format": "date-time",
-      "readOnly": true,
-      "description": "When the object was created"
-    },
-    "orgKey": {
-      "type": "string",
-      "readOnly": true,
-      "description": "Organization this object belong to"
+      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
     },
     "updatedAt": {
+      "description": "ISO 8601 timestamp when the entity was last updated (read-only)",
       "type": "string",
       "format": "date-time",
-      "readOnly": true,
-      "description": "When the object was updated"
+      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+    },
+    "tenantId": {
+      "description": "Unique identifier for the tenant that owns this entity (read-only)",
+      "type": "string"
     }
-  }
+  },
+  "required": [
+    "id",
+    "createdAt",
+    "updatedAt",
+    "tenantId"
+  ],
+  "additionalProperties": false
 }

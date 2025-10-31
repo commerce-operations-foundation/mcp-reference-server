@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "get-inventory",
+  "description": "Input schema for querying inventory",
+  "type": "object",
+  "properties": {
+    "skus": {
+      "description": "Product SKU to get inventory for (required)",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "locationIds": {
+      "description": "Specific warehouse/location ID (optional - if not provided, returns aggregated inventory)",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "skus"
+  ],
+  "additionalProperties": false
+}

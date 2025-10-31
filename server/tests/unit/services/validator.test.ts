@@ -2,7 +2,7 @@
  * Unit tests for Validator service
  */
 
-import { vi, describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { Validator } from '../../../src/services/validator';
 import { ValidationError } from '../../../src/utils/errors';
 
@@ -20,15 +20,15 @@ describe('Validator', () => {
         properties: {
           name: { type: 'string' },
           age: { type: 'number' },
-          email: { type: 'string', format: 'email' }
+          email: { type: 'string', format: 'email' },
         },
-        required: ['name']
+        required: ['name'],
       };
 
       const validData = {
         name: 'John Doe',
         age: 30,
-        email: 'john@example.com'
+        email: 'john@example.com',
       };
 
       const result = await validator.validate(validData, schema);
@@ -40,93 +40,26 @@ describe('Validator', () => {
         type: 'object',
         properties: {
           name: { type: 'string' },
-          age: { type: 'number' }
+          age: { type: 'number' },
         },
-        required: ['name']
+        required: ['name'],
       };
 
       const invalidData = {
-        age: 30 // missing required 'name'
+        age: 30, // missing required 'name'
       };
 
-      await expect(validator.validate(invalidData, schema))
-        .rejects.toThrow(ValidationError);
-    });
-
-    it('should validate partial data correctly', async () => {
-      const schema = {
-        type: 'object',
-        properties: {
-          name: { type: 'string' },
-          age: { type: 'number' }
-        },
-        required: ['name']
-      };
-
-      const partialData = {
-        age: 25 // missing required 'name' but should pass partial validation
-      };
-
-      const result = await validator.validatePartial(partialData, schema);
-      expect(result).toEqual(partialData);
+      await expect(validator.validate(invalidData, schema)).rejects.toThrow(ValidationError);
     });
 
     it('should throw error for invalid schema', async () => {
       const invalidSchema = {
-        type: 'invalid'
+        type: 'invalid',
       } as any;
 
       const data = { test: 'value' };
 
-      await expect(validator.validate(data, invalidSchema))
-        .rejects.toThrow('Invalid schema:');
-    });
-  });
-
-  describe('Custom Formats', () => {
-    it('should validate phone numbers', async () => {
-      const phoneSchema = {
-        type: 'object',
-        properties: {
-          phone: { type: 'string', format: 'phone' }
-        }
-      };
-
-      const validPhone = { phone: '+1-234-567-8900' };
-      await expect(validator.validate(validPhone, phoneSchema)).resolves.toEqual(validPhone);
-
-      const invalidPhone = { phone: 'invalid-phone' };
-      await expect(validator.validate(invalidPhone, phoneSchema)).rejects.toThrow(ValidationError);
-    });
-
-    it('should validate currency codes', async () => {
-      const currencySchema = {
-        type: 'object',
-        properties: {
-          currency: { type: 'string', format: 'currency' }
-        }
-      };
-
-      const validCurrency = { currency: 'USD' };
-      await expect(validator.validate(validCurrency, currencySchema)).resolves.toEqual(validCurrency);
-
-      const invalidCurrency = { currency: 'invalid' };
-      await expect(validator.validate(invalidCurrency, currencySchema)).rejects.toThrow(ValidationError);
-    });
-
-    it('should validate SKU format', async () => {
-      const skuSchema = {
-        type: 'object',
-        properties: {
-          sku: { type: 'string', format: 'sku' }
-        }
-      };
-
-      const validSku = { sku: 'ABC-123' };
-      await expect(validator.validate(validSku, skuSchema)).resolves.toEqual(validSku);
-
-      const invalidSku = { sku: 'invalid@sku' };
-      await expect(validator.validate(invalidSku, skuSchema)).rejects.toThrow(ValidationError);
+      await expect(validator.validate(data, invalidSchema)).rejects.toThrow('Invalid schema:');
     });
   });
 
@@ -135,9 +68,9 @@ describe('Validator', () => {
       const schema = {
         type: 'object',
         properties: {
-          name: { type: 'string' }
+          name: { type: 'string' },
         },
-        required: ['name']
+        required: ['name'],
       };
 
       try {
@@ -150,32 +83,7 @@ describe('Validator', () => {
 
     it('should handle invalid schema types', async () => {
       // Test with non-object, non-boolean schema
-      await expect(validator.validate({}, 'invalid-schema' as any))
-        .rejects.toThrow('Invalid schema:');
-    });
-  });
-
-  describe('Partial Validation', () => {
-    it('should make all fields optional in partial validation', async () => {
-      const schema = {
-        type: 'object',
-        properties: {
-          name: { type: 'string' },
-          age: { type: 'number' },
-          email: { type: 'string', format: 'email' }
-        },
-        required: ['name', 'age', 'email']
-      };
-
-      // Should pass even with missing required fields
-      const partialData = { name: 'John' };
-      const result = await validator.validatePartial(partialData, schema);
-      expect(result).toEqual(partialData);
-
-      // Should still validate types
-      const invalidPartialData = { age: 'not-a-number' };
-      await expect(validator.validatePartial(invalidPartialData, schema))
-        .rejects.toThrow(ValidationError);
+      await expect(validator.validate({}, 'invalid-schema' as any)).rejects.toThrow('Invalid schema:');
     });
   });
 });

@@ -12,7 +12,7 @@ import {
   ListResourcesRequestSchema,
   PingRequestSchema,
   McpError,
-  ErrorCode
+  ErrorCode,
 } from '@modelcontextprotocol/sdk/types.js';
 import { ToolRegistry } from './tools/registry.js';
 import { ServiceOrchestrator } from './services/service-orchestrator.js';
@@ -61,13 +61,12 @@ export class MCPServerSDK {
 
     // Handle tools/call requests with improved response wrapping
     this.server.setRequestHandler(CallToolRequestSchema, async (request) => {
-      Logger.debug(`Handling tools/call request for: ${request.params.name}`);
       const { name, arguments: args } = request.params;
 
-      // Check if tool exists - this is a Protocol Error
+      Logger.debug(`Handling tools/call request for: ${name}`);
+
       if (!this.toolRegistry.has(name)) {
         Logger.error(`Unknown tool requested: ${name}`);
-        // Use proper MCP error for method not found
         throw new McpError(ErrorCode.MethodNotFound, `Unknown tool: ${name}`, { name });
       }
 
@@ -123,13 +122,9 @@ export class MCPServerSDK {
   async start(): Promise<void> {
     Logger.info('Starting MCP server with SDK transport...');
 
-    // Initialize services with adapter config from server config
     await this.serviceOrchestrator.initialize(this.config.adapter);
-
-    // Register all tools
     await this.registerTools();
 
-    // Create and connect transport
     const transport = new StdioServerTransport();
     await this.server.connect(transport);
 

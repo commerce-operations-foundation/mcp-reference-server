@@ -1,5 +1,5 @@
 export default {
-  preset: 'ts-jest',
+  preset: 'ts-jest/presets/default-esm',
   testEnvironment: 'node',
   extensionsToTreatAsEsm: ['.ts'],
   roots: ['<rootDir>/src', '<rootDir>/tests'],
@@ -8,7 +8,12 @@ export default {
     '**/?(*.)+(spec|test).+(ts|tsx|js)'
   ],
   transform: {
-    '^.+\\.(ts|tsx)$': ['ts-jest', { useESM: true }]
+    '^.+\\.(ts|tsx)$': ['ts-jest', {
+      useESM: true,
+      tsconfig: {
+        allowSyntheticDefaultImports: true
+      }
+    }]
   },
   collectCoverageFrom: [
     'src/**/*.{ts,tsx}',
@@ -29,8 +34,10 @@ export default {
   },
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
-    '^@cof-org/mcp/(.*)$': '<rootDir>/__mocks__/commerce-operations-foundation-mcp-server/$1'
+    '^@cof-org/mcp$': '<rootDir>/node_modules/@cof-org/mcp/dist/index.js',
+    '^(\\.{1,2}/.*)\\.js$': '$1'
   },
+  moduleDirectories: ['node_modules'],
   setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
   globals: {},
   verbose: true,

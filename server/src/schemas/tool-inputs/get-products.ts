@@ -1,0 +1,12 @@
+import { z } from 'zod';
+
+import { TemporalPaginationSchema } from './shared/filters.js';
+
+export const GetProductsInputSchema = z
+  .object({
+    ids: z.array(z.string()).describe('Unique product ID in the Fulfillment System'),
+    skus: z.array(z.string()).describe('Product SKU (Stock Keeping Unit)'),
+  })
+  .extend(TemporalPaginationSchema.shape)
+  .partial();
+export type GetProductsInput = z.infer<typeof GetProductsInputSchema>;
