@@ -12,7 +12,7 @@ jobs:
   test:
     name: Test Suite
     runs-on: ubuntu-latest
-    
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -21,12 +21,10 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: ${{ env.NODE_VERSION }}
-        cache: 'npm'
-        cache-dependency-path: server/package-lock.json
 
     - name: Install dependencies
       working-directory: server
-      run: npm ci
+      run: npm install
 
     - name: Run full test suite
       working-directory: server
@@ -51,13 +49,11 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: ${{ env.NODE_VERSION }}
-        cache: 'npm'
-        cache-dependency-path: server/package-lock.json
         registry-url: 'https://registry.npmjs.org'
 
     - name: Install dependencies
       working-directory: server
-      run: npm ci
+      run: npm install
 
     - name: Build application
       working-directory: server

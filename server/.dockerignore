@@ -17,6 +17,7 @@ coverage
 src/**/*.test.ts
 tests/
 jest.config.js
+!eslint.config.js
 
 # IDE and editor files
 .vscode/
