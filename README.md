@@ -2,7 +2,7 @@
 
 ## Universal Fulfillment System for the AI Era
 
-The Commerce Operations Foundation MCP Server implements the Universal Order Interchange Standard (UOIS), providing a standardized interface between AI agents and fulfillment systems through the Model Context Protocol (MCP).
+The Commerce Operations Foundation MCP Server implements the Order Network eXchange Standard (onX), providing a standardized interface between AI agents and fulfillment systems through the Model Context Protocol (MCP).
 
 This project enables AI assistants like Claude to seamlessly interact with any fulfillment system, streamlining commerce operations from order capture through delivery.
 

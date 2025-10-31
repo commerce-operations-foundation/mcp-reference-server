@@ -1,4 +1,4 @@
-# Dockerignore for UOIS MCP Server
+# Dockerignore for onX MCP Server
 
 # Dependencies
 node_modules

@@ -112,7 +112,7 @@ Tools can be:
 
 ### 3. Tool-Based Data Access
 
-The Universal Order Interchange Standard uses a tool-based approach for all operations, including data retrieval:
+The Order Network eXchange Standard uses a tool-based approach for all operations, including data retrieval:
 ```typescript
 // Action Tools: Operations that change state
 tool: "create-sales-order"

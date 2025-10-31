@@ -104,7 +104,7 @@ jobs:
           ghcr.io/${{ github.repository }}:latest
           ghcr.io/${{ github.repository }}:${{ steps.version.outputs.VERSION }}
         labels: |
-          org.opencontainers.image.title=UOIS MCP Server
+          org.opencontainers.image.title=onX MCP Server
           org.opencontainers.image.version=${{ steps.version.outputs.VERSION }}
           org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
 
@@ -116,11 +116,11 @@ jobs:
         tag_name: ${{ github.ref }}
         release_name: Release ${{ github.ref }}
         body: |
-          ## UOIS MCP Server ${{ steps.version.outputs.VERSION }}
+          ## onX MCP Server ${{ steps.version.outputs.VERSION }}
           
           ### Installation
           ```bash
-          npm install @uois/mcp-server@${{ steps.version.outputs.VERSION }}
+          npm install @onx/mcp-server@${{ steps.version.outputs.VERSION }}
           ```
           
           ### Docker

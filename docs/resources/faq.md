@@ -2,8 +2,8 @@
 
 ## General Questions
 
-### What is the Universal Order Interchange Standard?
-The Universal Order Interchange Standard (UOIS) is an open specification built on the Model Context Protocol (MCP) that enables standardized communication between AI agents and fulfillment systems. It defines a common set of tools and data formats for order operations.
+### What is the Order Network eXchange Standard?
+The Order Network eXchange Standard (onX) is an open specification built on the Model Context Protocol (MCP) that enables standardized communication between AI agents and fulfillment systems. It defines a common set of tools and data formats for order operations.
 
 ### Who is behind this standard?
 The standard is governed by the Commerce Operations Foundation, a vendor-neutral organization with participation from Fulfillment vendors, AI platforms, commerce platforms, 3PLs, and merchants. While initially proposed by Pipe17, no single company controls the standard.
@@ -12,7 +12,7 @@ The standard is governed by the Commerce Operations Foundation, a vendor-neutral
 Yes, the standard is completely free to implement and use. The specification is open source, and there are no licensing fees or royalties. The Foundation may charge optional membership fees for voting rights and certification programs.
 
 ### How is this different from existing standards like EDI?
-Unlike EDI, which was designed for batch processing between businesses, UOIS is:
+Unlike EDI, which was designed for batch processing between businesses, onX is:
 - **AI-native**: Built for real-time agent interactions
 - **Interactive**: Supports conversational workflows
 - **Modern**: Uses JSON and current web technologies

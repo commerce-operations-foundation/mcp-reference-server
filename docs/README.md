@@ -1,8 +1,8 @@
-# Universal Order Interchange Standard
+# Order Network eXchange Standard
 
 ## Bringing Fulfillment into the Age of AI
 
-The Universal Order Interchange Standard (UOIS) is an open specification built on the Model Context Protocol (MCP) that enables seamless interaction between AI agents and fulfillment systems. It provides a standardized interface for capturing, processing, and managing orders across the modern commerce ecosystem.
+The Order Network eXchange (onX) is an open specification built on the Model Context Protocol (MCP) that enables seamless interaction between AI agents and fulfillment systems. It provides a standardized interface for capturing, processing, and managing orders across the modern commerce ecosystem.
 
 ## 🚀 Quick Start
 
@@ -99,4 +99,4 @@ node dist/index.js
 
 ---
 
-*The Universal Order Interchange Standard is an open specification designed to unify fulfillment in the age of AI. Join us in building the future of commerce.*
+*The Order Network eXchange Standard is an open specification designed to unify fulfillment in the age of AI. Join us in building the future of commerce.*
