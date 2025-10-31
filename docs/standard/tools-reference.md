@@ -32,6 +32,13 @@ Marks an order as fulfilled and returns fulfillment details such as tracking num
 
 **Result**: `FulfillmentToolResult<{ fulfillment: Fulfillment }>`.
 
+### create-return
+Creates a new return for items from an existing order. Handles customer returns, exchanges, and RMA workflows.
+
+**Input**: `CreateReturnInput`
+
+**Result**: `ReturnResult` with the persisted return record.
+
 ## Query Tools
 
 ### get-orders
@@ -75,6 +82,13 @@ Lists fulfillment records created for orders, including shipment information.
 **Input**: `GetFulfillmentsInput`
 
 **Result**: `FulfillmentToolResult<{ fulfillments: Fulfillment[] }>`.
+
+### get-returns
+Retrieves return records with filtering by return attributes and date ranges.
+
+**Input**: `GetReturnsInput`
+
+**Result**: `FulfillmentToolResult<{ returns: Return[] }>`.
 
 ---
 

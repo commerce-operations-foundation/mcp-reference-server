@@ -1,10 +1,12 @@
 /**
- * TODO: Make this just a fulfillment schema with the immutable fields removed
+ * Input schema for fulfilling an order - excludes system-generated fields
  */
 import { z } from 'zod';
 
-import { FulfillmentSchema } from '../entities/fulfillment.js';
+import { FulfillmentCoreSchema } from '../entities/fulfillment.js';
 
-export const FulfillOrderInputSchema = FulfillmentSchema;
+// Remove immutable system-generated fields (id, createdAt, updatedAt, tenantId)
+// These are set by the system and should not be provided in the input
+export const FulfillOrderInputSchema = FulfillmentCoreSchema;
 
 export type FulfillOrderInput = z.infer<typeof FulfillOrderInputSchema>;

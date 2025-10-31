@@ -19,7 +19,7 @@ This project enables AI assistants like Claude to seamlessly interact with any f
 The core Fulfillment MCP Reference server implementation that:
 - Handles MCP protocol communication (stdio transport)
 - Routes requests to appropriate adapters
-- Provides 10 standardized fulfillment operations (4 action + 6 query tools)
+- Provides 12 standardized fulfillment operations (5 action + 7 query tools)
 - Includes a built-in mock adapter for testing
 
 ### [/adapter-template](./adapter-template/README.md)
@@ -86,13 +86,14 @@ npm start
 
 ## 🛠 Core Capabilities
 
-The server provides 15 essential fulfillment operations:
+The server provides 12 essential fulfillment operations:
 
 **Action Tools**
 - `create-sales-order` - Create new orders from any channel
 - `update-order` - Modify order details and line items
 - `cancel-order` - Cancel orders with reason tracking
 - `fulfill-order` - Mark orders as fulfilled and return shipment details
+- `create-return` - Create returns for order items with refund/exchange tracking
 
 **Query Tools**
 - `get-orders` - Retrieve order information
@@ -101,6 +102,7 @@ The server provides 15 essential fulfillment operations:
 - `get-product-variants` - Retrieve variant-level data
 - `get-inventory` - Check inventory levels
 - `get-fulfillments` - Track fulfillment status
+- `get-returns` - Query return records and status
 
 ## 🏗 Architecture Overview
 

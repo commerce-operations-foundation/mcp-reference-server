@@ -16,15 +16,17 @@ import type {
   CancelOrderInput,
   UpdateOrderInput,
   FulfillOrderInput,
+  CreateReturnInput,
   GetOrdersInput,
   GetCustomersInput,
   GetProductsInput,
   GetProductVariantsInput,
   GetInventoryInput,
   GetFulfillmentsInput,
+  GetReturnsInput,
 } from '../schemas/tool-inputs/index.js';
-import { AdapterConfig, HealthStatus, OrderResult, FulfillmentToolResult } from '../types/adapter.js';
-import { Customer, Fulfillment, InventoryItem, Order, Product, ProductVariant } from '../schemas/index.js';
+import { AdapterConfig, HealthStatus, OrderResult, ReturnResult, FulfillmentToolResult } from '../types/adapter.js';
+import { Customer, Fulfillment, InventoryItem, Order, Product, ProductVariant, Return } from '../schemas/index.js';
 
 /**
  * ServiceOrchestrator provides a unified interface to all Fulfillment operations
@@ -211,6 +213,36 @@ export class ServiceOrchestrator {
     }
   }
 
+  async createReturn(input: CreateReturnInput): Promise<ReturnResult> {
+    this.ensureInitialized();
+    const startTime = Date.now();
+
+    try {
+      const adapter = this.adapterManager.getAdapter();
+      const result = await this.errorHandler.executeOperation('createReturn', async () => {
+        Logger.info('Creating return', { orderId: input.return.orderId });
+
+        const outcome = await TimeoutHandler.withTimeout(() => adapter.createReturn(input), 'adapter');
+
+        if (outcome.success) {
+          Logger.info('Return created successfully', {
+            returnId: outcome.return.id,
+            orderId: outcome.return.orderId,
+          });
+        } else {
+          Logger.error('Return creation failed', { error: outcome.error });
+        }
+
+        return outcome;
+      });
+      this.recordSuccess('createReturn', startTime);
+      return result;
+    } catch (error) {
+      this.recordFailure('createReturn', startTime);
+      throw error;
+    }
+  }
+
   // ==========================================
   // Inventory Operations (adapter-backed)
   // ==========================================
@@ -371,6 +403,33 @@ export class ServiceOrchestrator {
       return result;
     } catch (error) {
       this.recordFailure('getFulfillments', startTime);
+      throw error;
+    }
+  }
+
+  async getReturns(input: GetReturnsInput): Promise<FulfillmentToolResult<{ returns: Return[] }>> {
+    this.ensureInitialized();
+    const startTime = Date.now();
+
+    try {
+      const adapter = this.adapterManager.getAdapter();
+      const result = await this.errorHandler.executeOperation('getReturns', async () => {
+        Logger.debug('Fetching returns', { filters: input });
+
+        const outcome = await TimeoutHandler.withTimeout(() => adapter.getReturns(input), 'adapter');
+
+        if (outcome.success) {
+          Logger.debug('Returns retrieved', { count: outcome.returns.length });
+          return outcome;
+        } else {
+          Logger.error('Failed to retrieve returns', { error: outcome.error });
+          throw outcome.error;
+        }
+      });
+      this.recordSuccess('getReturns', startTime);
+      return result;
+    } catch (error) {
+      this.recordFailure('getReturns', startTime);
       throw error;
     }
   }

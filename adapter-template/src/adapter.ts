@@ -11,14 +11,17 @@ import type {
   AdapterCapabilities,
   HealthStatus,
   OrderResult,
+  ReturnResult,
   FulfillmentToolResult,
   Order,
   Fulfillment,
+  Return,
   InventoryItem,
   Product,
   ProductVariant,
   Customer,
   CreateSalesOrderInput,
+  CreateReturnInput,
   CancelOrderInput,
   UpdateOrderInput,
   FulfillOrderInput,
@@ -28,6 +31,7 @@ import type {
   GetProductVariantsInput,
   GetCustomersInput,
   GetFulfillmentsInput,
+  GetReturnsInput,
   Address,
   CustomerAddress,
   OrderLineItem,
@@ -244,6 +248,38 @@ export class YourFulfillmentAdapter implements IFulfillmentAdapter {
     }
   }
 
+  async createReturn(input: CreateReturnInput): Promise<ReturnResult> {
+    try {
+      // TODO: Implement return creation logic for your fulfillment system
+      // This is a placeholder implementation
+      const payload = {
+        order_id: input.return.orderId,
+        return_number: input.return.returnNumber,
+        status: input.return.status,
+        outcome: input.return.outcome,
+        items: input.return.returnLineItems?.map((item) => ({
+          sku: item.sku,
+          quantity: item.quantityReturned,
+          reason: item.returnReason,
+          refund_amount: item.refundAmount,
+        })),
+      };
+
+      const response = await this.client.post('/returns', payload);
+
+      if (!response.success || !response.data) {
+        return this.failure<{ return: Return }>('Failed to create return', response.error ?? response);
+      }
+
+      // TODO: Transform the response to Return type
+      return this.failure<{ return: Return }>(
+        'createReturn not yet implemented - please implement transformation logic'
+      );
+    } catch (error: unknown) {
+      return this.failure<{ return: Return }>(`Return creation failed: ${getErrorMessage(error)}`, error);
+    }
+  }
+
   async getOrders(input: GetOrdersInput): Promise<FulfillmentToolResult<{ orders: Order[] }>> {
     try {
       const response = await this.client.get<YourFulfillmentOrder[] | YourFulfillmentOrder>(
@@ -363,6 +399,37 @@ export class YourFulfillmentAdapter implements IFulfillmentAdapter {
         `Fulfillment lookup failed: ${getErrorMessage(error)}`,
         error
       );
+    }
+  }
+
+  async getReturns(input: GetReturnsInput): Promise<FulfillmentToolResult<{ returns: Return[] }>> {
+    try {
+      // TODO: Implement return retrieval logic for your fulfillment system
+      // This is a placeholder implementation
+      const params = {
+        ids: input.ids,
+        order_ids: input.orderIds,
+        return_numbers: input.returnNumbers,
+        statuses: input.statuses,
+        outcomes: input.outcomes,
+        updated_at_min: input.updatedAtMin,
+        updated_at_max: input.updatedAtMax,
+        created_at_min: input.createdAtMin,
+        created_at_max: input.createdAtMax,
+        limit: input.pageSize,
+        offset: input.skip,
+      };
+
+      const response = await this.client.get('/returns', params);
+
+      if (!response.success) {
+        return this.failure<{ returns: Return[] }>('Failed to fetch returns', response.error ?? response);
+      }
+
+      // TODO: Transform the response to Return[] type
+      return this.failure<{ returns: Return[] }>('getReturns not yet implemented - please implement transformation logic');
+    } catch (error: unknown) {
+      return this.failure<{ returns: Return[] }>(`Return lookup failed: ${getErrorMessage(error)}`, error);
     }
   }
 

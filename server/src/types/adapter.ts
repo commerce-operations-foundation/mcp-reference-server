@@ -4,6 +4,7 @@
 
 import {
   CancelOrderInput,
+  CreateReturnInput,
   CreateSalesOrderInput,
   Customer,
   Fulfillment,
@@ -14,10 +15,12 @@ import {
   GetOrdersInput,
   GetProductsInput,
   GetProductVariantsInput,
+  GetReturnsInput,
   InventoryItem,
   Order,
   Product,
   ProductVariant,
+  Return,
   UpdateOrderInput,
 } from '../schemas/index.js';
 
@@ -64,6 +67,7 @@ export type FulfillmentToolResult<T> =
     } & Record<string, unknown>);
 
 export type OrderResult = FulfillmentToolResult<{ order: Order }>;
+export type ReturnResult = FulfillmentToolResult<{ return: Return }>;
 
 // Main adapter interface
 export interface IFulfillmentAdapter {
@@ -82,6 +86,7 @@ export interface IFulfillmentAdapter {
   cancelOrder(input: CancelOrderInput): Promise<OrderResult>;
   updateOrder(input: UpdateOrderInput): Promise<OrderResult>;
   fulfillOrder(input: FulfillOrderInput): Promise<FulfillmentToolResult<{ fulfillment: Fulfillment }>>;
+  createReturn(input: CreateReturnInput): Promise<ReturnResult>;
 
   // Query Operations
   getOrders(input: GetOrdersInput): Promise<FulfillmentToolResult<{ orders: Order[] }>>;
@@ -92,6 +97,7 @@ export interface IFulfillmentAdapter {
   ): Promise<FulfillmentToolResult<{ productVariants: ProductVariant[] }>>;
   getCustomers(input: GetCustomersInput): Promise<FulfillmentToolResult<{ customers: Customer[] }>>;
   getFulfillments(input: GetFulfillmentsInput): Promise<FulfillmentToolResult<{ fulfillments: Fulfillment[] }>>;
+  getReturns(input: GetReturnsInput): Promise<FulfillmentToolResult<{ returns: Return[] }>>;
 }
 
 // Adapter factory type
