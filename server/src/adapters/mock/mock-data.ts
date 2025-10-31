@@ -4,7 +4,7 @@
  */
 
 import { DateUtils } from '../../utils/index.js';
-import { Customer, InventoryItem, Order, Product, ProductVariant } from '../../schemas/index.js';
+import { Customer, Fulfillment, InventoryItem, Order, Product, ProductVariant, Return } from '../../schemas/index.js';
 
 const tenantId = 'tenant_001';
 
@@ -15,6 +15,8 @@ export class MockData {
   public readonly productVariants: Map<string, ProductVariant> = new Map();
   public readonly customers: Map<string, Customer> = new Map();
   public readonly inventory: Map<string, InventoryItem> = new Map();
+  public readonly returns: Map<string, Return> = new Map();
+  public readonly fulfillments: Map<string, Fulfillment> = new Map();
 
   constructor() {
     this.generateSampleData();
@@ -28,6 +30,7 @@ export class MockData {
     this.generateSampleCustomers();
     this.generateSampleInventory();
     this.generateSampleOrders();
+    this.generateSampleReturns();
   }
 
   /**
@@ -503,17 +506,120 @@ export class MockData {
     });
   }
 
+  /**
+   * Generate sample returns
+   */
+  private generateSampleReturns(): void {
+    const sampleReturns: Return[] = [
+      {
+        id: 'return_001',
+        returnNumber: 'RET-10001',
+        orderId: 'order_001',
+        status: 'pending',
+        outcome: 'refund',
+        returnLineItems: [
+          {
+            orderLineItemId: 'line_001',
+            sku: 'WBH-001',
+            quantityReturned: 1,
+            returnReason: 'defective',
+            unitPrice: 149.99,
+            refundAmount: 149.99,
+            restockFee: 0,
+            name: 'Wireless Bluetooth Headphones',
+          },
+        ],
+        totalQuantity: 1,
+        returnTotal: 149.99,
+        refundAmount: 149.99,
+        restockingFee: 0,
+        createdAt: DateUtils.format(DateUtils.addDays(-2)),
+        updatedAt: DateUtils.format(DateUtils.addDays(-2)),
+        tenantId,
+      },
+      {
+        id: 'return_002',
+        returnNumber: 'RET-10002',
+        orderId: 'order_002',
+        status: 'received',
+        outcome: 'exchange',
+        returnLineItems: [
+          {
+            orderLineItemId: 'line_002',
+            sku: 'TSH-002',
+            quantityReturned: 1,
+            returnReason: 'size_issue',
+            unitPrice: 29.99,
+            refundAmount: 0,
+            restockFee: 0,
+            name: 'Cotton T-Shirt',
+          },
+        ],
+        exchangeLineItems: [
+          {
+            sku: 'TSH-003',
+            name: 'Cotton T-Shirt (Large)',
+            quantity: 1,
+            unitPrice: 29.99,
+          },
+        ],
+        totalQuantity: 1,
+        returnTotal: 29.99,
+        exchangeTotal: 29.99,
+        refundAmount: 0,
+        restockingFee: 0,
+        createdAt: DateUtils.format(DateUtils.addDays(-5)),
+        updatedAt: DateUtils.format(DateUtils.addDays(-3)),
+        tenantId,
+      },
+      {
+        id: 'return_003',
+        returnNumber: 'RET-10003',
+        orderId: 'order_003',
+        status: 'completed',
+        outcome: 'refund',
+        returnLineItems: [
+          {
+            orderLineItemId: 'line_003',
+            sku: 'COF-003',
+            quantityReturned: 2,
+            returnReason: 'no_longer_needed',
+            unitPrice: 24.99,
+            refundAmount: 44.98,
+            restockFee: 5.0,
+            name: 'Premium Coffee Maker',
+          },
+        ],
+        totalQuantity: 2,
+        returnTotal: 49.98,
+        refundAmount: 44.98,
+        restockingFee: 5.0,
+        refundStatus: 'processed',
+        refundMethod: 'original_payment',
+        createdAt: DateUtils.format(DateUtils.addDays(-10)),
+        updatedAt: DateUtils.format(DateUtils.addDays(-8)),
+        completedAt: DateUtils.format(DateUtils.addDays(-8)),
+        tenantId,
+      },
+    ];
+
+    sampleReturns.forEach((returnRecord) => {
+      this.returns.set(returnRecord.id, returnRecord);
+    });
+  }
 
   /**
    * Get data size for health checks
    */
-  getSize(): { orders: number; products: number; productVariants: number; customers: number; inventory: number } {
+  getSize(): { orders: number; products: number; productVariants: number; customers: number; inventory: number; returns: number; fulfillments: number } {
     return {
       orders: this.orders.size,
       products: this.products.size,
       productVariants: this.productVariants.size,
       customers: this.customers.size,
       inventory: this.inventory.size,
+      returns: this.returns.size,
+      fulfillments: this.fulfillments.size,
     };
   }
 
@@ -527,6 +633,8 @@ export class MockData {
     this.productVariants.clear();
     this.customers.clear();
     this.inventory.clear();
+    this.returns.clear();
+    this.fulfillments.clear();
   }
 
   /**

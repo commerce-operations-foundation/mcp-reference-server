@@ -6,7 +6,7 @@ import { makeZodFieldMap } from '../utils/schema-util.js';
 /**
  * Fulfillment entity core schema
  */
-const FulfillmentCoreSchema = z
+export const FulfillmentCoreSchema = z
   .object({
     customFields: CustomFieldsSchema,
     expectedDeliveryDate: z.iso.datetime().describe('Expected delivery date'),
@@ -21,9 +21,7 @@ const FulfillmentCoreSchema = z
   })
   .extend(ShippingInfoSchema.shape)
   .partial()
-  .required(makeZodFieldMap(['orderId', 'lineItems', 'trackingNumbers'] as const))
-  .extend(ObjectProps.shape)
-  .describe('Fulfillment');
+  .required(makeZodFieldMap(['orderId', 'lineItems', 'trackingNumbers'] as const));
 
 /**
  * Fulfillment entity schema.

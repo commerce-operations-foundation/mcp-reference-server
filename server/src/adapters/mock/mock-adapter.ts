@@ -7,6 +7,7 @@ import {
   IFulfillmentAdapter,
   HealthStatus,
   OrderResult,
+  ReturnResult,
   AdapterError,
   InvalidInputError,
   FulfillmentToolResult,
@@ -16,6 +17,8 @@ import { MockConfig } from './mock-config.js';
 import { Logger } from '../../utils/logger.js';
 import { IdGenerator, DateUtils } from '../../utils/index.js';
 import {
+  CreateReturnInput,
+  CreateReturnInputSchema,
   CreateSalesOrderInput,
   CreateSalesOrderInputSchema,
   CancelOrderInput,
@@ -35,11 +38,14 @@ import {
   GetProductsInputSchema,
   GetProductVariantsInput,
   GetProductVariantsInputSchema,
+  GetReturnsInput,
+  GetReturnsInputSchema,
   InventoryItem,
   Order,
   OrderLineItem,
   Product,
   ProductVariant,
+  Return,
   UpdateOrderInput,
   UpdateOrderInputSchema,
   Customer,
@@ -386,11 +392,67 @@ export class MockAdapter implements IFulfillmentAdapter {
       ),
     };
 
+    // Store the fulfillment for later retrieval
+    this.mockData.fulfillments.set(fulfillmentId, fulfillment);
+
     Logger.info('Order shipped', { orderId, fulfillmentId, trackingNumbers });
 
     return {
       success: true,
       fulfillment,
+    };
+  }
+
+  async createReturn(input: CreateReturnInput): Promise<ReturnResult> {
+    await this.simulateLatency();
+    this.ensureConnected();
+
+    if (this.shouldSimulateError('createReturn')) {
+      return {
+        success: false,
+        error: new AdapterError('Mock error: Return creation failed', 'OPERATION_FAILED'),
+      };
+    }
+
+    const parseResult = CreateReturnInputSchema.safeParse(input);
+    if (!parseResult.success) {
+      return {
+        success: false,
+        error: new InvalidInputError(parseResult.error.message, parseResult.error.issues),
+      };
+    }
+
+    const { return: returnData } = parseResult.data;
+    const returnId = IdGenerator.random(12);
+    const now = DateUtils.now();
+
+    // Validate that the order exists
+    const order = this.mockData.orders.get(returnData.orderId);
+    if (!order) {
+      return {
+        success: false,
+        error: new AdapterError(`Order not found: ${returnData.orderId}`, 'ORDER_NOT_FOUND', {
+          orderId: returnData.orderId,
+        }),
+      };
+    }
+
+    const savedReturn: Return = {
+      ...returnData,
+      id: returnId,
+      returnNumber: returnData.returnNumber ?? `RET-${IdGenerator.random(8)}`,
+      createdAt: now,
+      updatedAt: now,
+      tenantId: order.tenantId ?? 'mock-tenant',
+    };
+
+    this.mockData.returns.set(returnId, savedReturn);
+
+    Logger.info('Return created', { returnId, orderId: returnData.orderId });
+
+    return {
+      success: true,
+      return: savedReturn,
     };
   }
 
@@ -712,34 +774,105 @@ export class MockAdapter implements IFulfillmentAdapter {
 
     const data = parseResult.data;
     const fulfillments: Fulfillment[] = [];
-    const now = DateUtils.now();
-    const targetIds = data.ids?.length ? data.ids : [IdGenerator.fulfillmentId()];
 
-    for (const fulfillmentId of targetIds) {
-      const requestedOrderId = data.orderIds?.[0] ?? `order_${IdGenerator.random(6)}`;
-      const order = this.mockData.orders.get(requestedOrderId);
-      const address = this.buildAddress(order?.shippingAddress ?? order?.billingAddress, true)!;
-      const resolvedOrderId = order ? this.getOrderId(order) : requestedOrderId;
-
-      fulfillments.push({
-        id: fulfillmentId,
-        externalId: `FULFILL-${fulfillmentId}`,
-        shippingAddress: address,
-        lineItems: order?.lineItems ?? [],
-        orderId: resolvedOrderId,
-        trackingNumbers: [`TRACK-${fulfillmentId}`],
-        shippingCarrier: 'USPS',
-        status: 'shipped',
-        createdAt: now,
-        updatedAt: now,
-        tenantId: (order as Partial<Order>)?.tenantId ?? 'mock-tenant',
-        tags: [],
-      });
+    // If specific IDs are requested, retrieve those fulfillments
+    if (data.ids && data.ids.length > 0) {
+      for (const fulfillmentId of data.ids) {
+        const fulfillment = this.mockData.fulfillments.get(fulfillmentId);
+        if (fulfillment) {
+          fulfillments.push(fulfillment);
+        }
+      }
+    }
+    // If orderIds are provided, filter fulfillments by orderId
+    else if (data.orderIds && data.orderIds.length > 0) {
+      for (const fulfillment of this.mockData.fulfillments.values()) {
+        if (data.orderIds.includes(fulfillment.orderId)) {
+          fulfillments.push(fulfillment);
+        }
+      }
+    }
+    // If no filters, return all fulfillments
+    else {
+      fulfillments.push(...Array.from(this.mockData.fulfillments.values()));
     }
 
     return {
       success: true,
       fulfillments,
+    };
+  }
+
+  async getReturns(input: GetReturnsInput): Promise<
+    | {
+        success: true;
+        returns: Return[];
+      }
+    | {
+        success: false;
+        error: AdapterError;
+      }
+  > {
+    await this.simulateLatency();
+    this.ensureConnected();
+
+    const parseResult = GetReturnsInputSchema.safeParse(input);
+    if (!parseResult.success) {
+      return {
+        success: false,
+        error: new InvalidInputError(parseResult.error.message, parseResult.error.issues),
+      };
+    }
+
+    if (this.shouldSimulateError('getReturns')) {
+      return {
+        success: false,
+        error: new AdapterError('Mock error: Return retrieval failed', 'OPERATION_FAILED'),
+      };
+    }
+
+    let returns: Return[] = Array.from(this.mockData.returns.values());
+    const data = parseResult.data;
+
+    // Apply filters
+    if (data.ids) {
+      returns = returns.filter((ret) => data.ids!.includes(ret.id));
+    }
+    if (data.orderIds) {
+      returns = returns.filter((ret) => data.orderIds!.includes(ret.orderId));
+    }
+    if (data.returnNumbers) {
+      returns = returns.filter((ret) => ret.returnNumber && data.returnNumbers!.includes(ret.returnNumber));
+    }
+    if (data.statuses) {
+      returns = returns.filter((ret) => ret.status && data.statuses!.includes(ret.status));
+    }
+    if (data.outcomes) {
+      returns = returns.filter((ret) => ret.outcome && data.outcomes!.includes(ret.outcome));
+    }
+
+    // Apply temporal filters
+    if (data.createdAtMin) {
+      returns = returns.filter((ret) => ret.createdAt && ret.createdAt >= data.createdAtMin!);
+    }
+    if (data.createdAtMax) {
+      returns = returns.filter((ret) => ret.createdAt && ret.createdAt <= data.createdAtMax!);
+    }
+    if (data.updatedAtMin) {
+      returns = returns.filter((ret) => ret.updatedAt && ret.updatedAt >= data.updatedAtMin!);
+    }
+    if (data.updatedAtMax) {
+      returns = returns.filter((ret) => ret.updatedAt && ret.updatedAt <= data.updatedAtMax!);
+    }
+
+    // Apply pagination
+    const skip = data.skip ?? 0;
+    const pageSize = data.pageSize ?? 10;
+    returns = returns.slice(skip, skip + pageSize);
+
+    return {
+      success: true,
+      returns,
     };
   }
 

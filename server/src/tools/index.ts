@@ -14,6 +14,7 @@ import { CreateSalesOrderTool } from './actions/create-sales-order.js';
 import { UpdateOrderTool } from './actions/update-order.js';
 import { CancelOrderTool } from './actions/cancel-order.js';
 import { FulfillOrderTool } from './actions/fulfill-order.js';
+import { CreateReturnTool } from './actions/create-return.js';
 
 // Query Tools
 import { GetOrdersTool } from './queries/get-orders.js';
@@ -22,6 +23,7 @@ import { GetProductsTool } from './queries/get-products.js';
 import { GetProductVariantsTool } from './queries/get-product-variants.js';
 import { GetInventoryTool } from './queries/get-inventory.js';
 import { GetFulfillments } from './queries/get-fulfillments.js';
+import { GetReturnsTool } from './queries/get-returns.js';
 
 /**
  * Register all tools at once
@@ -31,12 +33,14 @@ export function registerTools(registry: ToolRegistry, serviceLayer: ServiceOrche
   registry.register(new CancelOrderTool(serviceLayer));
   registry.register(new UpdateOrderTool(serviceLayer));
   registry.register(new FulfillOrderTool(serviceLayer));
+  registry.register(new CreateReturnTool(serviceLayer));
   registry.register(new GetOrdersTool(serviceLayer));
   registry.register(new GetCustomersTool(serviceLayer));
   registry.register(new GetProductsTool(serviceLayer));
   registry.register(new GetProductVariantsTool(serviceLayer));
   registry.register(new GetInventoryTool(serviceLayer));
   registry.register(new GetFulfillments(serviceLayer));
+  registry.register(new GetReturnsTool(serviceLayer));
 }
 
 // Export all tool classes for external use
@@ -44,9 +48,11 @@ export * from './actions/create-sales-order.js';
 export * from './actions/cancel-order.js';
 export * from './actions/update-order.js';
 export * from './actions/fulfill-order.js';
+export * from './actions/create-return.js';
 export * from './queries/get-orders.js';
 export * from './queries/get-inventory.js';
 export * from './queries/get-products.js';
 export * from './queries/get-product-variants.js';
 export * from './queries/get-customers.js';
 export * from './queries/get-fulfillments.js';
+export * from './queries/get-returns.js';
