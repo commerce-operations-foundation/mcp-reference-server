@@ -1,0 +1,44 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Inventory",
+  "description": "Inventory Item",
+  "type": "object",
+  "properties": {
+    "tenantId": {
+      "description": "Unique identifier for the tenant that owns this entity (read-only)",
+      "type": "string"
+    },
+    "locationId": {
+      "type": "string"
+    },
+    "sku": {
+      "description": "SKU of the inventory item. Should match product variant SKU.",
+      "type": "string"
+    },
+    "onHand": {
+      "description": "Quantity physically in the warehouse",
+      "type": "integer",
+      "minimum": -9007199254740991,
+      "maximum": 9007199254740991
+    },
+    "unavailable": {
+      "description": "Quantity unavailable to sell (e.g. damaged, committed, missing, etc)",
+      "type": "integer",
+      "minimum": -9007199254740991,
+      "maximum": 9007199254740991
+    },
+    "available": {
+      "description": "Quantity available to sell (onHand - unavailable)",
+      "type": "integer",
+      "minimum": -9007199254740991,
+      "maximum": 9007199254740991
+    }
+  },
+  "required": [
+    "tenantId",
+    "locationId",
+    "sku",
+    "available"
+  ],
+  "additionalProperties": false
+}

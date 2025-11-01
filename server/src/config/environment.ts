@@ -1,0 +1,124 @@
+import { ServerConfig } from './config-manager.js';
+import { ConfigurationError } from '../utils/errors.js';
+import { Logger } from '../utils/logger.js';
+
+export class EnvironmentConfig {
+  static load(): Partial<ServerConfig> {
+    const config: Partial<ServerConfig> = {};
+    
+    // Server configuration
+    if (process.env.NODE_ENV) {
+      const serverCfg = (config.server ??= {} as any);
+      serverCfg.environment = process.env.NODE_ENV as any;
+    }
+    
+    if (process.env.SERVER_PORT) {
+      const serverCfg = (config.server ??= {} as any);
+      serverCfg.port = parseInt(process.env.SERVER_PORT);
+    }
+    
+    // Adapter configuration
+    if (process.env.ADAPTER_TYPE) {
+      let options = {};
+      if (process.env.ADAPTER_CONFIG) {
+        try {
+          options = JSON.parse(process.env.ADAPTER_CONFIG);
+        } catch (e) {
+          throw new ConfigurationError('ADAPTER_CONFIG must contain valid JSON', {
+            raw: process.env.ADAPTER_CONFIG,
+            error: e instanceof Error ? e.message : String(e)
+          });
+        }
+      }
+
+      const adapterType = process.env.ADAPTER_TYPE as 'built-in' | 'npm' | 'local';
+
+      // Build adapter config based on type to match discriminated union
+      if (adapterType === 'built-in') {
+        config.adapter = {
+          type: 'built-in',
+          name: process.env.ADAPTER_NAME,
+          package: process.env.ADAPTER_PACKAGE,
+          path: process.env.ADAPTER_PATH,
+          exportName: process.env.ADAPTER_EXPORT,
+          options
+        } as any;
+      } else if (adapterType === 'npm') {
+        config.adapter = {
+          type: 'npm',
+          package: process.env.ADAPTER_PACKAGE,
+          name: process.env.ADAPTER_NAME,
+          path: process.env.ADAPTER_PATH,
+          exportName: process.env.ADAPTER_EXPORT,
+          options
+        } as any;
+      } else if (adapterType === 'local') {
+        config.adapter = {
+          type: 'local',
+          path: process.env.ADAPTER_PATH,
+          name: process.env.ADAPTER_NAME,
+          package: process.env.ADAPTER_PACKAGE,
+          exportName: process.env.ADAPTER_EXPORT,
+          options
+        } as any;
+      }
+    }
+    
+    // Logging configuration
+    if (process.env.LOG_LEVEL) {
+      const logCfg = (config.logging ??= {} as any);
+      logCfg.level = process.env.LOG_LEVEL as any;
+    }
+    
+    // Security configuration - currently only sanitization is supported
+    
+    // Feature flags from environment
+    const features: Record<string, boolean> = {};
+    for (const key in process.env) {
+      if (key.startsWith('FEATURE_')) {
+        const featureName = key.substring(8).toLowerCase();
+        features[featureName] = process.env[key] === 'true';
+      }
+    }
+    
+    if (Object.keys(features).length > 0) {
+      config.features = features;
+    }
+    
+    return config;
+  }
+  
+  static validate(): void {
+    const errors = [];
+    const warnings = [];
+    
+    // Check required variables based on environment
+    if (process.env.NODE_ENV === 'production') {
+      if (!process.env.AUTH_ENABLED || process.env.AUTH_ENABLED !== 'true') {
+        warnings.push('Authentication should be enabled in production');
+      }
+      
+      if (process.env.LOG_LEVEL === 'debug') {
+        warnings.push('Debug logging should be disabled in production');
+      }
+    }
+    
+    // Generic adapter configuration validation
+    if (process.env.ADAPTER_CONFIG) {
+      try {
+        JSON.parse(process.env.ADAPTER_CONFIG);
+      } catch {
+        errors.push('ADAPTER_CONFIG contains invalid JSON - please provide valid JSON configuration');
+      }
+    }
+    
+    // Report issues
+    if (errors.length > 0) {
+      throw new Error(`Configuration errors: ${errors.join(', ')}`);
+    }
+    
+    if (warnings.length > 0) {
+      Logger.warn('Configuration warnings:', warnings);
+    }
+  }
+}

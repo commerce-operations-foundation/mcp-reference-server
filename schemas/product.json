@@ -1,0 +1,128 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Product",
+  "description": "Product",
+  "type": "object",
+  "properties": {
+    "id": {
+      "description": "Unique system-generated identifier for this entity (read-only)",
+      "type": "string"
+    },
+    "externalId": {
+      "description": "ID of the entity in the client's system. Must be unique within the tenant.",
+      "type": "string"
+    },
+    "createdAt": {
+      "description": "ISO 8601 timestamp when the entity was created (read-only)",
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+    },
+    "updatedAt": {
+      "description": "ISO 8601 timestamp when the entity was last updated (read-only)",
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+    },
+    "tenantId": {
+      "description": "Unique identifier for the tenant that owns this entity (read-only)",
+      "type": "string"
+    },
+    "externalProductId": {
+      "type": "string"
+    },
+    "name": {
+      "description": "Product display name",
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "handle": {
+      "description": "URL-friendly identifier or slug",
+      "type": "string"
+    },
+    "status": {
+      "description": "Adapter-defined status for the product as a whole",
+      "type": "string"
+    },
+    "tags": {
+      "description": "Tags for categorization and filtering. Useful for organizing entities with custom labels (e.g., \"priority\", \"wholesale\", \"gift\")",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "vendor": {
+      "type": "string"
+    },
+    "categories": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "options": {
+      "description": "Declares which option dimensions exist for the product",
+      "type": "array",
+      "items": {
+        "description": "Definition for a selectable product option",
+        "type": "object",
+        "properties": {
+          "name": {
+            "description": "Option dimension name, e.g. size or color",
+            "type": "string"
+          },
+          "values": {
+            "description": "Optional merchandising hints for valid option values",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "name",
+          "values"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "imageURLs": {
+      "description": "Fallback imagery used when variants omit their own images",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "customFields": {
+      "description": "Custom Fields - allows for arbitrary key-value pairs to be added to an entity. Useful for storing any custom data that is not covered by the other fields.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "value"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "id",
+    "createdAt",
+    "updatedAt",
+    "tenantId",
+    "name",
+    "options"
+  ],
+  "additionalProperties": false
+}

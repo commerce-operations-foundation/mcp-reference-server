@@ -1,0 +1,40 @@
+# Node.js dependencies
+server/node_modules/
+server/npm-debug.log*
+server/yarn-debug.log*
+server/yarn-error.log*
+
+# Environment variables
+server/.env
+server/.env.local
+server/.env.*.local
+
+# Build output
+server/dist/
+server/build/
+server/coverage/
+server/.next/
+server/.nuxt/
+server/.cache/
+server/.parcel-cache/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+server/logs/
+server/*.log
+
+# Temporary files
+tmp/
+server/tmp/
+server/temp/
+server/.tmp/
+working-docs/
+
+# IDE files
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project

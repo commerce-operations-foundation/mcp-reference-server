@@ -1,0 +1,39 @@
+{
+  "examples": [
+    {
+      "description": "Built-in Mock Adapter",
+      "config": {
+        "type": "built-in",
+        "name": "mock",
+        "options": {
+          "responseDelay": 100,
+          "errorRate": 0.01
+        }
+      }
+    },
+    {
+      "description": "NPM Package Adapter (e.g., Shopify)",
+      "config": {
+        "type": "npm",
+        "package": "@your-org/shopify-fulfilment-adapter",
+        "exportName": "ShopifyAdapter",
+        "options": {
+          "apiKey": "your-api-key",
+          "shopDomain": "your-shop.myshopify.com"
+        }
+      }
+    },
+    {
+      "description": "Local File Adapter",
+      "config": {
+        "type": "local",
+        "path": "/path/to/custom-adapter.js",
+        "exportName": "CustomAdapter",
+        "options": {
+          "endpoint": "https://api.example.com",
+          "timeout": 5000
+        }
+      }
+    }
+  ]
+}

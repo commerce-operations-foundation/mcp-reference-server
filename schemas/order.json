@@ -1,0 +1,494 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Order",
+  "description": "Sales Order",
+  "type": "object",
+  "properties": {
+    "id": {
+      "description": "Unique system-generated identifier for this entity (read-only)",
+      "type": "string"
+    },
+    "externalId": {
+      "description": "ID of the entity in the client's system. Must be unique within the tenant.",
+      "type": "string"
+    },
+    "createdAt": {
+      "description": "ISO 8601 timestamp when the entity was created (read-only)",
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+    },
+    "updatedAt": {
+      "description": "ISO 8601 timestamp when the entity was last updated (read-only)",
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+    },
+    "tenantId": {
+      "description": "Unique identifier for the tenant that owns this entity (read-only)",
+      "type": "string"
+    },
+    "name": {
+      "description": "Order name",
+      "type": "string"
+    },
+    "status": {
+      "description": "Order status",
+      "type": "string"
+    },
+    "billingAddress": {
+      "description": "Billing address",
+      "type": "object",
+      "properties": {
+        "address1": {
+          "description": "Primary street address (e.g., \"123 Main Street\")",
+          "type": "string"
+        },
+        "address2": {
+          "description": "Secondary address information such as apartment, suite, or unit number (e.g., \"Apt 4B\")",
+          "type": "string"
+        },
+        "city": {
+          "description": "City or town name",
+          "type": "string"
+        },
+        "company": {
+          "description": "Company or organization name associated with this address",
+          "type": "string"
+        },
+        "country": {
+          "description": "Country code in ISO 3166-1 alpha-2 format (2 letters, e.g., \"US\", \"CA\", \"GB\")",
+          "type": "string"
+        },
+        "email": {
+          "description": "Email address for contact at this location",
+          "type": "string",
+          "format": "email",
+          "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+        },
+        "firstName": {
+          "description": "First name of the person at this address",
+          "type": "string"
+        },
+        "lastName": {
+          "description": "Last name of the person at this address",
+          "type": "string"
+        },
+        "phone": {
+          "description": "Phone number including country code if applicable (e.g., \"+1-555-123-4567\")",
+          "type": "string"
+        },
+        "stateOrProvince": {
+          "description": "State or province. For US addresses, use 2-letter state code (e.g., \"CA\", \"NY\"). For other countries, use full province name or local standard.",
+          "type": "string"
+        },
+        "zipCodeOrPostalCode": {
+          "description": "ZIP code (US) or postal code (international) for the address",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "currency": {
+      "description": "Order currency code",
+      "type": "string"
+    },
+    "customFields": {
+      "description": "Custom Fields - allows for arbitrary key-value pairs to be added to an entity. Useful for storing any custom data that is not covered by the other fields.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "value"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "customer": {
+      "description": "Order customer information",
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "Unique system-generated identifier for this entity (read-only)",
+          "type": "string"
+        },
+        "externalId": {
+          "description": "ID of the entity in the client's system. Must be unique within the tenant.",
+          "type": "string"
+        },
+        "createdAt": {
+          "description": "ISO 8601 timestamp when the entity was created (read-only)",
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+        },
+        "updatedAt": {
+          "description": "ISO 8601 timestamp when the entity was last updated (read-only)",
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+        },
+        "tenantId": {
+          "description": "Unique identifier for the tenant that owns this entity (read-only)",
+          "type": "string"
+        },
+        "addresses": {
+          "description": "List of addresses associated with the customer (e.g., shipping, billing, home, work)",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "description": "Description of the address e.g. home, work, billing, shipping, etc",
+                "type": "string"
+              },
+              "address": {
+                "type": "object",
+                "properties": {
+                  "address1": {
+                    "description": "Primary street address (e.g., \"123 Main Street\")",
+                    "type": "string"
+                  },
+                  "address2": {
+                    "description": "Secondary address information such as apartment, suite, or unit number (e.g., \"Apt 4B\")",
+                    "type": "string"
+                  },
+                  "city": {
+                    "description": "City or town name",
+                    "type": "string"
+                  },
+                  "company": {
+                    "description": "Company or organization name associated with this address",
+                    "type": "string"
+                  },
+                  "country": {
+                    "description": "Country code in ISO 3166-1 alpha-2 format (2 letters, e.g., \"US\", \"CA\", \"GB\")",
+                    "type": "string"
+                  },
+                  "email": {
+                    "description": "Email address for contact at this location",
+                    "type": "string",
+                    "format": "email",
+                    "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                  },
+                  "firstName": {
+                    "description": "First name of the person at this address",
+                    "type": "string"
+                  },
+                  "lastName": {
+                    "description": "Last name of the person at this address",
+                    "type": "string"
+                  },
+                  "phone": {
+                    "description": "Phone number including country code if applicable (e.g., \"+1-555-123-4567\")",
+                    "type": "string"
+                  },
+                  "stateOrProvince": {
+                    "description": "State or province. For US addresses, use 2-letter state code (e.g., \"CA\", \"NY\"). For other countries, use full province name or local standard.",
+                    "type": "string"
+                  },
+                  "zipCodeOrPostalCode": {
+                    "description": "ZIP code (US) or postal code (international) for the address",
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "address"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "email": {
+          "description": "Primary email address for the customer",
+          "type": "string",
+          "format": "email",
+          "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+        },
+        "firstName": {
+          "description": "Customer's first name",
+          "type": "string"
+        },
+        "lastName": {
+          "description": "Customer's last name",
+          "type": "string"
+        },
+        "notes": {
+          "description": "Internal notes about the customer for reference (not visible to the customer)",
+          "type": "string"
+        },
+        "phone": {
+          "description": "Primary phone number including country code if applicable (e.g., \"+1-555-123-4567\")",
+          "type": "string"
+        },
+        "status": {
+          "description": "Customer account status (e.g., \"active\", \"inactive\", \"suspended\")",
+          "type": "string"
+        },
+        "type": {
+          "description": "Customer type (e.g., \"individual\" for personal customers or \"company\" for business customers)",
+          "type": "string"
+        },
+        "customFields": {
+          "description": "Custom Fields - allows for arbitrary key-value pairs to be added to an entity. Useful for storing any custom data that is not covered by the other fields.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "value": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "name",
+              "value"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "tags": {
+          "description": "Tags for categorization and filtering. Useful for organizing entities with custom labels (e.g., \"priority\", \"wholesale\", \"gift\")",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "createdAt",
+        "updatedAt",
+        "tenantId"
+      ],
+      "additionalProperties": false
+    },
+    "discounts": {
+      "description": "Discounts",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": {}
+      }
+    },
+    "lineItems": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "description": "Unique identifier for this line item within the order",
+            "type": "string"
+          },
+          "sku": {
+            "description": "Product Variant SKU",
+            "type": "string",
+            "minLength": 1
+          },
+          "quantity": {
+            "description": "Quantity ordered",
+            "type": "number",
+            "minimum": 1
+          },
+          "unitPrice": {
+            "description": "Price per unit",
+            "type": "number",
+            "minimum": 0
+          },
+          "unitDiscount": {
+            "description": "Discount per unit",
+            "type": "number",
+            "minimum": 0
+          },
+          "totalPrice": {
+            "description": "Total price for the line item. Calculated as (unitPrice - unitDiscount) * quantity",
+            "type": "number",
+            "minimum": 0
+          },
+          "name": {
+            "description": "Product name for display",
+            "type": "string"
+          },
+          "customFields": {
+            "description": "Custom Fields - allows for arbitrary key-value pairs to be added to an entity. Useful for storing any custom data that is not covered by the other fields.",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "name",
+                "value"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "sku",
+          "quantity"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "orderDiscount": {
+      "description": "Order Discount",
+      "type": "number"
+    },
+    "orderNote": {
+      "description": "Order Notes",
+      "type": "string"
+    },
+    "orderSource": {
+      "description": "The original order platform, walmart, etsy, etc",
+      "type": "string"
+    },
+    "orderTax": {
+      "description": "Order Tax",
+      "type": "number"
+    },
+    "paymentStatus": {
+      "description": "status of the payment",
+      "type": "string"
+    },
+    "payments": {
+      "description": "Payments",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": {}
+      }
+    },
+    "refunds": {
+      "description": "Refunds",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": {}
+      }
+    },
+    "subTotalPrice": {
+      "description": "Sub Total Price",
+      "type": "number"
+    },
+    "tags": {
+      "description": "Tags for categorization and filtering. Useful for organizing entities with custom labels (e.g., \"priority\", \"wholesale\", \"gift\")",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "totalPrice": {
+      "description": "Total Price",
+      "type": "number"
+    },
+    "shippingAddress": {
+      "description": "Shipping address",
+      "type": "object",
+      "properties": {
+        "address1": {
+          "description": "Primary street address (e.g., \"123 Main Street\")",
+          "type": "string"
+        },
+        "address2": {
+          "description": "Secondary address information such as apartment, suite, or unit number (e.g., \"Apt 4B\")",
+          "type": "string"
+        },
+        "city": {
+          "description": "City or town name",
+          "type": "string"
+        },
+        "company": {
+          "description": "Company or organization name associated with this address",
+          "type": "string"
+        },
+        "country": {
+          "description": "Country code in ISO 3166-1 alpha-2 format (2 letters, e.g., \"US\", \"CA\", \"GB\")",
+          "type": "string"
+        },
+        "email": {
+          "description": "Email address for contact at this location",
+          "type": "string",
+          "format": "email",
+          "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+        },
+        "firstName": {
+          "description": "First name of the person at this address",
+          "type": "string"
+        },
+        "lastName": {
+          "description": "Last name of the person at this address",
+          "type": "string"
+        },
+        "phone": {
+          "description": "Phone number including country code if applicable (e.g., \"+1-555-123-4567\")",
+          "type": "string"
+        },
+        "stateOrProvince": {
+          "description": "State or province. For US addresses, use 2-letter state code (e.g., \"CA\", \"NY\"). For other countries, use full province name or local standard.",
+          "type": "string"
+        },
+        "zipCodeOrPostalCode": {
+          "description": "ZIP code (US) or postal code (international) for the address",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "shippingCarrier": {
+      "description": "Shipping carrier name eg. UPS, FedEx, USPS",
+      "type": "string"
+    },
+    "shippingClass": {
+      "description": "Service level e.g. Next Day, Express, Ground",
+      "type": "string"
+    },
+    "shippingCode": {
+      "type": "string"
+    },
+    "shippingNote": {
+      "description": "Additional shipping notes",
+      "type": "string"
+    },
+    "shippingPrice": {
+      "description": "Shipping cost",
+      "type": "number"
+    },
+    "giftNote": {
+      "type": "string"
+    },
+    "incoterms": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "createdAt",
+    "updatedAt",
+    "tenantId",
+    "lineItems"
+  ],
+  "additionalProperties": false
+}

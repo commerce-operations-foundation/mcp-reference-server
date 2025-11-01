@@ -1,0 +1,481 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Return",
+  "description": "Return",
+  "type": "object",
+  "properties": {
+    "id": {
+      "description": "Unique system-generated identifier for this entity (read-only)",
+      "type": "string"
+    },
+    "externalId": {
+      "description": "ID of the entity in the client's system. Must be unique within the tenant.",
+      "type": "string"
+    },
+    "createdAt": {
+      "description": "ISO 8601 timestamp when the entity was created (read-only)",
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+    },
+    "updatedAt": {
+      "description": "ISO 8601 timestamp when the entity was last updated (read-only)",
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+    },
+    "tenantId": {
+      "description": "Unique identifier for the tenant that owns this entity (read-only)",
+      "type": "string"
+    },
+    "returnNumber": {
+      "description": "Customer-facing return identifier used for tracking and reference (e.g., \"RET-12345\")",
+      "type": "string"
+    },
+    "orderId": {
+      "description": "ID of the original order being returned",
+      "type": "string"
+    },
+    "status": {
+      "description": "Return processing status in the return lifecycle",
+      "type": "string"
+    },
+    "outcome": {
+      "description": "What the customer receives for their return",
+      "type": "string"
+    },
+    "returnLineItems": {
+      "description": "Items being returned",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "description": "Unique identifier for this return line item",
+            "type": "string"
+          },
+          "orderLineItemId": {
+            "description": "Reference to the original order line item",
+            "type": "string"
+          },
+          "sku": {
+            "description": "Product Variant SKU",
+            "type": "string"
+          },
+          "quantityReturned": {
+            "description": "Quantity being returned",
+            "type": "number",
+            "minimum": 1
+          },
+          "returnReason": {
+            "description": "Primary return reason code (e.g., \"defective\", \"wrong_item\", \"no_longer_needed\", \"size_issue\", \"quality_issue\")",
+            "type": "string"
+          },
+          "inspection": {
+            "type": "object",
+            "properties": {
+              "conditionCategory": {
+                "description": "Item condition grade after inspection",
+                "type": "string"
+              },
+              "dispositionOutcome": {
+                "description": "Disposition decision for the returned item",
+                "type": "string"
+              },
+              "warehouseLocationId": {
+                "description": "Warehouse bin/shelf location identifier for restocking",
+                "type": "string"
+              },
+              "note": {
+                "description": "Inspection notes about item condition and disposition",
+                "type": "string"
+              },
+              "inspectedBy": {
+                "description": "Who inspected the item",
+                "type": "string"
+              },
+              "inspectedAt": {
+                "description": "When item was inspected",
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+              },
+              "images": {
+                "description": "Photos of returned item condition",
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "format": "uri"
+                }
+              }
+            },
+            "additionalProperties": false
+          },
+          "unitPrice": {
+            "description": "Original unit price from order",
+            "type": "number"
+          },
+          "refundAmount": {
+            "description": "Refund amount for this line item",
+            "type": "number",
+            "minimum": 0
+          },
+          "restockFee": {
+            "description": "Restocking fee charged for this line item",
+            "type": "number",
+            "minimum": 0
+          },
+          "name": {
+            "description": "Product name for display",
+            "type": "string"
+          }
+        },
+        "required": [
+          "orderLineItemId",
+          "sku",
+          "quantityReturned",
+          "returnReason"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "exchangeLineItems": {
+      "description": "Items being exchanged",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "description": "Unique exchange line item identifier",
+            "type": "string"
+          },
+          "exchangeOrderId": {
+            "description": "Order ID created for this exchange",
+            "type": "string"
+          },
+          "exchangeOrderName": {
+            "description": "Order number/name for exchange order",
+            "type": "string"
+          },
+          "sku": {
+            "description": "Product Variant SKU",
+            "type": "string"
+          },
+          "name": {
+            "description": "Product name",
+            "type": "string"
+          },
+          "quantity": {
+            "description": "Quantity requested",
+            "type": "number",
+            "minimum": 1
+          },
+          "unitPrice": {
+            "description": "Unit price",
+            "type": "number"
+          }
+        },
+        "required": [
+          "sku",
+          "quantity"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "totalQuantity": {
+      "description": "Total quantity of items being returned (excludes exchange items)",
+      "type": "number"
+    },
+    "returnMethod": {
+      "type": "object",
+      "properties": {
+        "provider": {
+          "description": "Return logistics provider",
+          "type": "string"
+        },
+        "methodType": {
+          "description": "Method customer uses to return items",
+          "type": "string"
+        },
+        "address": {
+          "description": "Address where customer returns items",
+          "type": "object",
+          "properties": {
+            "address1": {
+              "description": "Primary street address (e.g., \"123 Main Street\")",
+              "type": "string"
+            },
+            "address2": {
+              "description": "Secondary address information such as apartment, suite, or unit number (e.g., \"Apt 4B\")",
+              "type": "string"
+            },
+            "city": {
+              "description": "City or town name",
+              "type": "string"
+            },
+            "company": {
+              "description": "Company or organization name associated with this address",
+              "type": "string"
+            },
+            "country": {
+              "description": "Country code in ISO 3166-1 alpha-2 format (2 letters, e.g., \"US\", \"CA\", \"GB\")",
+              "type": "string"
+            },
+            "email": {
+              "description": "Email address for contact at this location",
+              "type": "string",
+              "format": "email",
+              "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+            },
+            "firstName": {
+              "description": "First name of the person at this address",
+              "type": "string"
+            },
+            "lastName": {
+              "description": "Last name of the person at this address",
+              "type": "string"
+            },
+            "phone": {
+              "description": "Phone number including country code if applicable (e.g., \"+1-555-123-4567\")",
+              "type": "string"
+            },
+            "stateOrProvince": {
+              "description": "State or province. For US addresses, use 2-letter state code (e.g., \"CA\", \"NY\"). For other countries, use full province name or local standard.",
+              "type": "string"
+            },
+            "zipCodeOrPostalCode": {
+              "description": "ZIP code (US) or postal code (international) for the address",
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        },
+        "qrCodeUrl": {
+          "description": "QR code URL for label-free return methods",
+          "type": "string",
+          "format": "uri"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+        }
+      },
+      "additionalProperties": false
+    },
+    "returnShippingAddress": {
+      "description": "Address where items should be returned to",
+      "type": "object",
+      "properties": {
+        "address1": {
+          "description": "Primary street address (e.g., \"123 Main Street\")",
+          "type": "string"
+        },
+        "address2": {
+          "description": "Secondary address information such as apartment, suite, or unit number (e.g., \"Apt 4B\")",
+          "type": "string"
+        },
+        "city": {
+          "description": "City or town name",
+          "type": "string"
+        },
+        "company": {
+          "description": "Company or organization name associated with this address",
+          "type": "string"
+        },
+        "country": {
+          "description": "Country code in ISO 3166-1 alpha-2 format (2 letters, e.g., \"US\", \"CA\", \"GB\")",
+          "type": "string"
+        },
+        "email": {
+          "description": "Email address for contact at this location",
+          "type": "string",
+          "format": "email",
+          "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+        },
+        "firstName": {
+          "description": "First name of the person at this address",
+          "type": "string"
+        },
+        "lastName": {
+          "description": "Last name of the person at this address",
+          "type": "string"
+        },
+        "phone": {
+          "description": "Phone number including country code if applicable (e.g., \"+1-555-123-4567\")",
+          "type": "string"
+        },
+        "stateOrProvince": {
+          "description": "State or province. For US addresses, use 2-letter state code (e.g., \"CA\", \"NY\"). For other countries, use full province name or local standard.",
+          "type": "string"
+        },
+        "zipCodeOrPostalCode": {
+          "description": "ZIP code (US) or postal code (international) for the address",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "labels": {
+      "description": "Shipping labels for this return",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "description": "Label lifecycle status",
+            "type": "string"
+          },
+          "carrier": {
+            "description": "Shipping carrier providing the label",
+            "type": "string"
+          },
+          "trackingNumber": {
+            "description": "Tracking number for the return shipment",
+            "type": "string"
+          },
+          "url": {
+            "description": "URL to download the shipping label",
+            "type": "string",
+            "format": "uri"
+          },
+          "rate": {
+            "description": "Shipping cost for this label",
+            "type": "number"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+          }
+        },
+        "required": [
+          "carrier",
+          "trackingNumber"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "locationId": {
+      "description": "Warehouse facility identifier where return will be received",
+      "type": "string"
+    },
+    "returnTotal": {
+      "description": "Gross merchandise value of returned items before fees",
+      "type": "number"
+    },
+    "exchangeTotal": {
+      "description": "Gross merchandise value of exchange items before any credits applied",
+      "type": "number"
+    },
+    "refundAmount": {
+      "description": "Final refund amount to customer after fees and restocking charges",
+      "type": "number"
+    },
+    "refundMethod": {
+      "description": "Payment method for issuing the refund",
+      "type": "string"
+    },
+    "refundStatus": {
+      "description": "Payment refund processing status (separate from return status)",
+      "type": "string"
+    },
+    "refundTransactionId": {
+      "description": "Transaction ID for the refund",
+      "type": "string"
+    },
+    "shippingRefundAmount": {
+      "description": "Amount of original shipping cost being refunded",
+      "type": "number"
+    },
+    "returnShippingFees": {
+      "description": "Return shipping cost charged to customer (if applicable)",
+      "type": "number"
+    },
+    "restockingFee": {
+      "description": "Total restocking fees charged to customer across all items",
+      "type": "number"
+    },
+    "requestedAt": {
+      "description": "When return was requested",
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+    },
+    "receivedAt": {
+      "description": "When returned items were received",
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+    },
+    "completedAt": {
+      "description": "When return was fully processed",
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+    },
+    "customerNote": {
+      "description": "Customer notes about the return",
+      "type": "string"
+    },
+    "internalNote": {
+      "description": "Internal notes for staff",
+      "type": "string"
+    },
+    "returnInstructions": {
+      "description": "Instructions provided to customer",
+      "type": "string"
+    },
+    "declineReason": {
+      "description": "Reason if return was declined",
+      "type": "string"
+    },
+    "statusPageUrl": {
+      "description": "Customer-facing status tracking page",
+      "type": "string",
+      "format": "uri"
+    },
+    "tags": {
+      "description": "Tags for categorization and filtering. Useful for organizing entities with custom labels (e.g., \"priority\", \"wholesale\", \"gift\")",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "customFields": {
+      "description": "Custom Fields - allows for arbitrary key-value pairs to be added to an entity. Useful for storing any custom data that is not covered by the other fields.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "value"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "id",
+    "createdAt",
+    "updatedAt",
+    "tenantId",
+    "orderId",
+    "outcome",
+    "returnLineItems"
+  ],
+  "additionalProperties": false
+}
