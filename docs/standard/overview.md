@@ -2,7 +2,7 @@
 
 ## System Design
 
-The Universal Order Interchange Standard defines a three-layer architecture that separates concerns and enables flexible implementation:
+The Order Network eXchange standard defines a three-layer architecture that separates concerns and enables flexible implementation:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -12,7 +12,7 @@ The Universal Order Interchange Standard defines a three-layer architecture that
                   │ MCP Protocol
                   ▼
 ┌─────────────────────────────────────────────────────────────┐
-│                  Universal Fulfillment MCP Server                    │
+│                  Order Network eXchange MCP Server                    │
 │  ┌─────────────────────────────────────────────────────┐   │
 │  │                  Protocol Handler                    │   │
 │  │   • Message parsing  • Request routing              │   │
@@ -37,18 +37,20 @@ The Universal Order Interchange Standard defines a three-layer architecture that
 ## Core Concepts
 
 ### 1. Tools
+
 Tools are callable functions that perform operations. They represent actions that change state or retrieve information.
 
 ```typescript
 interface Tool {
-  name: string;           // Unique identifier
-  description: string;    // Human-readable purpose
-  parameters: Schema;     // JSON Schema for inputs
-  returns: Schema;        // JSON Schema for outputs
+  name: string; // Unique identifier
+  description: string; // Human-readable purpose
+  parameters: Schema; // JSON Schema for inputs
+  returns: Schema; // JSON Schema for outputs
 }
 ```
 
 ### 2. Transport
+
 The protocol supports multiple transport mechanisms:
 
 - **stdio** (Current): Standard input/output for local execution
@@ -80,13 +82,13 @@ Handles the low-level protocol mechanics:
 ```typescript
 class MCPProtocolHandler {
   // Parse incoming JSON-RPC messages
-  parseMessage(input: string): Message
-  
+  parseMessage(input: string): Message;
+
   // Format outgoing responses
-  formatResponse(result: any): string
-  
+  formatResponse(result: any): string;
+
   // Handle protocol-level errors
-  handleError(error: Error): ErrorResponse
+  handleError(error: Error): ErrorResponse;
 }
 ```
 
@@ -97,8 +99,8 @@ Your business logic for each operation:
 ```typescript
 class OrderTools {
   @tool({
-    name: "create-sales-order",
-    description: "Create a new order"
+    name: 'create-sales-order',
+    description: 'Create a new order',
   })
   async createSalesOrder(params: OrderInput): Promise<OrderOutput> {
     // Your implementation
@@ -114,8 +116,8 @@ Connects to your actual backend systems:
 ```typescript
 interface FulfillmentAdapter {
   // Abstract interface
-  createSalesOrder(order: Order): Promise<Result>
-  cancelOrder(orderId: string): Promise<Result>
+  createSalesOrder(order: Order): Promise<Result>;
+  cancelOrder(orderId: string): Promise<Result>;
   // ... other methods
 }
 
@@ -162,33 +164,36 @@ AI Agent                MCP Server              Fulfillment Backend
 ## Security Model
 
 ### Authentication (Future)
+
 ```typescript
 interface Authentication {
-  type: "oauth2" | "api-key" | "jwt"
-  credentials: Credentials
-  scopes: string[]
+  type: 'oauth2' | 'api-key' | 'jwt';
+  credentials: Credentials;
+  scopes: string[];
 }
 ```
 
 ### Authorization
+
 ```typescript
 interface Authorization {
-  tool: string
-  principal: Principal
-  context: Context
-  decision: "allow" | "deny" | "prompt"
+  tool: string;
+  principal: Principal;
+  context: Context;
+  decision: 'allow' | 'deny' | 'prompt';
 }
 ```
 
 ### Audit Trail
+
 ```typescript
 interface AuditLog {
-  timestamp: ISO8601
-  tool: string
-  parameters: any
-  principal: Principal
-  result: "success" | "failure"
-  metadata: Record<string, any>
+  timestamp: ISO8601;
+  tool: string;
+  parameters: any;
+  principal: Principal;
+  result: 'success' | 'failure';
+  metadata: Record<string, any>;
 }
 ```
 
@@ -196,26 +201,26 @@ interface AuditLog {
 
 ### Error Categories
 
-| Code Range | Category | Description |
-|------------|----------|-------------|
-| 1000-1999 | Protocol | MCP protocol errors |
-| 2000-2999 | Validation | Parameter validation |
-| 3000-3999 | Business | Business rule violations |
-| 4000-4999 | System | System-level failures |
-| 5000-5999 | Fulfillment-Specific | Custom Fulfillment errors |
+| Code Range | Category             | Description               |
+| ---------- | -------------------- | ------------------------- |
+| 1000-1999  | Protocol             | MCP protocol errors       |
+| 2000-2999  | Validation           | Parameter validation      |
+| 3000-3999  | Business             | Business rule violations  |
+| 4000-4999  | System               | System-level failures     |
+| 5000-5999  | Fulfillment-Specific | Custom Fulfillment errors |
 
 ### Error Response Format
 
 ```typescript
 interface ErrorResponse {
-  code: number
-  message: string
+  code: number;
+  message: string;
   details?: {
-    field?: string
-    reason?: string
-    suggestion?: string
-  }
-  retryable: boolean
+    field?: string;
+    reason?: string;
+    suggestion?: string;
+  };
+  retryable: boolean;
 }
 ```
 
@@ -229,13 +234,13 @@ Add domain-specific operations:
 
 ```typescript
 // Standard tools
-tool: "create-sales-order"
-tool: "cancel-order"
+tool: 'create-sales-order';
+tool: 'cancel-order';
 
 // Your custom tools
-tool: "apply-discount"
-tool: "schedule-delivery"
-tool: "gift-wrap"
+tool: 'apply-discount';
+tool: 'schedule-delivery';
+tool: 'gift-wrap';
 ```
 
 ### Vendor Extensions
@@ -244,11 +249,11 @@ Add vendor-specific data:
 
 ```typescript
 interface OrderExtensions {
-  standard: StandardOrder
+  standard: StandardOrder;
   extensions: {
-    "x-vendor-field": any
-    "x-custom-data": any
-  }
+    'x-vendor-field': any;
+    'x-custom-data': any;
+  };
 }
 ```
 
@@ -256,9 +261,9 @@ interface OrderExtensions {
 
 ```typescript
 interface Version {
-  protocol: "1.0"
-  implementation: "1.2.3"
-  capabilities: string[]
+  protocol: '1.0';
+  implementation: '1.2.3';
+  capabilities: string[];
 }
 ```
 
@@ -273,16 +278,17 @@ interface Version {
 
 ### Benchmarks
 
-| Operation | Target Response Time |
-|-----------|---------------------|
-| Query operations | < 200ms |
-| Simple mutations | < 500ms |
-| Complex operations | < 2000ms |
-| Batch operations | < 5000ms |
+| Operation          | Target Response Time |
+| ------------------ | -------------------- |
+| Query operations   | < 200ms              |
+| Simple mutations   | < 500ms              |
+| Complex operations | < 2000ms             |
+| Batch operations   | < 5000ms             |
 
 ## Deployment Models
 
 ### Local Development
+
 ```bash
 cd mcp-reference-server/server
 npm install
@@ -292,6 +298,7 @@ npm run dev
 ### Production Deployment
 
 #### Containerized
+
 ```dockerfile
 FROM node:18
 COPY . /app
@@ -299,19 +306,21 @@ CMD ["npm", "start"]
 ```
 
 #### Serverless
+
 ```typescript
 export const handler = async (event) => {
   return mcpServer.handle(event);
-}
+};
 ```
 
 #### Edge Functions
+
 ```typescript
 export default {
   async fetch(request) {
     return mcpServer.handleRequest(request);
-  }
-}
+  },
+};
 ```
 
 ## Monitoring & Observability
@@ -329,7 +338,7 @@ export default {
 logger.info('Tool invoked', {
   tool: 'create-sales-order',
   duration: 234,
-  success: true
+  success: true,
 });
 ```
 
@@ -337,14 +346,14 @@ logger.info('Tool invoked', {
 
 ```typescript
 interface HealthCheck {
-  status: "healthy" | "degraded" | "unhealthy"
+  status: 'healthy' | 'degraded' | 'unhealthy';
   checks: {
-    protocol: boolean
-    backend: boolean
-    database: boolean
-  }
-  version: string
-  uptime: number
+    protocol: boolean;
+    backend: boolean;
+    database: boolean;
+  };
+  version: string;
+  uptime: number;
 }
 ```
 
@@ -362,4 +371,4 @@ This architecture ensures that any Fulfillment can become AI-ready without major
 
 ---
 
-*Continue to: [Tools Reference →](tools-reference.md)*
+_Continue to: [Tools Reference →](tools-reference.md)_
