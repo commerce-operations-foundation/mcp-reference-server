@@ -1,4 +1,4 @@
-# Universal Fulfillment System MCP Server Specification
+# Order Network eXchange MCP Server Specification
 
 **Version:** 1.0.0
 **Status:** Draft
@@ -23,11 +23,12 @@
 
 ### Purpose
 
-The Universal Fulfillment System (Fulfillment) MCP Server provides a standardized interface between AI agents and fulfillment systems. This specification defines the server implementation requirements, protocol details, and operational characteristics necessary for compliant implementations.
+The Order Network eXchange MCP Server provides a standardized interface between AI agents and fulfillment systems. This specification defines the server implementation requirements, protocol details, and operational characteristics necessary for compliant implementations.
 
 ### Scope
 
 This specification covers:
+
 - MCP protocol implementation for Fulfillment operations
 - Standard tool definitions for order lifecycle management
 - Error handling and recovery procedures
@@ -81,14 +82,17 @@ All messages MUST conform to the JSON-RPC 2.0 specification:
 The server MUST implement these MCP protocol methods:
 
 1. **initialize**
+
    - Establishes connection and exchanges capabilities
    - Returns server information and supported features
 
 2. **tools/list**
+
    - Returns available tools with schemas
    - Includes tool descriptions for AI assistants
 
 3. **tools/call**
+
    - Executes a specific tool with provided arguments
    - Returns tool results or error responses
 
@@ -101,9 +105,11 @@ The server MUST implement these MCP protocol methods:
 The server MAY implement:
 
 1. **resources/list**
+
    - Expose data resources (order lists, inventory status)
 
 2. **prompts/list**
+
    - Provide prompt templates for common operations
 
 3. **sampling/create**
@@ -119,9 +125,9 @@ The server MUST support stdio (standard input/output) as the primary transport m
 
 ```typescript
 interface StdioTransport {
-  input: process.stdin;   // Read JSON-RPC messages
-  output: process.stdout;  // Write JSON-RPC responses
-  errors: process.stderr;  // Log errors and diagnostics
+  input: process.stdin; // Read JSON-RPC messages
+  output: process.stdout; // Write JSON-RPC responses
+  errors: process.stderr; // Log errors and diagnostics
 }
 ```
 
@@ -147,7 +153,9 @@ $ node dist/index.js
 ### Optional Transports
 
 Implementations MAY support additional transports:
+
 #### Streamable HTTP Transport
+
 ```yaml
 endpoint: http://localhost:3000/mcp
 method: POST
@@ -156,6 +164,7 @@ authentication: Bearer token or API key
 ```
 
 #### WebSocket Transport
+
 ```yaml
 endpoint: ws://localhost:3001/mcp
 protocol: mcp.v1
@@ -170,8 +179,8 @@ authentication: Connection-time auth
 
 The server MUST declare its capabilities during initialization:
 
-| Capability         | Required      | Description                                |
-| ------------------ | ------------- | ------------------------------------------ |
+| Capability         | Required       | Description                                |
+| ------------------ | -------------- | ------------------------------------------ |
 | tools              | ✅ Yes         | Supports tool execution                    |
 | tools.descriptions | ✅ Yes         | Provides AI-friendly descriptions          |
 | tools.schemas      | ✅ Yes         | Includes JSON Schema definitions           |
@@ -187,9 +196,9 @@ The server MUST provide:
 
 ```typescript
 interface ServerInfo {
-  name: "cof-mcp";
-  version: string;          // Semantic version
-  protocolVersion: "0.1.0"; // MCP protocol version
+  name: 'cof-mcp';
+  version: string; // Semantic version
+  protocolVersion: '0.1.0'; // MCP protocol version
   capabilities: Capabilities;
   vendor?: {
     name: string;
@@ -223,12 +232,14 @@ interface ToolRegistry {
 The reference server implements these ten tools:
 
 #### Action Tools (4 tools)
+
 1. **create-sales-order** - Create new orders
 2. **cancel-order** - Cancel existing orders
 3. **update-order** - Modify order details
 4. **fulfill-order** - Mark orders as fulfilled
 
 #### Query Tools (6 tools)
+
 5. **get-orders** - Retrieve order details
 6. **get-customers** - Retrieve customer data
 7. **get-products** - Get product information
@@ -242,16 +253,16 @@ Each tool MUST provide:
 
 ```typescript
 interface ToolDefinition {
-  name: string;              // Unique identifier (kebab-case)
-  description: string;       // AI-friendly description
-  inputSchema: JSONSchema;   // JSON Schema for parameters
-  outputSchema: JSONSchema;  // JSON Schema for response
+  name: string; // Unique identifier (kebab-case)
+  description: string; // AI-friendly description
+  inputSchema: JSONSchema; // JSON Schema for parameters
+  outputSchema: JSONSchema; // JSON Schema for response
   errors: ErrorDefinition[]; // Possible error conditions
-  examples?: Example[];      // Usage examples
+  examples?: Example[]; // Usage examples
   metadata?: {
-    category: "action" | "management" | "query";
-    async?: boolean;       // Long-running operation
-    idempotent?: boolean;  // Safe to retry
+    category: 'action' | 'management' | 'query';
+    async?: boolean; // Long-running operation
+    idempotent?: boolean; // Safe to retry
     requiresAuth?: boolean;
   };
 }
@@ -304,6 +315,7 @@ All errors MUST follow JSON-RPC 2.0 error format:
 ### Standard Error Codes
 
 #### JSON-RPC Standard Codes
+
 | Code   | Name             | Description         |
 | ------ | ---------------- | ------------------- |
 | -32700 | Parse error      | Invalid JSON        |
@@ -313,6 +325,7 @@ All errors MUST follow JSON-RPC 2.0 error format:
 | -32603 | Internal error   | Server error        |
 
 #### Fulfillment-Specific Error Codes
+
 | Code | Name                   | Description               | Retryable |
 | ---- | ---------------------- | ------------------------- | --------- |
 | 2001 | VALIDATION_ERROR       | Input validation failed   | No        |
@@ -404,7 +417,7 @@ Implementations SHOULD support authentication mechanisms:
 
 ```typescript
 interface Authentication {
-  type: "none" | "api-key" | "oauth2" | "custom";
+  type: 'none' | 'api-key' | 'oauth2' | 'custom';
 
   validateRequest(request: Request): boolean;
   refreshToken?(): Promise<string>;
@@ -439,9 +452,12 @@ interface RateLimits {
   requestsPerHour: number;
   burstLimit: number;
 
-  toolLimits?: Map<string, {
-    requestsPerMinute: number;
-  }>;
+  toolLimits?: Map<
+    string,
+    {
+      requestsPerMinute: number;
+    }
+  >;
 }
 ```
 
@@ -478,7 +494,7 @@ connections:
   keepalive: true
 
 caching:
-  ttl: 300s  # 5 minutes
+  ttl: 300s # 5 minutes
   max_entries: 1000
 ```
 
@@ -491,20 +507,26 @@ caching:
 The server supports **three distinct adapter loading mechanisms** to accommodate various deployment scenarios:
 
 #### 1. Built-in Adapters
+
 Adapters that ship with the core server package:
+
 - Always available without additional installation
 - Currently includes the mock adapter for testing
 - Loaded synchronously at server startup
 
 #### 2. NPM Package Adapters
+
 Adapters published to npm registry (public or private):
+
 - Installed via `npm install @vendor/adapter-name`
 - Dynamically imported at runtime
 - Ideal for Fulfillment vendors distributing adapters
 - Supports versioning and dependency management
 
 #### 3. Local File Adapters
+
 Adapters loaded from filesystem paths:
+
 - No publication or registry required
 - Loaded via relative or absolute paths
 - Perfect for private retailer implementations
@@ -517,17 +539,17 @@ interface AdapterConfig {
   type: 'built-in' | 'npm' | 'local';
 
   // For built-in adapters
-  name?: string;           // e.g., 'mock'
+  name?: string; // e.g., 'mock'
 
   // For NPM adapters
-  package?: string;        // e.g., '@pipe17/cof-fulfillment-adapter'
+  package?: string; // e.g., '@pipe17/cof-fulfillment-adapter'
 
   // For local adapters
-  path?: string;           // e.g., '../my-adapter/dist'
+  path?: string; // e.g., '../my-adapter/dist'
 
   // Optional for all types$$
-  exportName?: string;     // Export to use if not 'default'
-  options?: Record<string, any>;  // Adapter-specific options
+  exportName?: string; // Export to use if not 'default'
+  options?: Record<string, any>; // Adapter-specific options
 }
 ```
 
@@ -590,7 +612,9 @@ interface FulfillmentAdapter {
   getOrders(params: GetOrdersInput): Promise<FulfillmentToolResult<{ orders: Order[] }>>;
   getCustomers(params: GetCustomersInput): Promise<FulfillmentToolResult<{ customers: Customer[] }>>;
   getProducts(params: GetProductsInput): Promise<FulfillmentToolResult<{ products: Product[] }>>;
-  getProductVariants(params: GetProductVariantsInput): Promise<FulfillmentToolResult<{ productVariants: ProductVariant[] }>>;
+  getProductVariants(
+    params: GetProductVariantsInput
+  ): Promise<FulfillmentToolResult<{ productVariants: ProductVariant[] }>>;
   getInventory(params: GetInventoryInput): Promise<FulfillmentToolResult<{ inventory: InventoryItem[] }>>;
   getFulfillments(params: GetFulfillmentsInput): Promise<FulfillmentToolResult<{ fulfillments: Fulfillment[] }>>;
 }
@@ -601,6 +625,7 @@ interface FulfillmentAdapter {
 #### For Fulfillment Vendors (NPM Package)
 
 1. **Create adapter package:**
+
 ```json
 {
   "name": "@vendorname/cof-fulfillment-adapter-vendor",
@@ -613,6 +638,7 @@ interface FulfillmentAdapter {
 ```
 
 2. **Implement adapter:**
+
 ```typescript
 import { IFulfillmentAdapter } from '@cof-org/mcp';
 
@@ -630,6 +656,7 @@ export default class VendorAdapter implements IFulfillmentAdapter {
 ```
 
 3. **Publish to NPM:**
+
 ```bash
 npm publish
 ```
@@ -637,6 +664,7 @@ npm publish
 #### For Retailers (Local Adapter)
 
 1. **Create adapter project:**
+
 ```
 my-fulfillment-adapter/
 ├── package.json
@@ -647,6 +675,7 @@ my-fulfillment-adapter/
 ```
 
 2. **Implement adapter:**
+
 ```typescript
 import { IFulfillmentAdapter } from '@cof-org/mcp/types';
 
@@ -656,6 +685,7 @@ export default class RetailerAdapter implements IFulfillmentAdapter {
 ```
 
 3. **Build and use locally:**
+
 ```bash
 # Build adapter
 cd my-fulfillment-adapter
@@ -691,11 +721,13 @@ interface Plugin {
 Compliant implementations MUST pass:
 
 1. **Protocol Tests**
+
    - Valid JSON-RPC communication
    - Proper error responses
    - Message size limits
 
 2. **Tool Tests**
+
    - All 10 standard tools functional
    - Parameter validation
    - Error handling
@@ -733,6 +765,7 @@ See [examples/](../../examples/) directory for client integration samples.
 ## Changelog
 
 ### Version 1.0.0 (August 2025)
+
 - Initial specification release
 - Defined 10 standard tools
 - Established protocol requirements
@@ -740,4 +773,4 @@ See [examples/](../../examples/) directory for client integration samples.
 
 ---
 
-*This specification is maintained by the Commerce Operations Foundation. For updates and contributions, visit [GitHub repository].*
+_This specification is maintained by the Commerce Operations Foundation. For updates and contributions, visit [GitHub repository]._

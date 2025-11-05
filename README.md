@@ -16,28 +16,36 @@ This project enables AI assistants like Claude to seamlessly interact with any f
 ## 📁 Project Structure
 
 ### [/server](./server/README.md)
+
 The core Fulfillment MCP Reference server implementation that:
+
 - Handles MCP protocol communication (stdio transport)
 - Routes requests to appropriate adapters
 - Provides 12 standardized fulfillment operations (5 action + 7 query tools)
 - Includes a built-in mock adapter for testing
 
 ### [/adapter-template](./adapter-template/README.md)
+
 Template for creating custom Fulfillment adapters to allow the MCP Reference server to connect to your Fulfillment system:
+
 - Boilerplate code for new integrations
 - TypeScript interfaces and types
 - Testing framework setup
 - Publishing guidelines for vendors
 
 ### [/docs](./docs/README.md)
+
 Comprehensive documentation covering:
-- Universal Fulfillment System specification and standards
+
+- Order Network eXchange specification and standards
 - Architecture and design decisions
 - Integration guides for different stakeholders
 - API reference and examples
 
 ### [/schemas](./schemas)
+
 JSON Schema definitions for:
+
 - Order data structures
 - Customer information
 - Product catalog
@@ -46,6 +54,7 @@ JSON Schema definitions for:
 ## 🚀 Quick Start
 
 ### For AI Developers
+
 Integrate order management capabilities into your AI applications:
 
 ```bash
@@ -59,6 +68,7 @@ node dist/index.js
 The server uses the mock adapter by default (`ADAPTER_TYPE=built-in`, `ADAPTER_NAME=mock`). Configure your AI platform (like Claude Desktop) to execute `node /absolute/path/to/server/dist/index.js`. See the [Installation Guide](./docs/guides/installation.md) for platform-specific setup.
 
 ### For Fulfillment Vendors
+
 Create an adapter for your fulfillment system:
 
 ```bash
@@ -72,6 +82,7 @@ npm run dev
 ```
 
 ### For Retailers & Commerce Platforms
+
 Deploy the server with your chosen adapter:
 
 ```bash
@@ -89,6 +100,7 @@ npm start
 The server provides 12 essential fulfillment operations:
 
 **Action Tools**
+
 - `create-sales-order` - Create new orders from any channel
 - `update-order` - Modify order details and line items
 - `cancel-order` - Cancel orders with reason tracking
@@ -96,6 +108,7 @@ The server provides 12 essential fulfillment operations:
 - `create-return` - Create returns for order items with refund/exchange tracking
 
 **Query Tools**
+
 - `get-orders` - Retrieve order information
 - `get-customers` - Get customer details
 - `get-products` - Get product information
@@ -139,6 +152,7 @@ npm run test:coverage
 ## 📚 Documentation
 
 Documentation is available in the following locations:
+
 - [Full Documentation](./docs/README.md) - Complete specification and guides
 - [Server README](./server/README.md) - Detailed server implementation
 - [Adapter Template](./adapter-template/README.md) - Creating custom adapters
@@ -147,6 +161,7 @@ Documentation is available in the following locations:
 ## 👥 Contributing
 
 We welcome contributions from the community! Whether you're:
+
 - A Fulfillment vendor creating an adapter
 - A developer improving the core server
 - A user reporting issues or suggesting features

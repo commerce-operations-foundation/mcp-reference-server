@@ -18,6 +18,7 @@ If you're an Fulfillment vendor providing a public adapter package, follow these
 ### Prerequisites
 
 1. **NPM Account**
+
    ```bash
    # Create account at npmjs.com
    # Then login locally
@@ -33,11 +34,12 @@ If you're an Fulfillment vendor providing a public adapter package, follow these
 ### Step 1: Prepare for Publishing
 
 1. **Update package.json**
+
    ```json
    {
      "name": "@yourcompany/uois-adapter-yourfulfillment",
      "version": "1.0.0",
-     "description": "Universal Fulfillment adapter for YourFulfillment",
+     "description": "Order Network eXchange adapter for YourFulfillment",
      "keywords": ["uois", "fulfillment", "adapter", "mcp", "yourfulfillment"],
      "author": "Your Company <support@yourcompany.com>",
      "license": "MIT",
@@ -53,12 +55,14 @@ If you're an Fulfillment vendor providing a public adapter package, follow these
    ```
 
 2. **Verify all tests pass**
+
    ```bash
    npm test
    npm run lint
    ```
 
 3. **Build the package**
+
    ```bash
    npm run build
    ```
@@ -93,11 +97,13 @@ npm version prerelease --preid=beta
 ### Step 3: Publish to NPM
 
 1. **First-time publishing (scoped package)**
+
    ```bash
    npm publish --access public
    ```
 
 2. **Subsequent releases**
+
    ```bash
    npm publish
    ```
@@ -110,6 +116,7 @@ npm version prerelease --preid=beta
 ### Step 4: Post-Publishing
 
 1. **Verify installation**
+
    ```bash
    # In a test directory
    npm install @yourcompany/uois-adapter-yourfulfillment
@@ -119,6 +126,7 @@ npm version prerelease --preid=beta
    ```
 
 2. **Create GitHub release**
+
    ```bash
    git push origin main
    git push origin --tags
@@ -156,6 +164,7 @@ If you're a retailer creating a custom adapter for internal use, follow these gu
 1. **Setup private registry** (e.g., Verdaccio, npm Enterprise, Artifactory)
 
 2. **Configure NPM**
+
    ```bash
    # Set registry for your scope
    npm config set @yourcompany:registry https://npm.yourcompany.com
@@ -172,12 +181,14 @@ If you're a retailer creating a custom adapter for internal use, follow these gu
 ### Option 2: Git Repository
 
 1. **Use Git tags for versions**
+
    ```bash
    git tag v1.0.0
    git push origin v1.0.0
    ```
 
 2. **Install from Git**
+
    ```bash
    # In your MCP server
    npm install git+ssh://git@github.com:yourcompany/yourfulfillment-adapter.git#v1.0.0
@@ -189,12 +200,14 @@ If you're a retailer creating a custom adapter for internal use, follow these gu
 ### Option 3: Local File System
 
 1. **Build the adapter**
+
    ```bash
    cd yourfulfillment-adapter
    npm run build
    ```
 
 2. **Link locally (for development)**
+
    ```bash
    # In adapter directory
    npm link
@@ -207,7 +220,7 @@ If you're a retailer creating a custom adapter for internal use, follow these gu
    ```bash
    # In .env
    ADAPTER_TYPE=local
-  ADAPTER_PATH=../yourfulfillment-adapter/dist/index.js
+   ADAPTER_PATH=../yourfulfillment-adapter/dist/index.js
    ```
 
 ### CI/CD Pipeline
@@ -257,6 +270,7 @@ jobs:
 ### Semantic Versioning
 
 Follow semver strictly:
+
 - **MAJOR.MINOR.PATCH** (e.g., 2.1.3)
 - **MAJOR**: Breaking changes
 - **MINOR**: New features, backward compatible
@@ -265,6 +279,7 @@ Follow semver strictly:
 ### Breaking Changes
 
 Increment MAJOR version when:
+
 - Removing or renaming public methods
 - Changing method signatures
 - Modifying response formats
@@ -274,6 +289,7 @@ Increment MAJOR version when:
 ### Feature Additions
 
 Increment MINOR version when:
+
 - Adding new methods
 - Adding optional parameters
 - Adding new configuration options
@@ -283,6 +299,7 @@ Increment MINOR version when:
 ### Bug Fixes
 
 Increment PATCH version when:
+
 - Fixing bugs
 - Updating documentation
 - Improving error messages
@@ -292,6 +309,7 @@ Increment PATCH version when:
 ### Pre-release Versions
 
 Use for testing before stable release:
+
 ```bash
 1.0.0-alpha.1  # Alpha release
 1.0.0-beta.1   # Beta release
@@ -325,7 +343,7 @@ describe('Integration Tests', () => {
   it('should work with MCP server', async () => {
     const adapter = new YourFulfillmentAdapter({
       apiUrl: process.env.TEST_API_URL,
-      apiKey: process.env.TEST_API_KEY
+      apiKey: process.env.TEST_API_KEY,
     });
 
     await adapter.connect();
@@ -350,6 +368,7 @@ describe('Integration Tests', () => {
 ### 4. Compatibility Testing
 
 Test with different versions:
+
 - Node.js versions (14, 16, 18, 20)
 - MCP server versions
 - Your Fulfillment API versions
@@ -359,44 +378,54 @@ Test with different versions:
 ### Required Documentation
 
 1. **README.md**
+
    - Installation instructions
    - Configuration options
    - Basic usage example
    - Link to full documentation
 
 2. **CHANGELOG.md**
+
    ```markdown
    # Changelog
 
    ## [1.1.0] - 2025-10-31
+
    ### Added
+
    - New split order functionality
    - Support for webhook notifications
 
    ### Fixed
+
    - Memory leak in connection pooling
    - Rate limiting for bulk operations
 
    ### Changed
+
    - Improved error messages
    - Updated dependencies
    ```
 
 3. **API Documentation**
+
    - All public methods
    - Parameters and return types
    - Error scenarios
    - Code examples
 
 4. **Migration Guides**
+
    ```markdown
    # Migrating from v1.x to v2.0
 
    ## Breaking Changes
+
    - `captureOrder` now requires `currency` field
    - Removed deprecated `legacyAuth` option
 
    ## Migration Steps
+
    1. Update configuration...
    2. Change method calls...
    ```
@@ -404,6 +433,7 @@ Test with different versions:
 ### Documentation Tools
 
 Consider using:
+
 - **TypeDoc** for API documentation
 - **Docusaurus** for documentation site
 - **Swagger/OpenAPI** for REST API docs
@@ -425,6 +455,7 @@ Define your support timeline:
 ### Issue Management
 
 1. **Bug Reports**
+
    - Use GitHub Issues
    - Provide issue templates
    - Label system (bug, feature, docs)
@@ -436,38 +467,47 @@ Define your support timeline:
 
 ### Release Notes Template
 
-```markdown
+````markdown
 # Release Notes - v1.1.0
 
 ## Release Date: 2025-10-31
 
 ## What's New
+
 - Split order functionality for multi-warehouse fulfillment
 - Webhook support for real-time updates
 - Performance improvements (30% faster order processing)
 
 ## Bug Fixes
+
 - Fixed memory leak in connection pooling (#123)
 - Resolved rate limiting issues for bulk operations (#124)
 - Corrected timezone handling in order timestamps (#125)
 
 ## Breaking Changes
+
 None in this release
 
 ## Deprecations
+
 - `legacyAuth` option will be removed in v2.0.0
 
 ## Upgrade Instructions
+
 ```bash
 npm update @yourcompany/uois-adapter-yourfulfillment
 ```
+````
 
 ## Known Issues
+
 - Bulk update operations limited to 100 items
 
 ## Contributors
+
 Thanks to @user1, @user2 for their contributions!
-```
+
+````
 
 ### Monitoring Published Versions
 
@@ -475,9 +515,10 @@ Thanks to @user1, @user2 for their contributions!
    ```bash
    npm view @yourcompany/uois-adapter-yourfulfillment
    npm info @yourcompany/uois-adapter-yourfulfillment versions
-   ```
+````
 
 2. **Download Statistics**
+
    - Check npmjs.com package page
    - Use npm-stat.com for graphs
 
@@ -506,19 +547,23 @@ Before publishing, ensure:
 ### Common Issues
 
 1. **Authentication Failed**
+
    ```bash
    npm login
    npm whoami
    ```
 
 2. **Package Name Taken**
+
    - Use scoped packages: `@yourcompany/package-name`
 
 3. **Missing Files**
+
    - Check `files` field in package.json
    - Use `npm pack --dry-run` to verify
 
 4. **Version Already Exists**
+
    - Can't republish same version
    - Increment version number
 
