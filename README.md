@@ -6,14 +6,14 @@ The Commerce Operations Foundation MCP Server implements the Order Network eXcha
 
 This project enables AI assistants like Claude to seamlessly interact with any fulfillment system, streamlining commerce operations from order capture through delivery.
 
-## 📋 Project Purpose
+## Project Purpose
 
 - **Standardize Fulfillment Integration**: Define a universal protocol for fulfillment operations
 - **Enable AI-Driven Commerce**: Allow AI agents to manage orders, inventory, and fulfillment
 - **Simplify Implementation**: Provide plug-and-play adapters for different Fulfillment backends
 - **Accelerate Innovation**: Create a foundation for next-generation commerce automation
 
-## 📁 Project Structure
+## Project Structure
 
 ### [/server](./server/README.md)
 
@@ -51,7 +51,7 @@ JSON Schema definitions for:
 - Product catalog
 - Inventory models
 
-## 🚀 Quick Start
+## Quick Start
 
 ### For AI Developers
 
@@ -95,7 +95,7 @@ npm run build
 npm start
 ```
 
-## 🛠 Core Capabilities
+## Core Capabilities
 
 The server provides 12 essential fulfillment operations:
 
@@ -117,7 +117,7 @@ The server provides 12 essential fulfillment operations:
 - `get-fulfillments` - Track fulfillment status
 - `get-returns` - Query return records and status
 
-## 🏗 Architecture Overview
+## Architecture Overview
 
 ```
 ┌──────────────┐     ┌────────────────┐     ┌──────────────────┐
@@ -132,7 +132,7 @@ The server provides 12 essential fulfillment operations:
                          └─────────┘           └──────────┘
 ```
 
-## 🧪 Testing
+## Testing
 
 The project includes comprehensive testing at all levels:
 
@@ -149,7 +149,7 @@ npm run test:integration # Integration tests
 npm run test:coverage
 ```
 
-## 📚 Documentation
+## Documentation
 
 Documentation is available in the following locations:
 
@@ -158,7 +158,7 @@ Documentation is available in the following locations:
 - [Adapter Template](./adapter-template/README.md) - Creating custom adapters
 - [Architecture Overview](./docs/architecture/system-architecture.md) - System design and components
 
-## 👥 Contributing
+## Contributing
 
 We welcome contributions from the community! Whether you're:
 
@@ -168,18 +168,18 @@ We welcome contributions from the community! Whether you're:
 
 Please open an issue or pull request to get started.
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](./LICENSE) file for details.
 
-## 🔗 Resources
+## Resources
 
 - [Model Context Protocol](https://modelcontextprotocol.io) - The foundation protocol
 - [Installation Guide](./docs/guides/installation.md) - Detailed setup instructions
 - [Configuration Guide](./docs/guides/configuration.md) - All configuration options
 - [Example Test Prompts](./MCP_TEST_PROMPTS.md) - Common use cases and testing scenarios
 
-## 🎯 Get Started
+## Get Started
 
 Ready to revolutionize your fulfillment operations with AI?
 
