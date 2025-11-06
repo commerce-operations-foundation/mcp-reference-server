@@ -6,7 +6,7 @@ The Order Network eXchange Standard creates value for every participant in the c
 
 ## Benefits by Stakeholder
 
-### 🤖 AI Platform Providers
+### AI Platform Providers
 
 #### Immediate Capabilities
 - **Instant Commerce Features**: Enable shopping without building commerce infrastructure
@@ -35,7 +35,7 @@ With onX:
   - Simple support: Standardized patterns
 ```
 
-### 📦 Fulfillment Vendors
+### Fulfillment Vendors
 
 #### Market Positioning
 - **"AI-Ready" Label**: Powerful marketing differentiator
@@ -67,7 +67,7 @@ Stage 3: Differentiation (Ongoing)
 └── Custom extensions
 ```
 
-### 🛍️ Commerce Platforms
+### Commerce Platforms
 
 #### Integration Efficiency
 | Metric | Traditional | With onX | Improvement |
@@ -89,7 +89,7 @@ Stage 3: Differentiation (Ongoing)
 - **Increased Retention**: Sticky AI features
 - **Upsell Opportunities**: AI-powered premium features
 
-### 📦 3PL Providers
+### 3PL Providers
 
 #### Operational Excellence
 - **Automated Ingestion**: Orders flow directly from any source
@@ -113,7 +113,7 @@ Revenue Opportunities:
 - **Partner Ecosystem**: Connect with any platform
 - **Value-Added Services**: AI-enabled offerings
 
-### 🏪 Merchants and Brands
+### Merchants and Brands
 
 #### Customer Experience
 - **Conversational Commerce**: Natural language shopping
