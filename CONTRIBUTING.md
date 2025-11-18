@@ -143,8 +143,29 @@ Follow conventional commits:
 
 ## Release Workflow
 
+We follow an automated release process based on the `main` branch:
+
+1.  **Triggering a Release:**
+    -   To publish a new version, you must update the `version` field in `server/package.json` as part of your Pull Request.
+    -   Example: Change `1.0.0` to `1.0.1` (patch), `1.1.0` (minor), or `1.0.0-beta.1` (pre-release).
+
+2.  **Automation:**
+    -   When your PR is merged into `main`, the system checks if the version number is new.
+    -   If it is a new version, the `release` workflow runs automatically to:
+        -   Run a final sanity check (tests/lint).
+        -   Create and push the Git tag (e.g., `v1.0.1`).
+        -   Publish the package to NPM.
+        -   Build and push the Docker image to GHCR.
+        -   Create a GitHub Release entry.
+
+3.  **Pre-releases:**
+    -   Versions with labels like `-alpha`, `-beta`, or `-rc` (e.g., `1.1.0-beta.1`) are automatically marked as "Pre-release" on GitHub.
+
+4.  **When to Bump Version:**
+    -   **No Version Change:** For documentation updates, test improvements, or internal refactoring that doesn't affect the user, **do not** change the version in `package.json`. The changes will simply be merged into `main` and included in the next formal release.
+    -   **Version Change Required:** For bug fixes, new features, or breaking changes that users need immediately.
+
 - Merges to `develop` trigger automated builds
-- Releases are tagged and versioned following semantic versioning
 - Changelogs are generated from commit messages
 
 ## Communication

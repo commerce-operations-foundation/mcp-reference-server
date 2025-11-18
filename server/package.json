@@ -1,6 +1,6 @@
 {
   "name": "@cof-org/mcp",
-  "version": "1.0.0",
+  "version": "0.5.0",
   "description": "Commerce Operations Foundation MCP Server",
   "type": "module",
   "main": "dist/index.js",
