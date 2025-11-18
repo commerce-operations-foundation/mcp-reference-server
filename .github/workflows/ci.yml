@@ -6,7 +6,6 @@ on:
   pull_request:
     branches: [main, develop]
 
-
 permissions:
   contents: read
   security-events: write
@@ -91,7 +90,7 @@ jobs:
     name: Docker Build
     runs-on: ubuntu-latest
     needs: build
-    if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop'
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
 
     steps:
       - name: Checkout code
