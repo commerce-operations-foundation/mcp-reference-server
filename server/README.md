@@ -183,4 +183,4 @@ See [CONTRIBUTING.md](../CONTRIBUTING.md) for guidelines.
 
 ## Support
 
-For issues and questions, visit [GitHub Issues](https://github.com/cof-org/mcp/issues).
+For issues and questions, visit [GitHub Issues](https://github.com/commerce-operations-foundation/mcp/issues).

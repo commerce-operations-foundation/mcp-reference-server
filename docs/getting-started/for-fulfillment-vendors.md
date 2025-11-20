@@ -5,7 +5,7 @@ Build a Commerce Operations Foundation adapter for your fulfillment system using
 ## 1. Set Up the Template
 
 ```bash
-git clone https://github.com/cof-org/mcp-reference-server.git
+git clone https://github.com/commerce-operations-foundation/mcp-reference-server.git
 cd mcp-reference-server
 cp -r adapter-template your-fulfillment-adapter
 cd your-fulfillment-adapter

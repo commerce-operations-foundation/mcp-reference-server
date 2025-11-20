@@ -44,7 +44,7 @@ npm test
 
 ### 3. Pick an Issue
 
-Check [open issues](https://github.com/cof-org/mcp-reference-server/issues) and look for labels like:
+Check [open issues](https://github.com/commerce-operations-foundation/mcp-reference-server/issues) and look for labels like:
 - `good first issue`
 - `help wanted`
 
@@ -149,8 +149,8 @@ Follow conventional commits:
 
 ## Communication
 
-- For bug reports and feature requests, use [GitHub Issues](https://github.com/cof-org/mcp-reference-server/issues)
-- For design proposals and discussions, use [GitHub Discussions](https://github.com/cof-org/mcp-reference-server/discussions)
+- For bug reports and feature requests, use [GitHub Issues](https://github.com/commerce-operations-foundation/mcp-reference-server/issues)
+- For design proposals and discussions, use [GitHub Discussions](https://github.com/commerce-operations-foundation/mcp-reference-server/discussions)
 
 ## Licensing
 
