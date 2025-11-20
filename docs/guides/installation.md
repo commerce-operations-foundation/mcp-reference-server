@@ -11,7 +11,7 @@ This guide explains how to run the Commerce Operations Foundation MCP Server fro
 ## Method 1: Run from Source
 
 ```bash
-git clone https://github.com/cof-org/mcp-reference-server.git
+git clone https://github.com/commerce-operations-foundation/mcp-reference-server.git
 cd mcp-reference-server/server
 npm install
 ```

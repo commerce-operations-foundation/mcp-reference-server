@@ -79,7 +79,7 @@ The standard is governed by a vendor-neutral foundation ensuring:
 
 ### For Developers
 ```bash
-git clone https://github.com/cof-org/mcp-reference-server.git
+git clone https://github.com/commerce-operations-foundation/mcp-reference-server.git
 cd mcp-reference-server/server
 npm install
 npm run build

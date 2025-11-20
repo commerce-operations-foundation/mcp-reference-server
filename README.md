@@ -58,7 +58,7 @@ JSON Schema definitions for:
 Integrate order management capabilities into your AI applications:
 
 ```bash
-git clone https://github.com/cof-org/mcp-reference-server.git
+git clone https://github.com/commerce-operations-foundation/mcp-reference-server.git
 cd mcp-reference-server/server
 npm install
 npm run build
@@ -86,7 +86,7 @@ npm run dev
 Deploy the server with your chosen adapter:
 
 ```bash
-git clone https://github.com/cof-org/mcp-reference-server.git
+git clone https://github.com/commerce-operations-foundation/mcp-reference-server.git
 cd mcp-reference-server/server
 npm install
 cp .env.example .env
