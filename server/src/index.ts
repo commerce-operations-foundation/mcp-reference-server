@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import 'dotenv/config';
 
 /**
  * Order Network eXchange MCP Server - SDK Version

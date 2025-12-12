@@ -61,7 +61,7 @@ export class RydershipAdapter implements IFulfillmentAdapter {
     const options = config.options || config;
 
     this.options = {
-      apiUrl: options.apiUrl || 'http://loclalhost:3000/api/v2',
+      apiUrl: options.apiUrl || 'http://localhost:3000/api/v2',
       apiKey: options.apiKey || '',
       workspace: options.workspace,
       timeout: options.timeout || 30000,
@@ -88,7 +88,7 @@ export class RydershipAdapter implements IFulfillmentAdapter {
 
   async connect(): Promise<void> {
     try {
-      const response = await this.client.get('/health');
+      const response = await this.client.get('/public/status');
 
       if (!response.success) {
         throw new AdapterError('Failed to connect to Rydership', ErrorCode.CONNECTION_FAILED, response);
@@ -107,9 +107,10 @@ export class RydershipAdapter implements IFulfillmentAdapter {
     console.info('Disconnected from Rydership');
   }
 
+  // TODO: Let's get this working next!
   async healthCheck(): Promise<HealthStatus> {
     try {
-      const response = await this.client.get('/health');
+      const response = await this.client.get('/public/status');
 
       return {
         status: response.success ? 'healthy' : 'unhealthy',
@@ -181,7 +182,7 @@ export class RydershipAdapter implements IFulfillmentAdapter {
     }
 
     try {
-      const response = await this.client.post<RydershipOrder>(`/orders/${input.orderId}/cancel`, {
+      const response = await this.client.post<RydershipOrder>(`/orders/${input.orderId}/call/cancel`, {
         reason: input.reason ?? 'Customer requested cancellation',
         notify_customer: input.notifyCustomer ?? false,
         notes: input.notes,
@@ -206,7 +207,7 @@ export class RydershipAdapter implements IFulfillmentAdapter {
 
   async updateOrder(input: UpdateOrderInput): Promise<OrderResult> {
     try {
-      const response = await this.client.patch<RydershipOrder>(
+      const response = await this.client.put<RydershipOrder>(
         `/orders/${input.id}`,
         this.transformOrderUpdates(input.updates)
       );
