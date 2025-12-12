@@ -30,29 +30,35 @@ export interface RydershipApiResponse<T = any> {
 }
 
 // Example: Your Fulfillment-specific order format
+
 export interface RydershipOrder {
+  customer_id: string;
   id: string;
-  number: string;
-  external_id: string;
-  status: string;
-  customer: {
-    id: string;
-    email: string;
-    first_name: string;
-    last_name: string;
-    phone?: string;
-  };
-  items: RydershipOrderItem[];
-  total: number;
-  currency: string;
+  order_orig?: string;
+  status: number;
+  order_items: RydershipOrderItem[];
   created_at: string;
   updated_at: string;
-  shipping_address?: RydershipAddress;
-  billing_address?: RydershipAddress;
+  first_name?: string; // the first name of the person the order is being shipped to
+  last_name?: string; // the last name of the person the order is being shipped to
+  full_name?: string; // the full name of the person the order is being shipped to
+  shipping_name?: string; // the order shipping name
+  shipping_company?: string; // the order shipping company
+  shipping_address_1: string; // the order shipping street address 1
+  shipping_address_2?: string; // the order shipping street address 2
+  shipping_city: string; // the order shipping city
+  shipping_state?: string; // the order shipping state
+  shipping_zip?: string; // the order shipping zip
+  shipping_country?: string; // the order shipping country
+  shipping_country_iso2: string; // the order shipping country iso2 (US, GB, CA, etc)
+  shipping_phone?: string; // the order shipping phone number
   metadata?: Record<string, any>;
+  originator: RydershipOriginator;
 }
 
 export interface RydershipOrderItem {
+  id: string;
+  order_id: string;
   sku: string;
   name: string;
   quantity: number;
@@ -60,6 +66,22 @@ export interface RydershipOrderItem {
   discount?: number;
   tax?: number;
   subtotal: number;
+}
+
+export interface RydershipOriginator {
+  id: number; // the originator id
+  originated_id: number; // the id of the object created by the originator
+  originated_type: string; // the type of object created by the originator
+  shop_id?: number; // the originator shop id
+  provider?: string; // the originator provider (shopify, magento, bandcamp, etc)
+  original_id?: string; // the originator original id (from the provider)
+  group_id?: string; // the originator group id
+  misc?: string; // miscellaneous info for the originator
+  active: boolean; // is the originator active?
+  integration_id?: number; // the originator integration id
+  created_at: string; // the originator creation date and time (ISO string)
+  updated_at: string; // the originator last update date and time (ISO string)
+  application_id?: number; // the id of the oauth application
 }
 
 export interface RydershipAddress {

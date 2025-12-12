@@ -581,23 +581,26 @@ export class RydershipAdapter implements IFulfillmentAdapter {
 
   private transformToOrder(order: RydershipOrder): Order {
     return {
-      id: order.id,
-      externalId: order.external_id,
-      name: order.number,
-      status: this.mapOrderStatus(order.status),
-      totalPrice: order.total,
-      currency: order.currency,
-      customer: this.transformToCustomerFromOrder(order),
-      shippingAddress: this.transformToAddress(order.shipping_address),
-      billingAddress: this.transformToAddress(order.billing_address),
-      lineItems: order.items.map((item, index) => this.transformToOrderLineItem(order.id, item, index)),
-      createdAt: order.created_at,
-      updatedAt: order.updated_at,
-      tenantId: this.getTenantId(),
-      customFields: this.transformMetadataToCustomFields(order.metadata),
-      orderSource: order.metadata?.source,
-      orderNote: order.metadata?.note,
+      id: order.id, // required
+      createdAt: order.created_at, // required
+      updatedAt: order.updated_at, // required
+      tenantId: order.customer_id, // required
+      name: order.order_orig,
+      externalId: order.originator?.original_id,
+      orderNote: order.public_note,
+      orderSource: order.originator?.provider,
     };
+    // NOT IMPLEMENTED
+    // status: this.mapOrderStatus(order.status),
+    // totalPrice: order.total,
+    // currency: order.currency,
+    // shippingAddress: this.transformToAddress(order.shipping_address),
+    // lineItems: order.items.map((item, index) => this.transformToOrderLineItem(order.id, item, index)),
+    // customFields: this.transformMetadataToCustomFields(order.metadata),
+
+    // WONT IMPLEMENT
+    // customer: this.transformToCustomerFromOrder(order),
+    // billingAddress: this.transformToAddress(order.billing_address),
   }
 
   private transformToCustomer(customer: RydershipCustomer): Customer {
