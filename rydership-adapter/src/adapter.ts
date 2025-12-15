@@ -29,13 +29,12 @@ import type {
   GetInventoryInput,
   GetProductsInput,
   GetProductVariantsInput,
-  GetCustomersInput,
+  // GetCustomersInput,
   GetFulfillmentsInput,
   GetReturnsInput,
   Address,
-  CustomerAddress,
   OrderLineItem,
-  CustomField,
+  // CustomField,
 } from '@cof-org/mcp';
 import { AdapterError } from '@cof-org/mcp';
 import { ApiClient } from './utils/api-client.js';
@@ -44,10 +43,9 @@ import type {
   RydershipApiResponse,
   RydershipOrder,
   RydershipProduct,
-  RydershipCustomer,
   RydershipInventory,
   RydershipShipment,
-  RydershipAddress,
+  RydershipOrderItem,
 } from './types.js';
 import { STATUS_MAP, ErrorCode } from './types.js';
 import { getErrorMessage } from './utils/type-guards.js';
@@ -281,6 +279,11 @@ export class RydershipAdapter implements IFulfillmentAdapter {
     }
   }
 
+  async getCustomers(): Promise<FulfillmentToolResult<{ customers: Customer[] }>> {
+    // Not supported in this adapter
+    return this.failure<{ customers: Customer[] }>('getCustomers is not supported by this adapter');
+  }
+
   async getOrders(input: GetOrdersInput): Promise<FulfillmentToolResult<{ orders: Order[] }>> {
     try {
       const response = await this.client.get<RydershipOrder[] | RydershipOrder>(
@@ -320,7 +323,7 @@ export class RydershipAdapter implements IFulfillmentAdapter {
   async getProducts(input: GetProductsInput): Promise<FulfillmentToolResult<{ products: Product[] }>> {
     try {
       const response = await this.client.get<RydershipProduct[] | RydershipProduct>(
-        '/products',
+        '/items',
         this.mapProductFilters(input)
       );
 
@@ -340,7 +343,7 @@ export class RydershipAdapter implements IFulfillmentAdapter {
   ): Promise<FulfillmentToolResult<{ productVariants: ProductVariant[] }>> {
     try {
       const response = await this.client.get<RydershipProduct[] | RydershipProduct>(
-        '/products',
+        '/items',
         this.mapProductVariantFilters(input)
       );
 
@@ -358,24 +361,6 @@ export class RydershipAdapter implements IFulfillmentAdapter {
         `Product variant lookup failed: ${getErrorMessage(error)}`,
         error
       );
-    }
-  }
-
-  async getCustomers(input: GetCustomersInput): Promise<FulfillmentToolResult<{ customers: Customer[] }>> {
-    try {
-      const response = await this.client.get<RydershipCustomer[] | RydershipCustomer>(
-        '/customers',
-        this.mapCustomerFilters(input)
-      );
-
-      if (!response.success) {
-        return this.failure<{ customers: Customer[] }>('Failed to fetch customers', response.error ?? response);
-      }
-
-      const customers = this.ensureArray(response.data).map((customer) => this.transformToCustomer(customer));
-      return this.success<{ customers: Customer[] }>({ customers });
-    } catch (error: unknown) {
-      return this.failure<{ customers: Customer[] }>(`Customer lookup failed: ${getErrorMessage(error)}`, error);
     }
   }
 
@@ -501,8 +486,7 @@ export class RydershipAdapter implements IFulfillmentAdapter {
         discount: 0,
         tax: 0,
       })),
-      shipping_address: this.mapOrderAddress(order.shippingAddress),
-      billing_address: this.mapOrderAddress(order.billingAddress),
+      shipping_address: this.mapOrderShippingAddress(order),
       notes: order.orderNote,
       metadata: {
         source: order.orderSource,
@@ -511,22 +495,18 @@ export class RydershipAdapter implements IFulfillmentAdapter {
     };
   }
 
-  private mapOrderAddress(address?: Address): RydershipAddress | undefined {
-    if (!address) {
-      return undefined;
-    }
-
+  private mapOrderShippingAddress(orderOrPayload: any): Record<string, unknown> {
     return {
-      street1: address.address1 ?? '',
-      street2: address.address2,
-      city: address.city ?? '',
-      state: address.stateOrProvince ?? '',
-      postal_code: address.zipCodeOrPostalCode ?? '',
-      country: address.country ?? '',
-      phone: address.phone,
-      email: address.email,
-      name: this.composeName(address.firstName, address.lastName),
-      company: address.company,
+      street1: orderOrPayload.shipping_address_1 ?? '',
+      street2: orderOrPayload.shipping_address_2,
+      city: orderOrPayload.shipping_city ?? '',
+      state: orderOrPayload.shipping_state ?? '',
+      postal_code: orderOrPayload.shipping_zip ?? '',
+      country: orderOrPayload.shipping_country_iso2 ?? '',
+      phone: orderOrPayload.shipping_phone,
+      email: orderOrPayload.email,
+      name: this.composeShippingName(orderOrPayload),
+      company: orderOrPayload.shipping_company,
     };
   }
 
@@ -540,12 +520,7 @@ export class RydershipAdapter implements IFulfillmentAdapter {
 
     const shippingAddress = this.valueOrUndefined((updates as { shippingAddress?: Address | null }).shippingAddress);
     if (shippingAddress) {
-      payload.shipping_address = this.mapOrderAddress(shippingAddress);
-    }
-
-    const billingAddress = this.valueOrUndefined((updates as { billingAddress?: Address | null }).billingAddress);
-    if (billingAddress) {
-      payload.billing_address = this.mapOrderAddress(billingAddress);
+      payload.shipping_address = this.mapOrderShippingAddress(payload);
     }
 
     const notes = this.valueOrUndefined((updates as { notes?: string | null }).notes);
@@ -573,7 +548,7 @@ export class RydershipAdapter implements IFulfillmentAdapter {
         sku: item.sku,
         quantity: item.quantity ?? 0,
       })),
-      shipping_address: this.mapOrderAddress(input.shippingAddress),
+      // shipping_address: this.mapOrderAddress(input.shippingAddress),
       incoterms: input.incoterms,
       notes: input.giftNote,
     };
@@ -581,131 +556,51 @@ export class RydershipAdapter implements IFulfillmentAdapter {
 
   private transformToOrder(order: RydershipOrder): Order {
     return {
-      id: order.id, // required
+      id: String(order.id), // required
       createdAt: order.created_at, // required
       updatedAt: order.updated_at, // required
-      tenantId: order.customer_id, // required
+      tenantId: String(order.customer_id), // required
       name: order.order_orig,
       externalId: order.originator?.original_id,
       orderNote: order.public_note,
       orderSource: order.originator?.provider,
+      status: this.mapOrderStatus(order.status),
+      currency: order.order_items?.[0]?.currency,
+      lineItems: order.order_items ? order.order_items.map((order_item) => this.transformToOrderLineItem(order_item)) : [],
+      shippingAddress: this.mapOrderShippingAddress(order),
+      customFields: this.transformMetadataToCustomFields(order),
     };
     // NOT IMPLEMENTED
-    // status: this.mapOrderStatus(order.status),
     // totalPrice: order.total,
-    // currency: order.currency,
-    // shippingAddress: this.transformToAddress(order.shipping_address),
-    // lineItems: order.items.map((item, index) => this.transformToOrderLineItem(order.id, item, index)),
-    // customFields: this.transformMetadataToCustomFields(order.metadata),
+    //
 
     // WONT IMPLEMENT
     // customer: this.transformToCustomerFromOrder(order),
     // billingAddress: this.transformToAddress(order.billing_address),
   }
 
-  private transformToCustomer(customer: RydershipCustomer): Customer {
-    return {
-      id: customer.id,
-      email: customer.email,
-      firstName: customer.first_name,
-      lastName: customer.last_name,
-      phone: customer.phone,
-      addresses: this.transformToCustomerAddresses(customer.addresses),
-      tags: customer.tags,
-      createdAt: customer.created_at ?? this.now(),
-      updatedAt: customer.updated_at ?? this.now(),
-      tenantId: this.getTenantId(),
-      status: 'active',
-      type: 'customer',
-    };
-  }
-
-  private transformToCustomerFromOrder(order: RydershipOrder): Customer {
-    return this.transformToCustomer({
-      id: order.customer.id,
-      email: order.customer.email,
-      first_name: order.customer.first_name,
-      last_name: order.customer.last_name,
-      phone: order.customer.phone,
-      created_at: order.created_at,
-      updated_at: order.updated_at,
-      addresses: [order.shipping_address, order.billing_address].filter(Boolean) as RydershipAddress[],
-      tags: [],
-      metadata: order.metadata,
-    });
-  }
-
-  private transformToCustomerAddresses(addresses?: RydershipAddress[]): CustomerAddress[] | undefined {
-    if (!addresses?.length) {
-      return undefined;
-    }
-
-    const mapped = addresses
-      .map((addr) => {
-        const address = this.transformToAddress(addr);
-        if (!address) {
-          return undefined;
-        }
-        return {
-          name: addr.name ?? this.composeName(address.firstName, address.lastName),
-          address,
-        };
-      })
-      .filter(Boolean) as CustomerAddress[];
-
-    return mapped.length ? mapped : undefined;
-  }
-
-  private transformToAddress(address?: RydershipAddress): Address | undefined {
-    if (!address) {
-      return undefined;
-    }
-
-    const { firstName, lastName } = this.splitName(address.name);
-
-    return {
-      address1: address.street1 ?? '',
-      address2: address.street2,
-      city: address.city ?? '',
-      country: address.country ?? '',
-      email: address.email,
-      firstName,
-      lastName,
-      phone: address.phone,
-      stateOrProvince: address.state ?? '',
-      zipCodeOrPostalCode: address.postal_code ?? '',
-      company: address.company,
-    };
-  }
-
   private transformToOrderLineItem(
-    orderId: string,
-    item: RydershipOrder['items'][number],
-    index: number
+    item: RydershipOrderItem
   ): OrderLineItem {
     return {
-      id: `${orderId}-${item.sku}-${index}`,
-      sku: item.sku,
-      quantity: item.quantity,
-      unitPrice: item.price,
-      totalPrice: item.subtotal ?? item.price * item.quantity,
-      name: item.name,
+      id: String(item.id),
+      sku: String(item.sku),
+      quantity: Number(item.quantity),
+      unitPrice: Number(item.price),
+      totalPrice: Number(item.price && item.quantity ? item.price * item.quantity : 0),
+      name: item.description ?? item.sku,
     };
   }
 
-  private transformMetadataToCustomFields(metadata?: Record<string, unknown>): CustomField[] | undefined {
-    if (!metadata) {
-      return undefined;
+  private transformMetadataToCustomFields(order: any): { name: string; value: string }[] | undefined {
+    // Accepts the full Order object, returns customFields array if present, else undefined
+    if (order && Array.isArray(order.customFields) && order.customFields.length > 0) {
+      // Validate each entry is an object with name and value
+      return order.customFields
+        .filter((f: any) => f && typeof f.name === 'string' && typeof f.value === 'string')
+        .map((f: any) => ({ name: f.name, value: f.value }));
     }
-
-    const entries = Object.entries(metadata)
-      .filter(([, value]) => value !== undefined && value !== null)
-      .map(([name, value]) => ({
-        name,
-        value: String(value),
-      }));
-
-    return entries.length ? entries : undefined;
+    return undefined;
   }
 
   private transformToFulfillment(shipment: RydershipShipment): Fulfillment {
@@ -717,7 +612,7 @@ export class RydershipAdapter implements IFulfillmentAdapter {
       shippingCarrier: shipment.carrier,
       shippingClass: shipment.service,
       status: shipment.status,
-      shippingAddress: this.transformToAddress(shipment.to_address),
+      // shippingAddress: this.transformToAddress(shipment.to_address),
       lineItems: shipment.items.map((item, index) => ({
         id: `${shipment.id}-${item.sku}-${index}`,
         sku: item.sku,
@@ -760,30 +655,45 @@ export class RydershipAdapter implements IFulfillmentAdapter {
 
   private transformToProduct(product: RydershipProduct): Product {
     return {
-      id: product.id,
+      id: String(product.id),
       externalId: product.sku,
-      name: product.name,
+      name: product.title || '',
       description: product.description,
-      status: product.status,
-      options: [],
-      tags: product.attributes ? Object.keys(product.attributes) : undefined,
+      status: this.mapProductStatus(product),
+      options: [], // NOT IMPLEMENTED
       createdAt: product.created_at,
       updatedAt: product.updated_at,
-      tenantId: this.getTenantId(),
+      tenantId: String(product.customer_id),
+      imageURLs: product.image_originator_url ? [product.image_originator_url] : undefined,
     };
+    // NOT IMPLEMENTED
+    // tags: product.attributes ? Object.keys(product.attributes) : undefined,
+    
   }
 
   private transformToProductVariant(product: RydershipProduct): ProductVariant {
     return {
-      id: `${product.id}-default`,
-      productId: product.id,
-      sku: product.sku,
+      id: String(product.id),
+      productId: String(product.id),
+      sku: product.sku || '',
       title: product.name,
       price: product.price,
-      currency: 'USD',
+      currency: product.currency || 'USD',
+      //upc: product.upc || undefined,
+      barcode: product.scancode || undefined,
       createdAt: product.created_at,
       updatedAt: product.updated_at,
-      tenantId: this.getTenantId(),
+      tenantId: String(product.customer_id),
+      weight: typeof product.weight === 'number'
+        ? { value: product.weight, unit: 'lb' }
+        : undefined,
+      dimensions:  {
+        length: product.length ?? 0,
+        width: product.width ?? 0,
+        height: product.height ?? 0,
+        unit: 'in',
+      },
+      imageURLs: product.image_originator_url ? [product.image_originator_url] : undefined,
     };
   }
 
@@ -835,19 +745,6 @@ export class RydershipAdapter implements IFulfillmentAdapter {
     };
   }
 
-  private mapCustomerFilters(input: GetCustomersInput): Record<string, unknown> {
-    return {
-      ids: input.ids,
-      emails: input.emails,
-      updated_at_min: input.updatedAtMin,
-      updated_at_max: input.updatedAtMax,
-      created_at_min: input.createdAtMin,
-      created_at_max: input.createdAtMax,
-      limit: input.pageSize,
-      offset: input.skip,
-    };
-  }
-
   private mapFulfillmentFilters(input: GetFulfillmentsInput): Record<string, unknown> {
     return {
       ids: input.ids,
@@ -877,36 +774,31 @@ export class RydershipAdapter implements IFulfillmentAdapter {
     return reverse[status] ?? status;
   }
 
-  private mapOrderStatus(status: string): string {
-    return STATUS_MAP[status] ?? status;
+  private mapOrderStatus(status: number): string {
+    return STATUS_MAP[status] ?? String(status);
   }
 
-  private composeName(firstName?: string | null, lastName?: string | null): string | undefined {
-    const parts = [firstName, lastName]
+  private mapProductStatus(product: RydershipProduct): string | undefined {
+    if (product.active === false) {
+      return 'inactive'; 
+    } else if (product.available === false) {
+      return 'unavailable';
+    } else {
+      return 'active';
+    }
+  }
+  private composeShippingName(order: RydershipOrder): string | undefined {
+    if (order.shipping_name && order.shipping_name.trim()) {
+      return order.shipping_name.trim();
+    }
+    if (order.full_name && order.full_name.trim()) {
+      return order.full_name.trim();
+    }
+    const parts = [order.first_name, order.last_name]
       .filter((value): value is string => Boolean(value && value.trim()))
       .map((value) => value.trim());
 
     return parts.length ? parts.join(' ') : undefined;
-  }
-
-  private splitName(name?: string | null): { firstName?: string; lastName?: string } {
-    if (!name) {
-      return {};
-    }
-
-    const parts = name.trim().split(/\s+/);
-    if (!parts.length) {
-      return {};
-    }
-
-    if (parts.length === 1) {
-      return { firstName: parts[0] };
-    }
-
-    return {
-      firstName: parts.shift(),
-      lastName: parts.join(' '),
-    };
   }
 
   private valueOrUndefined<T>(value: T | null | undefined): T | undefined {
