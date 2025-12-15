@@ -5,8 +5,8 @@
  * Replace with actual tests for your Fulfillment integration.
  */
 
-import { jest } from '@jest/globals';
-import { YourFulfillmentAdapter } from '../src/adapter.js';
+import { beforeEach, describe, expect, it, jest } from '@jest/globals';
+import { RydershipAdapter } from '../src/adapter.js';
 import { ApiClient } from '../src/utils/api-client.js';
 import type {
   CreateSalesOrderInput,
@@ -15,9 +15,13 @@ import type {
   GetOrdersInput,
   GetInventoryInput,
 } from '@cof-org/mcp';
+import fs from 'fs';
+import path from 'path';
+import { RydershipOrder } from '../src/types';
 
-describe('YourFulfillmentAdapter', () => {
-  let adapter: YourFulfillmentAdapter;
+
+describe('RydershipAdapter', () => {
+  let adapter: RydershipAdapter;
   let mockApiClient: ApiClient;
   let getSpy: jest.MockedFunction<any>;
   let postSpy: jest.MockedFunction<any>;
@@ -25,7 +29,7 @@ describe('YourFulfillmentAdapter', () => {
 
   beforeEach(() => {
     // Create adapter instance
-    adapter = new YourFulfillmentAdapter({
+    adapter = new RydershipAdapter({
       apiUrl: 'https://api.test.yourfulfillment.com',
       apiKey: 'test-api-key',
       workspace: 'test-workspace',
@@ -39,6 +43,13 @@ describe('YourFulfillmentAdapter', () => {
     postSpy = jest.spyOn(mockApiClient, 'post') as unknown as jest.MockedFunction<any>;
     patchSpy = jest.spyOn(mockApiClient, 'patch') as unknown as jest.MockedFunction<any>;
   });
+  
+
+    // Helper to load fixture JSON
+    function loadFixture(name: string) {
+      const filePath = path.resolve(__dirname, 'fixtures/v2', name);
+      return JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+    }
 
   describe('Lifecycle Methods', () => {
     describe('connect', () => {
@@ -47,12 +58,37 @@ describe('YourFulfillmentAdapter', () => {
           success: true,
           data: { status: 'healthy' },
         });
+  
+    describe('Transformation Logic', () => {
+      it('should transform a shipped order fixture to MCP Order shape', () => {
+        const orderFixture = loadFixture('order.shipped.json') as RydershipOrder;
+        // @ts-ignore: access private for test
+        const mcpOrder = adapter.transformToOrder(orderFixture);
+        expect(mcpOrder).toBeDefined();
+        expect(mcpOrder.status).toBe('Shipped');
+        expect(mcpOrder.lineItems).toBeInstanceOf(Array);
+        expect(mcpOrder.shippingAddress).toBeDefined();
+        expect(mcpOrder.customer).toBeDefined();
+        expect(mcpOrder.id).toBeDefined();
+        // Add more assertions as needed for mapped fields
+      });
+  
+      it('should transform a product fixture to MCP Product shape', () => {
+        // You can add a product fixture and test here if available
+        // Example:
+        // const productFixture = loadFixture('product.json') as RydershipProduct;
+        // @ts-ignore: access private for test
+        // const mcpProduct = adapter.transformToProduct(productFixture);
+        // expect(mcpProduct).toBeDefined();
+      });
+    });
 
         await expect(adapter.connect()).resolves.not.toThrow();
         expect(getSpy).toHaveBeenCalledWith('/health');
       });
 
       it('should throw error when API is unreachable', async () => {
+    // ...existing code for lifecycle, order actions, query operations, and error handling...
         getSpy.mockResolvedValue({
           success: false,
           error: { code: 'CONNECTION_FAILED', message: 'Connection failed' },
@@ -427,62 +463,63 @@ describe('YourFulfillmentAdapter', () => {
         }
       });
     });
+    
+    // TODO
+    // describe('getInventory', () => {
+    //   it('should get inventory for SKUs', async () => {
+    //     getSpy.mockResolvedValue({
+    //       success: true,
+    //       data: [
+    //         {
+    //           sku: 'PROD-001',
+    //           available: 100,
+    //           reserved: 10,
+    //           total: 110,
+    //           warehouse_locations: [
+    //             { location_id: 'LOC-001', available: 60, reserved: 5 },
+    //             { location_id: 'LOC-002', available: 40, reserved: 5 },
+    //           ],
+    //           updated_at: '2024-01-01T00:00:00Z',
+    //         },
+    //       ],
+    //     });
 
-    describe('getInventory', () => {
-      it('should get inventory for SKUs', async () => {
-        getSpy.mockResolvedValue({
-          success: true,
-          data: [
-            {
-              sku: 'PROD-001',
-              available: 100,
-              reserved: 10,
-              total: 110,
-              warehouse_locations: [
-                { location_id: 'LOC-001', available: 60, reserved: 5 },
-                { location_id: 'LOC-002', available: 40, reserved: 5 },
-              ],
-              updated_at: '2024-01-01T00:00:00Z',
-            },
-          ],
-        });
+    //     const input: GetInventoryInput = {
+    //       skus: ['PROD-001'],
+    //     };
 
-        const input: GetInventoryInput = {
-          skus: ['PROD-001'],
-        };
+    //     const result = await adapter.getInventory(input);
 
-        const result = await adapter.getInventory(input);
+    //     expect(result.success).toBe(true);
+    //     if (result.success) {
+    //       expect(result.inventory.length).toBeGreaterThan(0);
+    //       expect(result.inventory[0]?.sku).toBe('PROD-001');
+    //       expect(result.inventory[0]?.available).toBe(60);
+    //       expect(result.inventory[0]?.locationId).toBe('LOC-001');
+    //     }
+    //   });
 
-        expect(result.success).toBe(true);
-        if (result.success) {
-          expect(result.inventory.length).toBeGreaterThan(0);
-          expect(result.inventory[0]?.sku).toBe('PROD-001');
-          expect(result.inventory[0]?.available).toBe(60);
-          expect(result.inventory[0]?.locationId).toBe('LOC-001');
-        }
-      });
+    //   it('should handle inventory lookup failure', async () => {
+    //     getSpy.mockResolvedValue({
+    //       success: false,
+    //       error: {
+    //         code: 'NOT_FOUND',
+    //         message: 'SKU not found',
+    //       },
+    //     });
 
-      it('should handle inventory lookup failure', async () => {
-        getSpy.mockResolvedValue({
-          success: false,
-          error: {
-            code: 'NOT_FOUND',
-            message: 'SKU not found',
-          },
-        });
+    //     const input: GetInventoryInput = {
+    //       skus: ['INVALID-SKU'],
+    //     };
 
-        const input: GetInventoryInput = {
-          skus: ['INVALID-SKU'],
-        };
+    //     const result = await adapter.getInventory(input);
 
-        const result = await adapter.getInventory(input);
-
-        expect(result.success).toBe(false);
-        if (!result.success) {
-          expect(result.error).toBeDefined();
-        }
-      });
-    });
+    //     expect(result.success).toBe(false);
+    //     if (!result.success) {
+    //       expect(result.error).toBeDefined();
+    //     }
+    //   });
+    // });
   });
 
   describe('Error Handling', () => {

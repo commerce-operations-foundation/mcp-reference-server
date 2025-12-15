@@ -43,8 +43,8 @@ import type {
   RydershipApiResponse,
   RydershipOrder,
   RydershipProduct,
-  RydershipInventory,
-  RydershipShipment,
+  // RydershipInventory,
+  // RydershipShipment,
   RydershipOrderItem,
 } from './types.js';
 import { STATUS_MAP, ErrorCode } from './types.js';
@@ -226,25 +226,29 @@ export class RydershipAdapter implements IFulfillmentAdapter {
     }
   }
 
-  async fulfillOrder(input: FulfillOrderInput): Promise<FulfillmentToolResult<{ fulfillment: Fulfillment }>> {
-    if (!input.orderId) {
-      return this.failure<{ fulfillment: Fulfillment }>('orderId is required to fulfill an order');
-    }
+  // TODO
+  async fulfillOrder(_input: FulfillOrderInput): Promise<FulfillmentToolResult<{ fulfillment: Fulfillment }>> {
+    // Not supported in this adapter
+    return this.failure<{ fulfillment: Fulfillment }>('fulfillOrder is not supported by this adapter');
 
-    try {
-      const response = await this.client.post<RydershipShipment>(
-        `/orders/${input.orderId}/shipments`,
-        this.transformFulfillOrderInput(input)
-      );
+    // if (!input.orderId) {
+    //   return this.failure<{ fulfillment: Fulfillment }>('orderId is required to fulfill an order');
+    // }
 
-      if (!response.success || !response.data) {
-        return this.failure<{ fulfillment: Fulfillment }>('Failed to create fulfillment', response.error ?? response);
-      }
+    // try {
+    //   const response = await this.client.post<RydershipShipment>(
+    //     `/orders/${input.orderId}/shipments`,
+    //     this.transformFulfillOrderInput(input)
+    //   );
 
-      return this.success<{ fulfillment: Fulfillment }>({ fulfillment: this.transformToFulfillment(response.data) });
-    } catch (error: unknown) {
-      return this.failure<{ fulfillment: Fulfillment }>(`Fulfillment failed: ${getErrorMessage(error)}`, error);
-    }
+    //   if (!response.success || !response.data) {
+    //     return this.failure<{ fulfillment: Fulfillment }>('Failed to create fulfillment', response.error ?? response);
+    //   }
+
+    //   return this.success<{ fulfillment: Fulfillment }>({ fulfillment: this.transformToFulfillment(response.data) });
+    // } catch (error: unknown) {
+    //   return this.failure<{ fulfillment: Fulfillment }>(`Fulfillment failed: ${getErrorMessage(error)}`, error);
+    // }
   }
 
   async createReturn(input: CreateReturnInput): Promise<ReturnResult> {
@@ -302,22 +306,25 @@ export class RydershipAdapter implements IFulfillmentAdapter {
     }
   }
 
-  async getInventory(input: GetInventoryInput): Promise<FulfillmentToolResult<{ inventory: InventoryItem[] }>> {
-    try {
-      const response = await this.client.get<RydershipInventory[] | RydershipInventory>(
-        '/inventory',
-        this.mapInventoryFilters(input)
-      );
+  async getInventory(_input: GetInventoryInput): Promise<FulfillmentToolResult<{ inventory: InventoryItem[] }>> {
+    // Not supported in this adapter
+    return this.failure<{ inventory: InventoryItem[] }>('getInventory is not supported by this adapter');
 
-      if (!response.success) {
-        return this.failure<{ inventory: InventoryItem[] }>('Failed to fetch inventory', response.error ?? response);
-      }
+    // try {
+    //   const response = await this.client.get<RydershipInventory[] | RydershipInventory>(
+    //     '/inventory',
+    //     this.mapInventoryFilters(input)
+    //   );
 
-      const inventory = this.ensureArray(response.data).flatMap((item) => this.transformToInventoryItems(item));
-      return this.success<{ inventory: InventoryItem[] }>({ inventory });
-    } catch (error: unknown) {
-      return this.failure<{ inventory: InventoryItem[] }>(`Inventory lookup failed: ${getErrorMessage(error)}`, error);
-    }
+    //   if (!response.success) {
+    //     return this.failure<{ inventory: InventoryItem[] }>('Failed to fetch inventory', response.error ?? response);
+    //   }
+
+    //   const inventory = this.ensureArray(response.data).flatMap((item) => this.transformToInventoryItems(item));
+    //   return this.success<{ inventory: InventoryItem[] }>({ inventory });
+    // } catch (error: unknown) {
+    //   return this.failure<{ inventory: InventoryItem[] }>(`Inventory lookup failed: ${getErrorMessage(error)}`, error);
+    // }
   }
 
   async getProducts(input: GetProductsInput): Promise<FulfillmentToolResult<{ products: Product[] }>> {
@@ -364,28 +371,31 @@ export class RydershipAdapter implements IFulfillmentAdapter {
     }
   }
 
-  async getFulfillments(input: GetFulfillmentsInput): Promise<FulfillmentToolResult<{ fulfillments: Fulfillment[] }>> {
-    try {
-      const response = await this.client.get<RydershipShipment[] | RydershipShipment>(
-        '/shipments',
-        this.mapFulfillmentFilters(input)
-      );
+  async getFulfillments(_input: GetFulfillmentsInput): Promise<FulfillmentToolResult<{ fulfillments: Fulfillment[] }>> {
+        // Not supported in this adapter
+    return this.failure<{ fulfillments: Fulfillment[] }>('getInventory is not supported by this adapter');
 
-      if (!response.success) {
-        return this.failure<{ fulfillments: Fulfillment[] }>(
-          'Failed to fetch fulfillments',
-          response.error ?? response
-        );
-      }
+    // try {
+    //   const response = await this.client.get<RydershipShipment[] | RydershipShipment>(
+    //     '/shipments',
+    //     this.mapFulfillmentFilters(input)
+    //   );
 
-      const fulfillments = this.ensureArray(response.data).map((shipment) => this.transformToFulfillment(shipment));
-      return this.success<{ fulfillments: Fulfillment[] }>({ fulfillments });
-    } catch (error: unknown) {
-      return this.failure<{ fulfillments: Fulfillment[] }>(
-        `Fulfillment lookup failed: ${getErrorMessage(error)}`,
-        error
-      );
-    }
+    //   if (!response.success) {
+    //     return this.failure<{ fulfillments: Fulfillment[] }>(
+    //       'Failed to fetch fulfillments',
+    //       response.error ?? response
+    //     );
+    //   }
+
+    //   const fulfillments = this.ensureArray(response.data).map((shipment) => this.transformToFulfillment(shipment));
+    //   return this.success<{ fulfillments: Fulfillment[] }>({ fulfillments });
+    // } catch (error: unknown) {
+    //   return this.failure<{ fulfillments: Fulfillment[] }>(
+    //     `Fulfillment lookup failed: ${getErrorMessage(error)}`,
+    //     error
+    //   );
+    // }
   }
 
   async getReturns(input: GetReturnsInput): Promise<FulfillmentToolResult<{ returns: Return[] }>> {
@@ -536,23 +546,24 @@ export class RydershipAdapter implements IFulfillmentAdapter {
     return payload;
   }
 
-  private transformFulfillOrderInput(input: FulfillOrderInput): Record<string, unknown> {
-    return {
-      tracking_number: input.trackingNumbers?.[0] ?? undefined,
-      carrier: input.shippingCarrier,
-      service: input.shippingClass,
-      location_id: input.locationId,
-      shipped_at: input.shipByDate ?? this.now(),
-      expected_delivery: input.expectedDeliveryDate,
-      items: input.lineItems?.map((item) => ({
-        sku: item.sku,
-        quantity: item.quantity ?? 0,
-      })),
-      // shipping_address: this.mapOrderAddress(input.shippingAddress),
-      incoterms: input.incoterms,
-      notes: input.giftNote,
-    };
-  }
+  // TODO
+  // private transformFulfillOrderInput(input: FulfillOrderInput): Record<string, unknown> {
+  //   return {
+  //     tracking_number: input.trackingNumbers?.[0] ?? undefined,
+  //     carrier: input.shippingCarrier,
+  //     service: input.shippingClass,
+  //     location_id: input.locationId,
+  //     shipped_at: input.shipByDate ?? this.now(),
+  //     expected_delivery: input.expectedDeliveryDate,
+  //     items: input.lineItems?.map((item) => ({
+  //       sku: item.sku,
+  //       quantity: item.quantity ?? 0,
+  //     })),
+  //     // shipping_address: this.mapOrderAddress(input.shippingAddress),
+  //     incoterms: input.incoterms,
+  //     notes: input.giftNote,
+  //   };
+  // }
 
   private transformToOrder(order: RydershipOrder): Order {
     return {
@@ -603,55 +614,57 @@ export class RydershipAdapter implements IFulfillmentAdapter {
     return undefined;
   }
 
-  private transformToFulfillment(shipment: RydershipShipment): Fulfillment {
-    return {
-      id: shipment.id,
-      externalId: shipment.tracking_number,
-      orderId: shipment.order_id,
-      trackingNumbers: shipment.tracking_number ? [shipment.tracking_number] : [],
-      shippingCarrier: shipment.carrier,
-      shippingClass: shipment.service,
-      status: shipment.status,
-      // shippingAddress: this.transformToAddress(shipment.to_address),
-      lineItems: shipment.items.map((item, index) => ({
-        id: `${shipment.id}-${item.sku}-${index}`,
-        sku: item.sku,
-        quantity: item.quantity,
-      })),
-      createdAt: shipment.shipped_at ?? this.now(),
-      updatedAt: shipment.delivered_at ?? shipment.shipped_at ?? this.now(),
-      tenantId: this.getTenantId(),
-      expectedDeliveryDate: shipment.delivered_at,
-      expectedShipDate: shipment.shipped_at,
-      shippingNote: shipment.tracking_url,
-    };
-  }
+  // TODO
+  // private transformToFulfillment(shipment: RydershipShipment): Fulfillment {
+  //   return {
+  //     id: shipment.id,
+  //     externalId: shipment.tracking_number,
+  //     orderId: shipment.order_id,
+  //     trackingNumbers: shipment.tracking_number ? [shipment.tracking_number] : [],
+  //     shippingCarrier: shipment.carrier,
+  //     shippingClass: shipment.service,
+  //     status: shipment.status,
+  //     // shippingAddress: this.transformToAddress(shipment.to_address),
+  //     lineItems: shipment.items.map((item, index) => ({
+  //       id: `${shipment.id}-${item.sku}-${index}`,
+  //       sku: item.sku,
+  //       quantity: item.quantity,
+  //     })),
+  //     createdAt: shipment.shipped_at ?? this.now(),
+  //     updatedAt: shipment.delivered_at ?? shipment.shipped_at ?? this.now(),
+  //     // tenantId: this.getTenantId(), // NOT PROVIDED IN SHIPMENT
+  //     expectedDeliveryDate: shipment.delivered_at,
+  //     expectedShipDate: shipment.shipped_at,
+  //     shippingNote: shipment.tracking_url,
+  //   };
+  // }
 
-  private transformToInventoryItems(inventory: RydershipInventory): InventoryItem[] {
-    const tenantId = this.getTenantId();
+  // TODO
+  // private transformToInventoryItems(inventory: RydershipInventory): InventoryItem[] {
+  //   const tenantId = inventory.customer_id ? String(inventory.customer_id) : '';
 
-    if (inventory.warehouse_locations?.length) {
-      return inventory.warehouse_locations.map((location) => ({
-        locationId: location.location_id,
-        sku: inventory.sku,
-        available: location.available,
-        onHand: location.available + location.reserved,
-        unavailable: location.reserved,
-        tenantId,
-      }));
-    }
+  //   if (inventory.warehouse_locations?.length) {
+  //     return inventory.warehouse_locations.map((location) => ({
+  //       locationId: location.location_id,
+  //       sku: inventory.sku,
+  //       available: location.available,
+  //       onHand: location.available + location.reserved,
+  //       unavailable: location.reserved,
+  //       tenantId,
+  //     }));
+  //   }
 
-    return [
-      {
-        locationId: '',
-        sku: inventory.sku,
-        available: inventory.available,
-        onHand: inventory.total,
-        unavailable: inventory.total - inventory.available,
-        tenantId,
-      },
-    ];
-  }
+  //   return [
+  //     {
+  //       locationId: '',
+  //       sku: inventory.sku,
+  //       available: inventory.available,
+  //       onHand: inventory.total,
+  //       unavailable: inventory.total - inventory.available,
+  //       tenantId,
+  //     },
+  //   ];
+  // }
 
   private transformToProduct(product: RydershipProduct): Product {
     return {
@@ -698,65 +711,76 @@ export class RydershipAdapter implements IFulfillmentAdapter {
   }
 
   private mapOrderFilters(input: GetOrdersInput): Record<string, unknown> {
+    const search = {
+      ids_in: input.ids,
+      originator_original_id_in: input.externalIds,
+      status_in: input.statuses,
+      updated_at_gteq: input.updatedAtMin,
+      updated_at_lteq: input.updatedAtMax,
+      created_at_gteq: input.createdAtMin,
+      created_at_lteq: input.createdAtMax
+    };
+
     return {
-      ids: input.ids,
-      external_ids: input.externalIds,
-      statuses: input.statuses,
-      updated_at_min: input.updatedAtMin,
-      updated_at_max: input.updatedAtMax,
-      created_at_min: input.createdAtMin,
-      created_at_max: input.createdAtMax,
-      limit: input.pageSize,
-      offset: input.skip,
+      search: JSON.stringify(search),
+      per_page: input.pageSize,
+      page: input.skip,
     };
   }
 
-  private mapInventoryFilters(input: GetInventoryInput): Record<string, unknown> {
-    return {
-      skus: input.skus,
-      location_ids: input.locationIds,
-    };
-  }
+  // TODO
+  // private mapInventoryFilters(input: GetInventoryInput): Record<string, unknown> {
+  //   return {
+  //     skus: input.skus,
+  //     location_ids: input.locationIds,
+  //   };
+  // }
 
   private mapProductFilters(input: GetProductsInput): Record<string, unknown> {
+    const search = {
+      ids_in: input.ids,
+      updated_at_gteq: input.updatedAtMin,
+      updated_at_lteq: input.updatedAtMax,
+      created_at_gteq: input.createdAtMin,
+      created_at_lteq: input.createdAtMax
+    };
+
     return {
-      ids: input.ids,
-      skus: input.skus,
-      updated_at_min: input.updatedAtMin,
-      updated_at_max: input.updatedAtMax,
-      created_at_min: input.createdAtMin,
-      created_at_max: input.createdAtMax,
-      limit: input.pageSize,
-      offset: input.skip,
+      search: JSON.stringify(search),
+      per_page: input.pageSize,
+      page: input.skip,
     };
   }
 
   private mapProductVariantFilters(input: GetProductVariantsInput): Record<string, unknown> {
+    const search = {
+      ids_in: input.ids,
+      updated_at_gteq: input.updatedAtMin,
+      updated_at_lteq: input.updatedAtMax,
+      created_at_gteq: input.createdAtMin,
+      created_at_lteq: input.createdAtMax
+    };
+
     return {
-      ids: input.ids,
-      skus: input.skus,
-      product_ids: input.productIds,
-      updated_at_min: input.updatedAtMin,
-      updated_at_max: input.updatedAtMax,
-      created_at_min: input.createdAtMin,
-      created_at_max: input.createdAtMax,
-      limit: input.pageSize,
-      offset: input.skip,
+      search: JSON.stringify(search),
+      per_page: input.pageSize,
+      page: input.skip,
     };
   }
 
-  private mapFulfillmentFilters(input: GetFulfillmentsInput): Record<string, unknown> {
-    return {
-      ids: input.ids,
-      order_ids: input.orderIds,
-      updated_at_min: input.updatedAtMin,
-      updated_at_max: input.updatedAtMax,
-      created_at_min: input.createdAtMin,
-      created_at_max: input.createdAtMax,
-      limit: input.pageSize,
-      offset: input.skip,
-    };
-  }
+  // TODO
+  // private mapFulfillmentFilters(input: GetFulfillmentsInput): Record<string, unknown> {
+  //   return {
+  //     ids: input.ids,
+  //     order_ids: input.orderIds,
+  //     updated_at_min: input.updatedAtMin,
+  //     updated_at_max: input.updatedAtMax,
+  //     created_at_min: input.createdAtMin,
+  //     created_at_max: input.createdAtMax,
+  //     limit: input.pageSize,
+  //     offset: input.skip,
+  //   };
+  // }
 
   private async fetchOrderById(orderId: string): Promise<RydershipApiResponse<RydershipOrder>> {
     return this.client.get<RydershipOrder>(`/orders/${orderId}`);
@@ -803,10 +827,6 @@ export class RydershipAdapter implements IFulfillmentAdapter {
 
   private valueOrUndefined<T>(value: T | null | undefined): T | undefined {
     return value ?? undefined;
-  }
-
-  private getTenantId(): string {
-    return this.options.workspace ?? 'default-workspace';
   }
 
   private now(): string {
