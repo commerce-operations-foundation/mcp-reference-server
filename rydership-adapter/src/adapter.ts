@@ -180,7 +180,7 @@ export class RydershipAdapter implements IFulfillmentAdapter {
     }
 
     try {
-      const response = await this.client.post<RydershipOrder>(`/orders/${input.orderId}/call/cancel`, {
+      const response = await this.client.put<RydershipOrder>(`/orders/${input.orderId}/call/cancel`, {
         reason: input.reason ?? 'Customer requested cancellation',
         notify_customer: input.notifyCustomer ?? false,
         notes: input.notes,

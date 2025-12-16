@@ -9,8 +9,8 @@ import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 import { RydershipAdapter } from '../src/adapter.js';
 import { ApiClient } from '../src/utils/api-client.js';
 import type {
-  // CreateSalesOrderInput,
-  // CancelOrderInput,
+  CreateSalesOrderInput,
+  CancelOrderInput,
   UpdateOrderInput,
   GetOrdersInput,
   // GetInventoryInput,
@@ -105,180 +105,132 @@ describe('RydershipAdapter', () => {
   });
 
   describe('Order Actions', () => {
-    // describe('createSalesOrder', () => {
-    //   const validOrderInput: CreateSalesOrderInput = {
-    //     order: {
-    //       lineItems: [
-    //         {
-    //           sku: 'PROD-001',
-    //           quantity: 2,
-    //           unitPrice: 29.99,
-    //           name: 'Test Product',
-    //         },
-    //       ],
-    //       customer: {
-    //         id: 'CUST-001',
-    //         email: 'test@example.com',
-    //         firstName: 'John',
-    //         lastName: 'Doe',
-    //         phone: '+1234567890',
-    //         createdAt: '2024-01-01T00:00:00Z',
-    //         updatedAt: '2024-01-01T00:00:00Z',
-    //         tenantId: 'test-tenant',
-    //       },
-    //       shippingAddress: {
-    //         firstName: 'John',
-    //         lastName: 'Doe',
-    //         address1: '123 Main St',
-    //         address2: 'Apt 4',
-    //         city: 'New York',
-    //         stateOrProvince: 'NY',
-    //         zipCodeOrPostalCode: '10001',
-    //         country: 'US',
-    //         phone: '+1234567890',
-    //       },
-    //       billingAddress: {
-    //         firstName: 'John',
-    //         lastName: 'Doe',
-    //         address1: '123 Main St',
-    //         address2: 'Apt 4',
-    //         city: 'New York',
-    //         stateOrProvince: 'NY',
-    //         zipCodeOrPostalCode: '10001',
-    //         country: 'US',
-    //         phone: '+1234567890',
-    //       },
-    //       totalPrice: 57.48,
-    //       currency: 'USD',
-    //       orderNote: 'Please handle with care',
-    //       orderSource: 'website',
-    //       name: 'ORD-2024-001',
-    //       status: 'pending',
-    //     },
-    //   };
+    describe('createSalesOrder', () => {
+      const validOrderInput: CreateSalesOrderInput = {
+        order: {
+          lineItems: [
+            {
+              sku: 'PROD-001',
+              quantity: 2,
+              unitPrice: 29.99,
+              name: 'Test Product',
+            },
+          ],
+          customer: {
+            id: 'CUST-001',
+            email: 'test@example.com',
+            firstName: 'John',
+            lastName: 'Doe',
+            phone: '+1234567890',
+            createdAt: '2024-01-01T00:00:00Z',
+            updatedAt: '2024-01-01T00:00:00Z',
+            tenantId: 'test-tenant',
+          },
+          shippingAddress: {
+            firstName: 'John',
+            lastName: 'Doe',
+            address1: '123 Main St',
+            address2: 'Apt 4',
+            city: 'New York',
+            stateOrProvince: 'NY',
+            zipCodeOrPostalCode: '10001',
+            country: 'US',
+            phone: '+1234567890',
+          },
+          billingAddress: {
+            firstName: 'John',
+            lastName: 'Doe',
+            address1: '123 Main St',
+            address2: 'Apt 4',
+            city: 'New York',
+            stateOrProvince: 'NY',
+            zipCodeOrPostalCode: '10001',
+            country: 'US',
+            phone: '+1234567890',
+          },
+          totalPrice: 57.48,
+          currency: 'USD',
+          orderNote: 'Please handle with care',
+          orderSource: 'website',
+          name: 'ORD-2024-001',
+          status: 'pending',
+        },
+      };
 
-    //   it('should create sales order successfully', async () => {
-    //     postSpy.mockResolvedValue({
-    //       success: true,
-    //       data: {
-    //         id: 'ORDER-001',
-    //         number: 'ORD-2024-001',
-    //         external_id: 'EXT-001',
-    //         status: 'new',
-    //         customer: {
-    //           id: 'CUST-001',
-    //           email: 'test@example.com',
-    //           first_name: 'John',
-    //           last_name: 'Doe',
-    //         },
-    //         items: [
-    //           {
-    //             sku: 'PROD-001',
-    //             name: 'Test Product',
-    //             quantity: 2,
-    //             price: 29.99,
-    //             subtotal: 59.98,
-    //           },
-    //         ],
-    //         total: 57.48,
-    //         currency: 'USD',
-    //         created_at: '2024-01-01T00:00:00Z',
-    //         updated_at: '2024-01-01T00:00:00Z',
-    //         shipping_address: {},
-    //         billing_address: {},
-    //       },
-    //     });
+      it('should create sales order successfully', async () => {
+        const orderFixture = loadFixture('order.processing.json');
+        postSpy.mockResolvedValue({ success: true, data: orderFixture });
 
-    //     const result = await adapter.createSalesOrder(validOrderInput);
+        const result = await adapter.createSalesOrder(validOrderInput);
 
-    //     expect(result.success).toBe(true);
-    //     if (result.success) {
-    //       expect(result.order.id).toBe('ORDER-001');
-    //       expect(result.order.name).toBe('ORD-2024-001');
-    //       expect(result.order.status).toBeDefined();
-    //     }
-    //     expect(postSpy).toHaveBeenCalledWith('/orders', expect.any(Object));
-    //   });
+        expect(result.success).toBe(true);
+        if (result.success) {
+          expect(result.order.id).toBe('123456');
+          expect(result.order.name).toBe('ORD-2024-001');
+          expect(result.order.status).toBeDefined();
+        }
+        expect(postSpy).toHaveBeenCalledWith('/orders', expect.any(Object));
+      });
 
-    //   it('should handle order creation failure', async () => {
-    //     postSpy.mockResolvedValue({
-    //       success: false,
-    //       error: {
-    //         code: 'VALIDATION_ERROR',
-    //         message: 'Invalid order data',
-    //       },
-    //     });
+      it('should handle order creation failure', async () => {
+        postSpy.mockResolvedValue({
+          success: false,
+          error: {
+            code: 'VALIDATION_ERROR',
+            message: 'Invalid order data',
+          },
+        });
 
-    //     const result = await adapter.createSalesOrder(validOrderInput);
+        const result = await adapter.createSalesOrder(validOrderInput);
 
-    //     expect(result.success).toBe(false);
-    //     if (!result.success) {
-    //       expect(result.error).toBeDefined();
-    //     }
-    //   });
-    // });
+        expect(result.success).toBe(false);
+        if (!result.success) {
+          expect(result.error).toBeDefined();
+        }
+      });
+    });
 
-    // describe('cancelOrder', () => {
-    //   it('should cancel order successfully', async () => {
-    //     postSpy.mockResolvedValue({
-    //       success: true,
-    //       data: {
-    //         id: 'ORDER-001',
-    //         number: 'ORD-2024-001',
-    //         external_id: 'EXT-001',
-    //         status: 'cancelled',
-    //         customer: {
-    //           id: 'CUST-001',
-    //           email: 'test@example.com',
-    //           first_name: 'John',
-    //           last_name: 'Doe',
-    //         },
-    //         items: [],
-    //         total: 100.0,
-    //         currency: 'USD',
-    //         created_at: '2024-01-01T00:00:00Z',
-    //         updated_at: '2024-01-01T00:00:00Z',
-    //         shipping_address: {},
-    //         billing_address: {},
-    //       },
-    //     });
+    describe('cancelOrder', () => {
+      it('should cancel order successfully', async () => {
+        const orderFixture = loadFixture('order.canceled.json');
+        putSpy.mockResolvedValue({ success: true, data: orderFixture });
 
-    //     const input: CancelOrderInput = {
-    //       orderId: 'ORDER-001',
-    //       reason: 'Customer request',
-    //       notifyCustomer: true,
-    //     };
+        const input: CancelOrderInput = {
+          orderId: '123457',
+          reason: 'Customer request',
+          notifyCustomer: true,
+        };
 
-    //     const result = await adapter.cancelOrder(input);
+        const result = await adapter.cancelOrder(input);
 
-    //     expect(result.success).toBe(true);
-    //     if (result.success) {
-    //       expect(result.order.id).toBe('ORDER-001');
-    //       expect(result.order.status).toBe('cancelled');
-    //     }
-    //   });
+        expect(result.success).toBe(true);
+        if (result.success) {
+          expect(result.order.id).toBe('123457');
+          expect(result.order.status).toBe('Cancelled');
+        }
+      });
 
-    //   it('should handle cancellation failure', async () => {
-    //     postSpy.mockResolvedValue({
-    //       success: false,
-    //       error: {
-    //         code: 'ORDER_NOT_FOUND',
-    //         message: 'Order not found',
-    //       },
-    //     });
+      it('should handle cancellation failure', async () => {
+        postSpy.mockResolvedValue({
+          success: false,
+          error: {
+            code: 'ORDER_NOT_FOUND',
+            message: 'Order not found',
+          },
+        });
 
-    //     const input: CancelOrderInput = {
-    //       orderId: 'INVALID-ID',
-    //     };
+        const input: CancelOrderInput = {
+          orderId: 'INVALID-ID',
+        };
 
-    //     const result = await adapter.cancelOrder(input);
+        const result = await adapter.cancelOrder(input);
 
-    //     expect(result.success).toBe(false);
-    //     if (!result.success) {
-    //       expect(result.error).toBeDefined();
-    //     }
-    //   });
-    // });
+        expect(result.success).toBe(false);
+        if (!result.success) {
+          expect(result.error).toBeDefined();
+        }
+      });
+    });
 
     describe('updateOrder', () => {
       it('should update order successfully', async () => {
