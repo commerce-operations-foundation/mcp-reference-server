@@ -286,7 +286,7 @@ describe('RydershipAdapter', () => {
         putSpy.mockResolvedValue({ success: true, data: orderFixture });
 
         const input: UpdateOrderInput = {
-          id: 'ORDER-001',
+          id: '123456',
           updates: {
             shippingAddress: {
               firstName: 'Jane',
@@ -304,7 +304,7 @@ describe('RydershipAdapter', () => {
 
         expect(result.success).toBe(true);
         if (result.success) {
-          expect(result.order.id).toBe('ORDER-001');
+          expect(result.order.id).toBe('123456');
           expect(result.order.status).toBe('Processing');
         }
       });
