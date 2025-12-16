@@ -15,6 +15,7 @@ The Order Network eXchange (onX) is an open specification built on the Model Con
 - [Problem Statement](introduction/problem-statement.md) - Why we need a universal standard
 - [Why MCP?](introduction/why-mcp.md) - The technology behind the standard
 - [Ecosystem Benefits](introduction/ecosystem-benefits.md) - Value for every stakeholder
+- [Glossary](introduction/glossary.md) - Glossary of terms used by the standard
 
 ### Technical Specification
 - [Architecture Overview](standard/overview.md) - System design and components
