@@ -530,17 +530,22 @@ export class RydershipAdapter implements IFulfillmentAdapter {
 
     const shippingAddress = this.valueOrUndefined((updates as { shippingAddress?: Address | null }).shippingAddress);
     if (shippingAddress) {
-      payload.shipping_address = this.mapOrderShippingAddress(payload);
+      payload.shipping_address_1 = shippingAddress.address1;
+      payload.shipping_address_2 = shippingAddress.address2;
+      payload.shipping_city = shippingAddress.city;
+      payload.shipping_state = shippingAddress.stateOrProvince;
+      payload.shipping_zip = shippingAddress.zipCodeOrPostalCode;
+      payload.shipping_country_iso2 = shippingAddress.country;
+      payload.shipping_phone = shippingAddress.phone;
+      payload.email = shippingAddress.email;
+      payload.shipping_company = shippingAddress.company;
+      payload.first_name = shippingAddress.firstName;
+      payload.last_name = shippingAddress.lastName;
     }
 
     const notes = this.valueOrUndefined((updates as { notes?: string | null }).notes);
     if (notes) {
-      payload.notes = notes;
-    }
-
-    const tags = this.valueOrUndefined((updates as { tags?: string[] | null }).tags);
-    if (Array.isArray(tags)) {
-      payload.tags = tags;
+      payload.public_notes = notes;
     }
 
     return payload;
