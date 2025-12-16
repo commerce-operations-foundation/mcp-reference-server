@@ -11,7 +11,7 @@ import { ApiClient } from '../src/utils/api-client.js';
 import type {
   // CreateSalesOrderInput,
   // CancelOrderInput,
-  // UpdateOrderInput,
+  UpdateOrderInput,
   GetOrdersInput,
   // GetInventoryInput,
 } from '@cof-org/mcp';
@@ -32,7 +32,7 @@ describe('RydershipAdapter', () => {
   let mockApiClient: ApiClient;
   let getSpy: jest.MockedFunction<any>;
   let postSpy: jest.MockedFunction<any>;
-  // let patchSpy: jest.MockedFunction<any>;
+  let putSpy: jest.MockedFunction<any>;
 
   beforeEach(() => {
     // Create adapter instance
@@ -48,7 +48,7 @@ describe('RydershipAdapter', () => {
     mockApiClient = (adapter as any).client;
     getSpy = jest.spyOn(mockApiClient, 'get') as unknown as jest.MockedFunction<any>;
     postSpy = jest.spyOn(mockApiClient, 'post') as unknown as jest.MockedFunction<any>;
-    // patchSpy = jest.spyOn(mockApiClient, 'patch') as unknown as jest.MockedFunction<any>;
+    putSpy = jest.spyOn(mockApiClient, 'put') as unknown as jest.MockedFunction<any>;
   });
 
   describe('Lifecycle Methods', () => {
@@ -280,62 +280,35 @@ describe('RydershipAdapter', () => {
     //   });
     // });
 
-    // describe('updateOrder', () => {
-    //   it('should update order successfully', async () => {
-    //     patchSpy.mockResolvedValue({
-    //       success: true,
-    //       data: {
-    //         id: 'ORDER-001',
-    //         number: 'ORD-2024-001',
-    //         external_id: 'EXT-001',
-    //         status: 'processing',
-    //         customer: {
-    //           id: 'CUST-001',
-    //           email: 'test@example.com',
-    //           first_name: 'Jane',
-    //           last_name: 'Smith',
-    //         },
-    //         items: [],
-    //         total: 100.0,
-    //         currency: 'USD',
-    //         created_at: '2024-01-01T00:00:00Z',
-    //         updated_at: '2024-01-02T00:00:00Z',
-    //         shipping_address: {
-    //           street1: '456 Oak Ave',
-    //           city: 'Los Angeles',
-    //           state: 'CA',
-    //           postal_code: '90001',
-    //           country: 'US',
-    //         },
-    //         billing_address: {},
-    //       },
-    //     });
+    describe('updateOrder', () => {
+      it('should update order successfully', async () => {
+        const orderFixture = loadFixture('order.processing.json');
+        putSpy.mockResolvedValue({ success: true, data: orderFixture });
 
-    //     const input: UpdateOrderInput = {
-    //       id: 'ORDER-001',
-    //       updates: {
-    //         status: 'processing',
-    //         shippingAddress: {
-    //           firstName: 'Jane',
-    //           lastName: 'Smith',
-    //           address1: '456 Oak Ave',
-    //           city: 'Los Angeles',
-    //           stateOrProvince: 'CA',
-    //           zipCodeOrPostalCode: '90001',
-    //           country: 'US',
-    //         },
-    //       },
-    //     };
+        const input: UpdateOrderInput = {
+          id: 'ORDER-001',
+          updates: {
+            shippingAddress: {
+              firstName: 'Jane',
+              lastName: 'Smith',
+              address1: '456 Oak Ave',
+              city: 'Los Angeles',
+              stateOrProvince: 'CA',
+              zipCodeOrPostalCode: '90001',
+              country: 'US',
+            },
+          },
+        };
 
-    //     const result = await adapter.updateOrder(input);
+        const result = await adapter.updateOrder(input);
 
-    //     expect(result.success).toBe(true);
-    //     if (result.success) {
-    //       expect(result.order.id).toBe('ORDER-001');
-    //       expect(result.order.status).toBe('processing');
-    //     }
-    //   });
-    // });
+        expect(result.success).toBe(true);
+        if (result.success) {
+          expect(result.order.id).toBe('ORDER-001');
+          expect(result.order.status).toBe('Processing');
+        }
+      });
+    });
   });
 
   describe('Query Operations', () => {
