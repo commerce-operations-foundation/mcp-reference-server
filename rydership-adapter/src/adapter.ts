@@ -205,6 +205,7 @@ export class RydershipAdapter implements IFulfillmentAdapter {
 
   async updateOrder(input: UpdateOrderInput): Promise<OrderResult> {
     try {
+      console.log('Updating order with input:', input);
       const response = await this.client.put<RydershipOrder>(
         `/orders/${input.id}`,
         this.transformOrderUpdates(input.updates)
