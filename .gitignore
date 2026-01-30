@@ -3,11 +3,15 @@ server/node_modules/
 server/npm-debug.log*
 server/yarn-debug.log*
 server/yarn-error.log*
+validator/node_modules/
+validator/npm-debug.log*
 
 # Environment variables
 server/.env
 server/.env.local
 server/.env.*.local
+validator/.env
+validator/.env.local
 
 # Build output
 server/dist/
@@ -17,6 +21,8 @@ server/.next/
 server/.nuxt/
 server/.cache/
 server/.parcel-cache/
+validator/dist/
+validator/coverage/
 
 # OS files
 .DS_Store
