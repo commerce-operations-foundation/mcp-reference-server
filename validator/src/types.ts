@@ -67,9 +67,6 @@ export interface ComplianceReport {
   score: number; // 0-100
 }
 
-// ONX_TOOLS is now exported from @onx/schemas package
-// Import from './schemas/index.js' instead
-
 /**
  * Transport configuration
  */
