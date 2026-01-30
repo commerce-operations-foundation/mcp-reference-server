@@ -3,26 +3,8 @@
  */
 
 import { spawn, ChildProcess } from 'node:child_process';
-import { McpTransport, McpResponse, ServerInfo } from './base.js';
+import { McpTransport, McpResponse, ServerInfo, JsonRpcRequest, JsonRpcResponse } from './base.js';
 import { ToolDefinition, StdioTransportConfig } from '../types.js';
-
-interface JsonRpcRequest {
-  jsonrpc: '2.0';
-  id: number;
-  method: string;
-  params?: Record<string, unknown>;
-}
-
-interface JsonRpcResponse {
-  jsonrpc: '2.0';
-  id: number;
-  result?: unknown;
-  error?: {
-    code: number;
-    message: string;
-    data?: unknown;
-  };
-}
 
 export class StdioTransport implements McpTransport {
   private config: StdioTransportConfig;
