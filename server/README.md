@@ -63,6 +63,7 @@ The server follows a three-layer architecture:
 - `cancel-order` - Cancel existing orders with optional reasons
 - `update-order` - Modify order details and metadata
 - `fulfill-order` - Mark orders as fulfilled and return fulfillment data
+- `create-return` - Create returns for order items with refund/exchange tracking
 
 ### Query Tools
 - `get-orders` - Retrieve orders with rich filtering
@@ -71,6 +72,7 @@ The server follows a three-layer architecture:
 - `get-product-variants` - Retrieve variant data
 - `get-inventory` - Check stock levels across locations
 - `get-fulfillments` - List fulfillment records and statuses
+- `get-returns` - Query return records and status
 
 ## Claude Desktop Integration
 
