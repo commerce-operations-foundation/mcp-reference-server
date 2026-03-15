@@ -16,11 +16,14 @@ import {
   CancelOrderInputSchema,
   UpdateOrderInputSchema,
   FulfillOrderInputSchema,
+  CreateReturnInputSchema,
   GetOrdersInputSchema,
   GetCustomersInputSchema,
   GetProductsInputSchema,
+  GetProductVariantsInputSchema,
   GetInventoryInputSchema,
   GetFulfillmentsInputSchema,
+  GetReturnsInputSchema,
 } from '../tool-inputs/index.js';
 import { ReturnSchema } from '../entities/return.js';
 
@@ -126,6 +129,24 @@ const schemaDefinitions = [
     schema: GetFulfillmentsInputSchema,
     title: 'get-fulfillments',
     description: 'Input schema for querying fulfillments',
+  },
+  {
+    name: 'tool-inputs/create-return.json',
+    schema: CreateReturnInputSchema,
+    title: 'create-return',
+    description: 'Input schema for creating a return',
+  },
+  {
+    name: 'tool-inputs/get-returns.json',
+    schema: GetReturnsInputSchema,
+    title: 'get-returns',
+    description: 'Input schema for querying returns',
+  },
+  {
+    name: 'tool-inputs/get-product-variants.json',
+    schema: GetProductVariantsInputSchema,
+    title: 'get-product-variants',
+    description: 'Input schema for querying product variants',
   },
 ] as const;
 
