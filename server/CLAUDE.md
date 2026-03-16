@@ -68,8 +68,8 @@ npx vitest tests/unit --grep "AdapterFactory"
 ### Tool System
 
 Tools are defined in `src/tools/` and registered through the explicit list in `registerTools`:
-- **Actions**: `create-sales-order`, `cancel-order`, `update-order`, `fulfill-order`
-- **Queries**: `get-orders`, `get-customers`, `get-products`, `get-product-variants`, `get-inventory`, `get-fulfillments`
+- **Actions**: `create-sales-order`, `cancel-order`, `update-order`, `fulfill-order`, `create-return`
+- **Queries**: `get-orders`, `get-customers`, `get-products`, `get-product-variants`, `get-inventory`, `get-fulfillments`, `get-returns`
 
 All tools extend `BaseTool` which provides:
 - JSON Schema validation via `inputSchema`
@@ -122,7 +122,7 @@ All source uses ES modules with `.js` extensions in imports (required for ES mod
 ## Creating Custom Adapters
 
 1. Implement `IFulfillmentAdapter` interface from `src/types/adapter.ts`
-2. Support the lifecycle hooks plus the ten shipped operations (`createSalesOrder`, `cancelOrder`, `updateOrder`, `fulfillOrder`, `getOrders`, `getCustomers`, `getProducts`, `getProductVariants`, `getInventory`, `getFulfillments`)
+2. Support the lifecycle hooks plus the twelve shipped operations (`createSalesOrder`, `cancelOrder`, `updateOrder`, `fulfillOrder`, `createReturn`, `getOrders`, `getCustomers`, `getProducts`, `getProductVariants`, `getInventory`, `getFulfillments`, `getReturns`)
 
 For built-in adapters:
 1. Create adapter in `src/adapters/your-adapter/`

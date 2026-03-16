@@ -128,7 +128,7 @@ You can also send a quick `tools/list` request using stdio:
 echo '{"jsonrpc":"2.0","method":"tools/list","id":1}' | node dist/index.js
 ```
 
-The response should contain the ten tools described in the Tools Reference.
+The response should contain the twelve tools described in the Tools Reference.
 
 ## Troubleshooting
 

@@ -11,7 +11,7 @@ The Order Network eXchange Standard creates value for every participant in the c
 #### Immediate Capabilities
 - **Instant Commerce Features**: Enable shopping without building commerce infrastructure
 - **Universal Compatibility**: One integration works with all compliant Fulfillment systems
-- **Rich Functionality**: 10 core operations covering order capture, fulfillment, and analytics
+- **Rich Functionality**: 12 core operations covering order capture, fulfillment, returns, and analytics
 - **No Maintenance Burden**: Fulfillment vendors maintain their implementations
 
 #### Competitive Advantages
@@ -234,7 +234,7 @@ Opportunity Cost Analysis:
 
 #### For AI Platforms
 ✓ Enable commerce in < 1 week
-✓ Support the standard 10 operations
+✓ Support the standard 12 operations (5 actions + 7 queries)
 ✓ Zero custom Fulfillment code
 ✓ 99.9% reliability
 

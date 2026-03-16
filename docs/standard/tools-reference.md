@@ -1,6 +1,6 @@
 # Tools Reference
 
-The reference MCP server currently exposes ten fulfillment tools grouped into action and query categories. All tools conform to the `ToolDescription` contract defined in the server source (`server/src/tools`).
+The reference MCP server currently exposes twelve fulfillment tools (5 actions + 7 queries) grouped into action and query categories. All tools conform to the `ToolDescription` contract defined in the server source (`server/src/tools`).
 
 ## Action Tools
 

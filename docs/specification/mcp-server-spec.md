@@ -229,7 +229,7 @@ interface ToolRegistry {
 
 ### Standard Tool Set
 
-The reference server implements these ten tools:
+The reference server implements these twelve tools:
 
 #### Action Tools (4 tools)
 
@@ -728,7 +728,7 @@ Compliant implementations MUST pass:
 
 2. **Tool Tests**
 
-   - All 10 standard tools functional
+   - All 12 standard tools functional
    - Parameter validation
    - Error handling
 
@@ -767,7 +767,7 @@ See [examples/](../../examples/) directory for client integration samples.
 ### Version 1.0.0 (August 2025)
 
 - Initial specification release
-- Defined 10 standard tools
+- Defined 12 standard tools (5 actions + 7 queries)
 - Established protocol requirements
 - Set performance targets
 

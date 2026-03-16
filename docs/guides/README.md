@@ -37,7 +37,7 @@ See the [Installation Guide](installation.md#claude-desktop-integration) for pla
 
 ## Available Tools
 
-See the [Tools Reference](../standard/tools-reference.md) for documentation of the 10 standard operations.
+See the [Tools Reference](../standard/tools-reference.md) for documentation of the 12 standard operations (5 actions + 7 queries).
 
 ## Adapters
 

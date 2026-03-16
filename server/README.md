@@ -4,7 +4,7 @@ A Model Context Protocol (MCP) server that provides standardized access to comme
 
 ## Features
 
-- 10 standardized fulfillment tools covering core order capture, fulfillment, and data queries
+- 12 standardized fulfillment tools (5 actions + 7 queries) covering order capture, fulfillment, returns, and data queries
 - Plug-and-play adapter system for different fulfillment backends
 - Mock adapter for testing and development
 - Full TypeScript implementation with strict type safety

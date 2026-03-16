@@ -39,7 +39,7 @@ The current specification focuses on request-response patterns. Real-time events
 
 ### How long does implementation take?
 - **Basic implementation**: 1-2 weeks for core tools
-- **Full implementation**: 1-2 months for all 10 shipped tools
+- **Full implementation**: 1-2 months for all 12 shipped tools
 - **Production-ready**: 2-3 months with testing and optimization
 
 ### Do I need to implement every tool?
