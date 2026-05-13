@@ -5,7 +5,8 @@
  * Entry point using MCP SDK components
  */
 
-import { fileURLToPath } from 'url';
+import { realpathSync } from 'fs';
+import { pathToFileURL } from 'url';
 
 import { ConfigManager } from './config/config-manager.js';
 import { MCPServerSDK } from './server.js';
@@ -57,12 +58,31 @@ async function main() {
   }
 }
 
-// Run if this is the main module
-// ES modules use import.meta.url
-const __filename = fileURLToPath(import.meta.url);
+/**
+ * Detect whether this module is the process entry point.
+ *
+ * `process.argv[1]` holds the path Node was invoked with. When the package is
+ * installed via npm/npx, the `bin` entry is exposed as a symlink (for example
+ * `node_modules/.bin/cof-mcp -> ../@virtocommerce/cof-mcp/dist/index.js`), so a
+ * direct string comparison against `import.meta.url` fails on POSIX systems
+ * and `main()` is silently skipped — the process exits with code 0 and no
+ * output, which is what causes the server to "start and immediately disconnect"
+ * under Claude Desktop on macOS/Linux.
+ *
+ * Resolving symlinks with `fs.realpathSync` and comparing canonical file URLs
+ * makes the check correct on macOS, Linux, and Windows.
+ */
+function isMainModule(): boolean {
+  const invokedPath = process.argv[1];
+  if (!invokedPath) return false;
+  try {
+    return pathToFileURL(realpathSync(invokedPath)).href === import.meta.url;
+  } catch {
+    return false;
+  }
+}
 
-// Check if this file was run directly
-if (process.argv[1] === __filename) {
+if (isMainModule()) {
   main();
 }
 
