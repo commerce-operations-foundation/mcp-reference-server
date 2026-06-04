@@ -11,17 +11,11 @@ const baseAddress = (overrides: Partial<Record<string, string>> = {}) => ({
   ...overrides,
 });
 
-const buildCustomer = (extId: string) => {
-  const timestamp = new Date().toISOString();
-  return {
-    id: `CUST-${extId}-${Date.now()}`,
-    tenantId: 'mock-tenant',
-    createdAt: timestamp,
-    updatedAt: timestamp,
-    email: `${extId.toLowerCase()}@example.com`,
-    firstName: 'Adapter',
-  };
-};
+const buildCustomer = (extId: string) => ({
+  id: `CUST-${extId}-${Date.now()}`,
+  email: `${extId.toLowerCase()}@example.com`,
+  firstName: 'Adapter',
+});
 
 const buildOrder = (extId: string) => ({
   externalId: extId,

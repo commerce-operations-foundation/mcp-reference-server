@@ -11,17 +11,11 @@ const requiredAddress = (overrides: Partial<Record<string, string>> = {}) => ({
   ...overrides,
 });
 
-const buildCustomer = (prefix: string) => {
-  const timestamp = new Date().toISOString();
-  return {
-    id: `CUST-${prefix}-${Date.now()}`,
-    tenantId: 'mock-tenant',
-    createdAt: timestamp,
-    updatedAt: timestamp,
-    email: `${prefix.toLowerCase()}@example.com`,
-    firstName: prefix,
-  };
-};
+const buildCustomer = (prefix: string) => ({
+  id: `CUST-${prefix}-${Date.now()}`,
+  email: `${prefix.toLowerCase()}@example.com`,
+  firstName: prefix,
+});
 
 const makeLineItem = (idSuffix: string) => ({
   id: `LI-${idSuffix}`,
