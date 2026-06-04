@@ -18,6 +18,7 @@
     "build": "tsc",
     "dev": "vite-node src/index.ts",
     "start": "node dist/index.js",
+    "start:http": "node dist/http-server.js",
     "test": "npm run build && vitest",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage",
