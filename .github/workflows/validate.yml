@@ -1,0 +1,63 @@
+name: Validate onX Compliance
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: .
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install server dependencies
+        run: npm ci
+        working-directory: ./server
+
+      - name: Build server
+        run: npm run build
+        working-directory: ./server
+
+      - name: Install validator dependencies
+        run: npm ci
+        working-directory: ./validator
+
+      - name: Build validator
+        run: npm run build
+        working-directory: ./validator
+
+      - name: Validate MCP Server
+        working-directory: ./validator
+        env:
+          ADAPTER_TYPE: built-in
+          ADAPTER_NAME: mock
+        run: |
+          node dist/cli/index.js stdio node -a "../server/dist/index.js"
+
+      - name: Generate JSON Report
+        if: always()
+        working-directory: ./validator
+        env:
+          ADAPTER_TYPE: built-in
+          ADAPTER_NAME: mock
+        run: |
+          node dist/cli/index.js stdio node -a "../server/dist/index.js" -f json > compliance-report.json || true
+          cat compliance-report.json
+
+      - name: Upload Compliance Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: compliance-report
+          path: validator/compliance-report.json

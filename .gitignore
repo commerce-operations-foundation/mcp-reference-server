@@ -1,36 +1,37 @@
 # Node.js dependencies
-server/node_modules/
-server/npm-debug.log*
-server/yarn-debug.log*
-server/yarn-error.log*
+node_modules/
+
+# Debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
 # Environment variables
-server/.env
-server/.env.local
-server/.env.*.local
+.env
+.env.local
+.env.*.local
 
 # Build output
-server/dist/
-server/build/
-server/coverage/
-server/.next/
-server/.nuxt/
-server/.cache/
-server/.parcel-cache/
+dist/
+build/
+coverage/
+.next/
+.nuxt/
+.cache/
+.parcel-cache/
 
 # OS files
 .DS_Store
 Thumbs.db
 
 # Logs
-server/logs/
-server/*.log
+logs/
+*.log
 
 # Temporary files
 tmp/
-server/tmp/
-server/temp/
-server/.tmp/
+temp/
+.tmp/
 working-docs/
 
 # IDE files

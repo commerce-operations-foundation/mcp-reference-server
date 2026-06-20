@@ -1,0 +1,134 @@
+name: 'onX MCP Validator'
+description: 'Validate MCP servers against the Commerce Operations Foundation onX specification'
+author: 'Commerce Operations Foundation'
+
+branding:
+  icon: 'check-circle'
+  color: 'green'
+
+inputs:
+  server-command:
+    description: 'Command to start the MCP server'
+    required: true
+  server-args:
+    description: 'Arguments to pass to the server (space-separated)'
+    required: false
+    default: ''
+  env-vars:
+    description: 'Environment variables (KEY=VALUE, one per line)'
+    required: false
+    default: ''
+  functional-tests:
+    description: 'Run functional tests (true/false)'
+    required: false
+    default: 'true'
+  fail-on-partial:
+    description: 'Fail if only partially compliant (true/false)'
+    required: false
+    default: 'false'
+  working-directory:
+    description: 'Working directory for running the server'
+    required: false
+    default: '.'
+
+outputs:
+  compliance:
+    description: 'Compliance status (full, partial, non-compliant)'
+  score:
+    description: 'Compliance score (0-100)'
+  report:
+    description: 'Full JSON compliance report'
+  implemented-tools:
+    description: 'Number of implemented tools'
+  missing-tools:
+    description: 'Comma-separated list of missing tools'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
+    - name: Install validator
+      shell: bash
+      run: npm install -g @cof-org/onx-validator
+
+    - name: Parse environment variables
+      id: parse-env
+      shell: bash
+      run: |
+        ENV_ARGS=""
+        if [ -n "${{ inputs.env-vars }}" ]; then
+          while IFS= read -r line; do
+            if [ -n "$line" ]; then
+              ENV_ARGS="$ENV_ARGS -e $line"
+            fi
+          done <<< "${{ inputs.env-vars }}"
+        fi
+        echo "env_args=$ENV_ARGS" >> $GITHUB_OUTPUT
+
+    - name: Run validation
+      id: validate
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        # Build args
+        ARGS=""
+        if [ -n "${{ inputs.server-args }}" ]; then
+          for arg in ${{ inputs.server-args }}; do
+            ARGS="$ARGS -a $arg"
+          done
+        fi
+
+        # Run validator
+        FUNCTIONAL_FLAG=""
+        if [ "${{ inputs.functional-tests }}" = "false" ]; then
+          FUNCTIONAL_FLAG="--no-functional"
+        fi
+
+        set +e
+        REPORT=$(onx-validate stdio "${{ inputs.server-command }}" $ARGS ${{ steps.parse-env.outputs.env_args }} $FUNCTIONAL_FLAG -f json 2>&1)
+        EXIT_CODE=$?
+        set -e
+
+        # Extract values from JSON
+        COMPLIANCE=$(echo "$REPORT" | jq -r '.compliance // "error"')
+        SCORE=$(echo "$REPORT" | jq -r '.score // 0')
+        IMPLEMENTED=$(echo "$REPORT" | jq -r '.summary.implementedTools // 0')
+        MISSING=$(echo "$REPORT" | jq -r '.summary.missingTools | join(",")')
+
+        # Set outputs
+        echo "compliance=$COMPLIANCE" >> $GITHUB_OUTPUT
+        echo "score=$SCORE" >> $GITHUB_OUTPUT
+        echo "implemented-tools=$IMPLEMENTED" >> $GITHUB_OUTPUT
+        echo "missing-tools=$MISSING" >> $GITHUB_OUTPUT
+
+        # Store full report (escape for multiline)
+        EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+        echo "report<<$EOF" >> $GITHUB_OUTPUT
+        echo "$REPORT" >> $GITHUB_OUTPUT
+        echo "$EOF" >> $GITHUB_OUTPUT
+
+        # Print report to console
+        if [ "$COMPLIANCE" != "error" ]; then
+          onx-validate stdio "${{ inputs.server-command }}" $ARGS ${{ steps.parse-env.outputs.env_args }} $FUNCTIONAL_FLAG || true
+        else
+          echo "::error::Validation failed"
+          echo "$REPORT"
+        fi
+
+        # Determine exit code
+        if [ "$COMPLIANCE" = "full" ]; then
+          exit 0
+        elif [ "$COMPLIANCE" = "partial" ] && [ "${{ inputs.fail-on-partial }}" = "true" ]; then
+          echo "::error::Server is only partially compliant"
+          exit 1
+        elif [ "$COMPLIANCE" = "partial" ]; then
+          echo "::warning::Server is only partially compliant"
+          exit 0
+        else
+          echo "::error::Server is non-compliant"
+          exit 1
+        fi
