@@ -28,6 +28,15 @@ const ProductCoreSchema = z
     categories: z.array(z.string()),
     options: z.array(ProductOptionSchema).describe('Declares which option dimensions exist for the product'),
     imageURLs: z.array(z.string()).describe('Fallback imagery used when variants omit their own images'),
+    hsCode: z.string().describe('HTS or HS code of the product, up to 14 digits'),
+    countryOfOrigin: z.string().describe('ISO-2 letter country code'),
+    eccn: z
+      .string()
+      .describe('Export Control Classification Number, 5 character alphanumeric, required for exports from the USA'),
+    unNumber: z.string().describe('Four digit UN number for hazmat materials identification'),
+    unPackingGroup: z.string().describe('Identifies the degree of danger - values I, II or III'),
+    unPackingInstruction: z.string().describe('Usually five characters, letters and numbers'),
+    nmfc: z.string().describe('National Motor Freight Classification, used in the US only in lieu of UN codes'),
     customFields: CustomFieldsSchema,
   })
   .partial()

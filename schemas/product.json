@@ -97,45 +97,31 @@
     },
     "hsCode": {
       "description": "HTS or HS code of the product, up to 14 digits",
-      "type": "string",
-      "value": {
-      }
+      "type": "string"
     },
     "countryOfOrigin": {
       "description": "ISO-2 letter country code",
-      "type": "string",
-      "value": {
-      }
+      "type": "string"
     },
-     "eccn": {
+    "eccn": {
       "description": "Export Control Classification Number, 5 character alphanumeric, required for exports from the USA",
-      "type": "string",
-      "value": {
-      }
+      "type": "string"
     },
-     "unNumber": {
+    "unNumber": {
       "description": "Four digit UN number for hazmat materials identification",
-      "type": "string",
-      "value": {
-      }
+      "type": "string"
     },
-     "unPackingGroup": {
+    "unPackingGroup": {
       "description": "Identifies the degree of danger - values I, II or III",
-      "type": "string",
-      "value": {
-      }
+      "type": "string"
     },
-     "unPackingInstruction": {
+    "unPackingInstruction": {
       "description": "Usually five characters, letters and numbers",
-      "type": "string",
-      "value": {
-      }
+      "type": "string"
     },
     "nmfc": {
-      "description": "National Motor Freigth Classification, used in the US only in lieu of UN codes",
-      "type": "string",
-      "value": {
-      }
+      "description": "National Motor Freight Classification, used in the US only in lieu of UN codes",
+      "type": "string"
     },
     "customFields": {
       "description": "Custom Fields - allows for arbitrary key-value pairs to be added to an entity. Useful for storing any custom data that is not covered by the other fields.",
