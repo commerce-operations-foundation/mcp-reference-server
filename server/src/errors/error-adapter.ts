@@ -2,8 +2,7 @@
  * Error Adapter Layer
  * Provides deterministic mapping from internal errors to MCP protocol errors
  */
-
-import { McpError, ErrorCode } from '@modelcontextprotocol/sdk/types.js';
+import { ProtocolError, ProtocolErrorCode } from "@modelcontextprotocol/server";
 import { FulfillmentError, ValidationError, ConfigurationError, ConnectionError } from '../utils/errors.js';
 import { AdapterError } from '../types/adapter.js';
 import {
@@ -70,7 +69,7 @@ function isRetryableError(error: Error): boolean {
 /**
  * Map internal error to MCP protocol error
  */
-function mapToMcpError(error: Error): McpError {
+function mapToMcpError(error: Error): ProtocolError {
   // Handle FulfillmentError with toJSONRPCError method
   if (error instanceof FulfillmentError && typeof error.toJSONRPCError === 'function') {
     return error.toJSONRPCError();
@@ -78,7 +77,7 @@ function mapToMcpError(error: Error): McpError {
 
   // Handle ValidationError specifically
   if (error instanceof ValidationError) {
-    return new McpError(ErrorCode.InvalidParams, error.message, {
+    return new ProtocolError(ProtocolErrorCode.InvalidParams, error.message, {
       field: error.field,
       value: error.value,
       retryable: false,
@@ -87,7 +86,7 @@ function mapToMcpError(error: Error): McpError {
 
   // Handle AdapterError
   if (error instanceof AdapterError) {
-    return new McpError(ErrorCode.InternalError, `Adapter Error: ${error.message}`, {
+    return new ProtocolError(ProtocolErrorCode.InternalError, `Adapter Error: ${error.message}`, {
       code: error.code,
       details: error.details,
       retryable: true,
@@ -96,16 +95,16 @@ function mapToMcpError(error: Error): McpError {
 
   // Handle tool-specific errors
   if (error instanceof ToolNotFoundError) {
-    return new McpError(ErrorCode.MethodNotFound, error.message, error.data);
+    return new ProtocolError(ProtocolErrorCode.MethodNotFound, error.message, error.data);
   }
 
   if (error instanceof MethodNotFoundError) {
-    return new McpError(ErrorCode.MethodNotFound, error.message, error.data);
+    return new ProtocolError(ProtocolErrorCode.MethodNotFound, error.message, error.data);
   }
 
   // Handle configuration errors
   if (error instanceof ConfigurationError) {
-    return new McpError(ErrorCode.InternalError, error.message, {
+    return new ProtocolError(ProtocolErrorCode.InternalError, error.message, {
       code: error.code,
       details: error.details,
       retryable: false,
@@ -114,7 +113,7 @@ function mapToMcpError(error: Error): McpError {
 
   // Handle connection errors (retryable)
   if (error instanceof ConnectionError) {
-    return new McpError(ErrorCode.InternalError, error.message, {
+    return new ProtocolError(ProtocolErrorCode.InternalError, error.message, {
       code: error.code,
       details: error.details,
       retryable: true,
@@ -122,17 +121,17 @@ function mapToMcpError(error: Error): McpError {
   }
 
   // Handle existing MCP errors
-  if (error instanceof McpError) {
+  if (error instanceof ProtocolError) {
     return error;
   }
 
   // Handle MCP-specific errors from errors/index.ts
   if (error instanceof FulfillmentAdapterError || error instanceof FulfillmentValidationError) {
-    return error as McpError;
+    return error as ProtocolError;
   }
 
   // Default case: treat as internal error
-  return new McpError(ErrorCode.InternalError, error.message || 'Unknown error occurred', {
+  return new ProtocolError(ProtocolErrorCode.InternalError, error.message || 'Unknown error occurred', {
     originalError: error.name,
     retryable: isRetryableError(error),
   });

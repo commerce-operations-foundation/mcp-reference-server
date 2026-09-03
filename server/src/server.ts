@@ -1,19 +1,5 @@
-/**
- * MCP Server using SDK components
- * This is the recommended approach for MCP servers
- */
-
-import { Server } from '@modelcontextprotocol/sdk/server/index.js';
-import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import {
-  CallToolRequestSchema,
-  ListToolsRequestSchema,
-  ListPromptsRequestSchema,
-  ListResourcesRequestSchema,
-  PingRequestSchema,
-  McpError,
-  ErrorCode,
-} from '@modelcontextprotocol/sdk/types.js';
+import { StdioServerTransport } from "@modelcontextprotocol/server/stdio";
+import { Server, ProtocolError, ProtocolErrorCode } from "@modelcontextprotocol/server";
 import { ToolRegistry } from './tools/registry.js';
 import { ServiceOrchestrator } from './services/service-orchestrator.js';
 import { ServerConfig } from './types/index.js';
@@ -53,21 +39,21 @@ export class MCPServerSDK {
 
   private setupHandlers(): void {
     // Handle tools/list requests
-    this.server.setRequestHandler(ListToolsRequestSchema, async () => {
+    this.server.setRequestHandler('tools/list', async () => {
       Logger.debug('Handling tools/list request');
       const tools = this.toolRegistry.list();
       return { tools };
     });
 
     // Handle tools/call requests with improved response wrapping
-    this.server.setRequestHandler(CallToolRequestSchema, async (request) => {
+    this.server.setRequestHandler('tools/call', async (request) => {
       const { name, arguments: args } = request.params;
 
       Logger.debug(`Handling tools/call request for: ${name}`);
 
       if (!this.toolRegistry.has(name)) {
         Logger.error(`Unknown tool requested: ${name}`);
-        throw new McpError(ErrorCode.MethodNotFound, `Unknown tool: ${name}`, { name });
+        throw new ProtocolError(ProtocolErrorCode.MethodNotFound, `Unknown tool: ${name}`, { name });
       }
 
       try {
@@ -96,19 +82,19 @@ export class MCPServerSDK {
     });
 
     // Handle ping requests
-    this.server.setRequestHandler(PingRequestSchema, async () => {
+    this.server.setRequestHandler('ping', async () => {
       Logger.debug('Handling ping request');
       return {};
     });
 
     // Handle prompts/list requests - return empty list since we don't support prompts
-    this.server.setRequestHandler(ListPromptsRequestSchema, async () => {
+    this.server.setRequestHandler('prompts/list', async () => {
       Logger.debug('Handling prompts/list request');
       return { prompts: [] };
     });
 
     // Handle resources/list requests - return empty list since we don't support resources
-    this.server.setRequestHandler(ListResourcesRequestSchema, async () => {
+    this.server.setRequestHandler('resources/list', async () => {
       Logger.debug('Handling resources/list request');
       return { resources: [] };
     });

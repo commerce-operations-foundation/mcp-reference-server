@@ -4,26 +4,13 @@
  */
 
 // Import SDK types
-import type {
-  JSONRPCRequest,
-  JSONRPCResponse,
-  JSONRPCError,
-  InitializeRequest,
-  ListToolsRequest,
-  CallToolRequest,
-  InitializeResult,
-  ListToolsResult,
-  CallToolResult,
-  Tool,
-  McpError,
-  ErrorCode
-} from '@modelcontextprotocol/sdk/types.js';
+import type { JSONRPCRequest, JSONRPCResultResponse, JSONRPCErrorResponse, InitializeRequest, ListToolsRequest, CallToolRequest, InitializeResult, ListToolsResult, CallToolResult, Tool, ProtocolError, ProtocolErrorCode } from "@modelcontextprotocol/server";
 
 // Re-export for backward compatibility
 export type {
   JSONRPCRequest,
-  JSONRPCResponse,
-  JSONRPCError,
+  JSONRPCResultResponse as JSONRPCResponse,
+  JSONRPCErrorResponse as JSONRPCError,
   InitializeRequest,
   ListToolsRequest,
   CallToolRequest,
@@ -31,8 +18,8 @@ export type {
   ListToolsResult,
   CallToolResult,
   Tool as ToolDescription,
-  McpError,
-  ErrorCode
+  ProtocolError as McpError,
+  ProtocolErrorCode
 };
 
 // Re-export schema as JSONSchema for backward compatibility
