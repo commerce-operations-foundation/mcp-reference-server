@@ -81,6 +81,7 @@ export async function createOnxHttpServer(config: ServerConfig): Promise<OnxHttp
     name: process.env.ADAPTER_NAME ?? config.adapter.name ?? 'mock',
     package: process.env.ADAPTER_PACKAGE ?? config.adapter.package,
     path: process.env.ADAPTER_PATH ?? config.adapter.path,
+    options: config.adapter.options,
   };
   const runtime = await createOnxMcpRuntime(config, adapterConfig);
   const routes = createRestRoutes(runtime);
