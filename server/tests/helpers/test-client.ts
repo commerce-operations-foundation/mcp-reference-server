@@ -20,6 +20,10 @@ export class TestMCPClient extends EventEmitter {
   private buffer: string = '';
   private requestId: number = 1;
 
+  constructor(private readonly protocol: 'legacy' | 'modern' = 'legacy') {
+    super();
+  }
+
   async connect(): Promise<void> {
     const serverPath = path.join(__dirname, '../../dist/index.js');
 
@@ -144,11 +148,21 @@ export class TestMCPClient extends EventEmitter {
     }
 
     const id = this.requestId++;
+    const requestParams = this.protocol === 'modern'
+      ? {
+          ...(params ?? {}),
+          _meta: {
+            'io.modelcontextprotocol/protocolVersion': '2026-07-28',
+            'io.modelcontextprotocol/clientInfo': { name: 'test-client', version: '1.0.0' },
+            'io.modelcontextprotocol/clientCapabilities': {},
+          },
+        }
+      : params;
     const request = {
       jsonrpc: '2.0',
       id,
       method,
-      params,
+      params: requestParams,
     };
 
     return new Promise((resolve, reject) => {
@@ -217,6 +231,14 @@ export class TestMCPClient extends EventEmitter {
 
     for (let i = 0; i < maxAttempts; i++) {
       try {
+        if (this.protocol === 'modern') {
+          const response = await this.sendRequest('server/discover');
+          if (response?.supportedVersions?.includes('2026-07-28')) {
+            return;
+          }
+          throw new Error('Modern discovery response did not advertise 2026-07-28');
+        }
+
         const response = await this.sendRequest('initialize', {
           protocolVersion: '2024-11-05',
           capabilities: {

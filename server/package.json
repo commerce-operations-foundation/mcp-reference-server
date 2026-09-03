@@ -44,7 +44,8 @@
   "author": "Commerce Operations Foundation",
   "license": "MIT",
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^0.5.0",
+    "@modelcontextprotocol/node": "^2.0.0",
+    "@modelcontextprotocol/server": "^2.0.0",
     "ajv": "^8.12.0",
     "ajv-formats": "^3.0.1",
     "dotenv": "^16.3.1",
@@ -72,7 +73,7 @@
     "vitest": "^3.2.6"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=20.0.0"
   },
   "files": [
     "dist",

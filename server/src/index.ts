@@ -66,7 +66,8 @@ if (process.argv[1] === __filename) {
   main();
 }
 
-export { MCPServerSDK } from './server.js';
+export { MCPServerSDK, buildOnxMcpServer, createOnxMcpRuntime } from './server.js';
+export type { OnxMcpRuntime } from './server.js';
 export { ConfigManager } from './config/config-manager.js';
 export * from './types/index.js';
 export * from './schemas/index.js';
