@@ -15,6 +15,20 @@ describe('MCP Server Integration', () => {
   });
 
   describe('Protocol Handshake', () => {
+    it('serves modern stdio through 2026 discovery without initialize', async () => {
+      const modernClient = new TestMCPClient('modern');
+      await modernClient.connect();
+      try {
+        const discovery = await modernClient.sendRequest('server/discover');
+        expect(discovery.supportedVersions).toContain('2026-07-28');
+
+        const tools = await modernClient.sendRequest('tools/list');
+        expect(tools.tools).toHaveLength(12);
+      } finally {
+        await modernClient.disconnect();
+      }
+    }, 30000);
+
     it('should complete initialization', async () => {
       const response = await client.sendRequest('initialize', {
         protocolVersion: '2024-11-05',

@@ -44,14 +44,15 @@
   "author": "Commerce Operations Foundation",
   "license": "MIT",
   "dependencies": {
+    "@modelcontextprotocol/node": "^2.0.0",
+    "@modelcontextprotocol/server": "^2.0.0",
     "ajv": "^8.12.0",
     "ajv-formats": "^3.0.1",
     "dotenv": "^16.3.1",
     "uuid": "^9.0.1",
     "winston": "^3.17.0",
     "winston-daily-rotate-file": "^5.0.0",
-    "zod": "^4.1.12",
-    "@modelcontextprotocol/server": "^2.0.0"
+    "zod": "^4.1.12"
   },
   "devDependencies": {
     "@eslint/js": "^9.8.0",
@@ -72,7 +73,7 @@
     "vitest": "^3.2.6"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=20.0.0"
   },
   "files": [
     "dist",
